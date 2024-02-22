@@ -1,24 +1,20 @@
-import React from 'react';
-import logo from '@assets/img/logo.svg';
+import { Box } from '@mui/material';
+import { TaskListManager } from '@src/components/TaskListManager/TaskListManager';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import axios from "axios";
+
+const queryClient = new QueryClient();
+
+axios.defaults.baseURL = import.meta.env.PROD
+  ? "https://api.example.com"
+  : "http://localhost:3444/api";
 
 export default function Popup(): JSX.Element {
   return (
-    <div className="absolute top-0 left-0 right-0 bottom-0 text-center h-full p-3 bg-gray-800">
-      <header className="flex flex-col items-center justify-center text-white">
-        <img src={logo} className="h-36 pointer-events-none animate-spin-slow" alt="logo" />
-        <p>
-          Edit <code>src/pages/popup/Popup.jsx</code> and save to reload.
-        </p>
-        <a
-          className="text-blue-400"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React!
-        </a>
-        <p>Popup styled with TailwindCSS!</p>
-      </header>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <Box sx={{ px: 2, py: 1, minHeight: 400 }}>
+        <TaskListManager />
+      </Box>
+    </QueryClientProvider>
   );
 }
