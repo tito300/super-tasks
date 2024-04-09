@@ -4,11 +4,14 @@
     "NODE_ENV": "development"
   },
   "watch": [
-    "src", "utils", "vite.config.ts", "manifest.json", "manifest.dev.json"
+    "src",
+    "utils",
+    "vite.config.ts",
+    "manifest.json",
+    "manifest.dev.json",
+    "public"
   ],
   "ext": "tsx,css,html,ts,json",
-  "ignore": [
-    "src/**/*.spec.ts"
-  ],
+  "ignore": ["src/**/*.spec.ts"],
   "exec": "vite build"
 }

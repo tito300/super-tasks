@@ -25,7 +25,7 @@ export function TaskListManager() {
   };
   return (
     <>
-      <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+      <FormControl variant="standard" sx={{ m: 1, pl: 1, minWidth: 120 }}>
         <InputLabel id="tasks-list-title">TASKS</InputLabel>
         <Select
           labelId="tasks-list-title"
@@ -45,7 +45,7 @@ export function TaskListManager() {
           ))}
         </Select>
       </FormControl>
-      <Divider sx={{mb: 1}}/>
+      <Divider sx={{ mb: 1 }} />
       <TaskManager listId={listId} />
     </>
   );

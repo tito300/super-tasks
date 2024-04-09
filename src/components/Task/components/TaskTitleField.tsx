@@ -32,6 +32,7 @@ export const TaskTitleField = forwardRef<
             inputRef={textFieldRef}
             {...field}
             autoFocus={focused}
+            multiline
             onKeyDown={handleKeyDown}
             placeholder="Title..."
             variant="standard"

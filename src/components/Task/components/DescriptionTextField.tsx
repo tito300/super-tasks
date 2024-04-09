@@ -1,4 +1,4 @@
-import { TextField } from "@mui/material";
+import { Hidden, TextField } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { Notes } from "@mui/icons-material";
@@ -23,12 +23,15 @@ export function DescriptionTextField({ onblur }: { onblur: () => void }) {
         <TextField
           inputRef={textFieldRef}
           {...field}
+          multiline
           onKeyDown={handleKeyDown}
           variant="standard"
           size="small"
           sx={{ ml: 1 }}
           InputProps={{
             sx: {
+              textOverflow: "ellipsis",
+              overflow: "hidden",
               height: (theme) => theme.spacing(2.75),
               color: (theme) => theme.palette.text.secondary,
             },

@@ -113,14 +113,14 @@ export function Task({
                 }
                 onFocus={() => setFocused(true)}
               />
-              <Collapse in={expanded}>
+              {/* <Collapse in={expanded}>
                 <DescriptionTextField
                   onblur={() =>
                     formFields.formState.isDirty &&
                     formFields.handleSubmit(onSubmit)
                   }
                 />
-              </Collapse>
+              </Collapse> */}
             </Stack>
           </Stack>
           <TaskOptionsMenu listId={listId} />
