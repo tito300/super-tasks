@@ -16,7 +16,7 @@ export const TaskTitleField = forwardRef<
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter") {
       onblur();
       textFieldRef.current?.blur();
     }

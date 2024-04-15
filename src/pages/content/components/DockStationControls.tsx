@@ -3,7 +3,7 @@ import { IconButton, styled } from "@mui/material";
 
 const Container = styled("div")(({ theme }) => ({
   position: "absolute",
-  bottom: "99%",
+  bottom: "100%",
   right: 0,
   display: "flex",
   boxShadow: theme.shadows[0],
@@ -25,11 +25,11 @@ export function DockStationControls({
 }) {
   return (
     <Container>
-      <IconButton onClick={onMinimize} size="small" sx={{ fontSize: 14 }}>
-        <Remove fontSize="inherit" />
-      </IconButton>
-      <IconButton onClick={onRemove} size="small" sx={{ fontSize: 14 }}>
+      <IconButton onClick={onRemove} size="small" sx={{ fontSize: 15 }}>
         <Close fontSize="inherit" />
+      </IconButton>
+      <IconButton onClick={onMinimize} size="small" sx={{ fontSize: 15 }}>
+        <Remove fontSize="inherit" />
       </IconButton>
     </Container>
   );

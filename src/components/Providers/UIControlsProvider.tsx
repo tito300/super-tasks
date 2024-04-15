@@ -1,39 +1,61 @@
+import {
+  UserSettings,
+  userSettingsDefaults,
+} from "@src/config/userSettingsDefaults";
+import { deepmerge } from "@mui/utils";
 import React from "react";
-import { PropsWithChildren, createContext, useCallback, useMemo, useState } from "react";
+import {
+  PropsWithChildren,
+  createContext,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
 export type UIControls = {
-    darkMode: boolean;
-    toggleDarkMode: () => void;
-
-    defaultOpen: boolean;
-    toggleDefaultOpen: () => void;
+  userSettings: UserSettings;
+  isNewTab: boolean;
+  updateUserSettings: (newSettings: Partial<UserSettings>) => void;
 };
 
 const UIControlsContext = createContext<UIControls>(null!);
-export function UIControlsProvider({ children, defaultOpen: inDefaultOpen }: PropsWithChildren & { defaultOpen?: boolean }) {
-    const [darkMode, setDarkMode] = useState(false);
-    const [defaultOpen, setDefaultOpen] = useState(inDefaultOpen ?? false);
 
-    const toggleDarkMode = useCallback(() => setDarkMode((prev) => !prev), []);
-    const toggleDefaultOpen = useCallback(() => setDefaultOpen((prev) => !prev), []);
-    
-    const uiControls = useMemo(() => {
-        return {
-            darkMode: false,
-            toggleDarkMode: toggleDarkMode,
+export function UIControlsProvider({
+  children,
+  userSettings: inUserSettings,
+}: PropsWithChildren & { userSettings?: Partial<UserSettings> }) {
+  const [userSettings, setUserSettings] = useState<UserSettings>(() =>
+    deepmerge(userSettingsDefaults, inUserSettings ?? {})
+  );
 
-            defaultOpen: false,
-            toggleDefaultOpen: toggleDarkMode,
-        };
-    }, [darkMode, defaultOpen, toggleDarkMode, toggleDefaultOpen]);
+  const updateUserSettings = useCallback(
+    (newSettings: Partial<UserSettings>) =>
+      setUserSettings((userSettings) => ({
+        ...userSettings,
+        ...newSettings
+      })),
+    []
+  );
 
-    return <UIControlsContext.Provider value={uiControls}>{children}</UIControlsContext.Provider>;
+  const uiControls = useMemo(() => {
+    return {
+      userSettings,
+      isNewTab: document.location.search.includes("=newtab"),
+      updateUserSettings,
+    };
+  }, [userSettings, updateUserSettings]);
+
+  return (
+    <UIControlsContext.Provider value={uiControls}>
+      {children}
+    </UIControlsContext.Provider>
+  );
 }
 
 export const useUIControls = () => {
-    const context = React.useContext(UIControlsContext);
-    if (context === undefined) {
-        throw new Error("useUIControls must be used within a UIControlsProvider");
-    }
-    return context;
-}
+  const context = React.useContext(UIControlsContext);
+  if (context === undefined) {
+    throw new Error("useUIControls must be used within a UIControlsProvider");
+  }
+  return context;
+};

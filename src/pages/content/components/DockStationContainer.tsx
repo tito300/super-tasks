@@ -11,8 +11,12 @@ const Container = styled("div")(({ theme }) => ({
 }));
 
 export function DockStationContainer({ children }: PropsWithChildren) {
-  const uiControls = useUIControls();
-  const [open, setOpen] = useState(uiControls.defaultOpen);
+  const { userSettings, isNewTab } = useUIControls();
+  const [open, setOpen] = useState(
+    isNewTab && userSettings.tasksOpenOnNewTab
+      ? true
+      : userSettings.taskButtonExpanded
+  );
   const [removed, setRemoved] = useState(false);
   const theme = useTheme();
 
@@ -36,7 +40,8 @@ export function DockStationContainer({ children }: PropsWithChildren) {
           backgroundColor: theme.palette.background.paper,
           fontSize: 0,
           [":hover"]: {
-            backgroundColor: theme.palette.action.hover,
+            backgroundColor: theme.palette.background.paper,
+            opacity: 1,
           },
         }}
         onClick={() => setOpen(true)}

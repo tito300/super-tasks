@@ -17,11 +17,9 @@ export const Main = ({
   children,
   scriptType,
   theme,
-  defaultOpen,
 }: PropsWithChildren & {
   scriptType: ScriptType;
   theme?: Theme;
-  defaultOpen?: boolean;
 }) => {
   const enhancedTheme = useMemo(() => {
     return deepmerge(theme ?? {}, v1Theme);
@@ -31,7 +29,7 @@ export const Main = ({
       <QueryClientProvider client={queryClient}>
         <MessageEngineProvider scriptType={scriptType}>
           <ServicesProvider scriptType={scriptType}>
-            <UIControlsProvider defaultOpen={defaultOpen}>
+            <UIControlsProvider >
               {children}
             </UIControlsProvider>
           </ServicesProvider>

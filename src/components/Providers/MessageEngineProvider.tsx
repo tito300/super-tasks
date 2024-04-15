@@ -21,10 +21,11 @@ export function MessageEngineProvider({
 }
 
 export function useMessageEngine() {
-  if (!messageEngineContext)
+  const messageEngine = React.useContext(messageEngineContext);
+  if (!messageEngine)
     throw new Error(
       "useMessageEngine must be used within a MessageEngineProvider"
     );
 
-  return React.useContext(messageEngineContext);
+  return messageEngine;
 }

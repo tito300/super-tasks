@@ -61,6 +61,21 @@ export function TaskManager({ listId }: { listId: string }) {
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
+        {!!listId && !tempTaskPending && (
+          <AddTask
+            sx={{ mt: 1 }}
+            autoFocus
+            onClick={() => setTempTaskPending(true)}
+          />
+        )}
+        {tempTaskPending && (
+          <Task
+            temporary
+            listId={listId}
+            onSaved={() => setTempTaskPending(false)}
+            data={createEmptyTask({ id: "3dfs" })}
+          ></Task>
+        )}
         <SortableContext items={data!} strategy={verticalListSortingStrategy}>
           {isFetching && !data.length && (
             <>
@@ -70,23 +85,14 @@ export function TaskManager({ listId }: { listId: string }) {
               <TaskSkeleton />
             </>
           )}
+
           {data
             ?.filter((task) => task.status !== "completed")
             .map((task) => (
               <Task key={task.id} listId={listId} data={task} />
             ))}
         </SortableContext>
-        {tempTaskPending && (
-          <Task
-            temporary
-            listId={listId}
-            onSaved={() => setTempTaskPending(false)}
-            data={createEmptyTask({ id: "3dfs" })}
-          ></Task>
-        )}
-        {!!listId && (
-          <AddTask sx={{ mt: 1 }} onClick={() => setTempTaskPending(true)} />
-        )}
+        
         {isError && <Alert severity="error">Error Fetching Tasks</Alert>}
         {!!completedTasks.length && (
           <Stack>
@@ -102,11 +108,7 @@ export function TaskManager({ listId }: { listId: string }) {
             </Stack>
             <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
               {completedTasks.map((task) => (
-                <Task
-                  listId={listId}
-                  key={task.id + "completed"}
-                  data={task}
-                />
+                <Task listId={listId} key={task.id + "completed"} data={task} />
               ))}
             </Collapse>
           </Stack>
