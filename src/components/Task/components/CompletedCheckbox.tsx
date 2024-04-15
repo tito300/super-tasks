@@ -2,7 +2,7 @@ import { Checkbox, TextField } from "@mui/material";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { CheckCircle, CircleOutlined } from "@mui/icons-material";
-import { useUpdateTask } from "../../../api/tasks";
+import { useUpdateTask } from "../../../api/task.api";
 
 export function CompletedCheckbox({ listId }: { listId: string }) {
   const { control, getValues } = useFormContext<TaskForm>();

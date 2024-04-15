@@ -1,7 +1,7 @@
 import { Alert, Box, Collapse, Stack, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Task, createEmptyTask } from "../Task/Task";
-import { useMoveTask, useTasks } from "../../api/tasks";
+import { useMoveTask, useTasks } from "../../api/task.api";
 import {
   Active,
   DndContext,
@@ -102,7 +102,11 @@ export function TaskManager({ listId }: { listId: string }) {
             </Stack>
             <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
               {completedTasks.map((task) => (
-                <Task listId={listId} key={task.id + "completed"} data={task} />
+                <Task
+                  listId={listId}
+                  key={task.id + "completed"}
+                  data={task}
+                />
               ))}
             </Collapse>
           </Stack>

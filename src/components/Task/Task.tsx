@@ -9,7 +9,8 @@ import { DescriptionTextField } from "./components/DescriptionTextField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
-import { useAddTask, useTasks, useUpdateTask } from "../../api/tasks";
+import { useAddTask, useTasks, useUpdateTask } from "../../api/task.api";
+import { TaskMessage } from "@src/messageEngine/types/taskMessages";
 
 export type Task = {
   id: string;
@@ -58,6 +59,12 @@ export function Task({
           previousTaskId: tasks.length ? tasks[tasks.length - 1].id : undefined,
         })
         .then(() => onSaved?.());
+          // chrome.runtime.sendMessage<TaskMessage>({
+          //   action: "BroadcastMessage",
+          //   payload: {
+              
+          //   },
+          // });
     } else {
       updateMutation.mutate(form);
     }

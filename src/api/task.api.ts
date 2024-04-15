@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { Task } from "../components/Task/Task";
-import { wait } from "../utils/wait";
 import { arrayMove } from "@dnd-kit/sortable";
+import { useServices } from "@src/components/Providers/ServicesProvider";
 
 export type TaskList = {
   id: string;
@@ -15,16 +14,15 @@ export const useTasks = ({
 }: {
   listId: string;
   enabled?: boolean;
-}) =>
-  useQuery<Task[]>({
+}) => {
+  const { task } = useServices();
+  return useQuery<Task[]>({
     queryKey: ["tasks", listId],
     initialData: [],
     queryFn: async () => {
       if (!listId) return [];
 
-      const data = (await axios
-        .get(`/tasks/${listId}/tasks`)
-        .then((res) => res?.data?.items)) as Task[];
+      const data = await task.getTasks(listId);
 
       const sortedData = data.sort((a, b) =>
         a.position.localeCompare(b.position)
@@ -34,19 +32,23 @@ export const useTasks = ({
     },
     enabled,
   });
+};
 
-export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) =>
-  useQuery<TaskList[]>({
+export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
+  const { task } = useServices();
+  return useQuery<TaskList[]>({
     queryKey: ["taskList"],
     initialData: [],
     queryFn: async () => {
-      return axios.get("/tasks").then((res) => res?.data?.items);
+      return task.getTaskLists();
     },
     enabled,
   });
+};
 
 export const useMoveTask = (listId: string) => {
   const queryClient = useQueryClient();
+  const { task: taskService } = useServices();
   return useMutation({
     mutationFn: ({
       taskId,
@@ -55,11 +57,7 @@ export const useMoveTask = (listId: string) => {
       taskId: string;
       previousTaskId: string | null;
     }) => {
-      return axios
-        .post(`tasks/${listId}/tasks/${taskId}/move`, {
-          previousTaskId,
-        })
-        .then((res) => res.data);
+      return taskService.moveTask(listId, taskId, previousTaskId);
     },
     onMutate: async ({ previousTaskId, taskId }) => {
       // Cancel any outgoing refetches
@@ -90,6 +88,7 @@ export const useMoveTask = (listId: string) => {
     // If the mutation fails,
     // use the context returned from onMutate to roll back
     onError: (err, newTodo, context) => {
+      console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
     },
     onSuccess: () => {
@@ -101,10 +100,10 @@ export const useMoveTask = (listId: string) => {
 
 export const useDeleteTask = (listId: string) => {
   const queryClient = useQueryClient();
+  const { task: taskService } = useServices();
   return useMutation({
     mutationFn: (id: string) => {
-      return axios.delete(`/tasks/${listId}/tasks/${id}`);
-      // return wait(2000);
+      return taskService.deleteTask(listId, id);
     },
     onMutate: async (id: string) => {
       // Cancel any outgoing refetches
@@ -131,6 +130,7 @@ export const useDeleteTask = (listId: string) => {
     // If the mutation fails,
     // use the context returned from onMutate to roll back
     onError: (err, newTodo, context) => {
+      console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
     },
     onSuccess: () => {
@@ -142,6 +142,8 @@ export const useDeleteTask = (listId: string) => {
 
 export const useAddTask = (listId: string) => {
   const queryClient = useQueryClient();
+  const { task: taskService } = useServices();
+
   return useMutation({
     mutationFn: ({
       task,
@@ -150,11 +152,7 @@ export const useAddTask = (listId: string) => {
       task: Task;
       previousTaskId?: string;
     }) => {
-      return axios.post(
-        `/tasks/${listId}/tasks?previous=${previousTaskId ?? ""}`,
-        task
-      );
-      // return wait(2000);
+      return taskService.addTask(listId, task, previousTaskId);
     },
     onMutate: async ({ task }) => {
       // Cancel any outgoing refetches
@@ -176,6 +174,7 @@ export const useAddTask = (listId: string) => {
     // If the mutation fails,
     // use the context returned from onMutate to roll back
     onError: (err, newTodo, context) => {
+      console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
     },
     onSuccess: () => {
@@ -187,12 +186,11 @@ export const useAddTask = (listId: string) => {
 
 export const useUpdateTask = (listId: string) => {
   const queryClient = useQueryClient();
+  const { task: taskService } = useServices();
+
   return useMutation({
     mutationFn: async (task: Task) => {
-      const updatedTask = await axios
-        .post(`/tasks/${listId}/tasks/${task.id}`, task)
-        .then((res) => res.data);
-      return updatedTask;
+      return taskService.updateTask(listId, task);
     },
     onMutate: async (task) => {
       // Cancel any outgoing refetches
@@ -218,6 +216,7 @@ export const useUpdateTask = (listId: string) => {
     // If the mutation fails,
     // use the context returned from onMutate to roll back
     onError: (err, newTodo, context) => {
+      console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
     },
     onSuccess: async () => {

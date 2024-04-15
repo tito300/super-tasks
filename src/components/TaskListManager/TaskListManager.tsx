@@ -7,7 +7,7 @@ import {
   Divider,
 } from "@mui/material";
 import React, { useEffect } from "react";
-import { useTaskLists } from "../../api/tasks";
+import { useTaskLists } from "../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
 
 export function TaskListManager() {
