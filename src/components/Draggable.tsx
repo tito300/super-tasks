@@ -1,17 +1,23 @@
 import { SxProps, styled } from "@mui/material";
-import { PropsWithChildren, useState, useCallback } from "react";
+import React, { PropsWithChildren, useState, useCallback, forwardRef } from "react";
 
 const Container = styled("div")(({ theme }) => ({
   position: "fixed",
-  bottom: theme.spacing(2),
-  right: theme.spacing(2),
+  transform: "translate(-100%, -100%)",
 }));
 
-export function Draggable({
-  children,
-  sx: inSx,
-}: PropsWithChildren & { sx?: SxProps }) {
-  const [offsets, setOffsets] = useState<{ x?: number; y?: number }>({});
+export const Draggable = forwardRef<
+  HTMLDivElement,
+   {
+    sx?: SxProps;
+    id?: string;
+    defaultPosition?: { x: number; y: number };
+    children: React.ReactNode | (() => React.ReactNode);
+  }
+>(function Draggable({ children, sx: inSx, id, defaultPosition }, ref) {
+  const [offsets, setOffsets] = useState<{ x?: number; y?: number }>(() => ({
+    ...defaultPosition,
+  }));
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     const onMouseMove = (e: MouseEvent) => {
@@ -30,19 +36,15 @@ export function Draggable({
     window.addEventListener("mouseup", onMouseUp);
   }, []);
 
-  const sx: SxProps = offsets.x
-    ? {
-        left: offsets.x,
-        top: offsets.y,
-        bottom: "auto",
-        right: "auto",
-        ...inSx,
-      }
-    : { ...inSx };
+  const sx: SxProps = {
+    left: offsets.x || 0,
+    top: offsets.y || 0,
+    ...inSx,
+  };
 
   return (
-    <Container onMouseDown={onMouseDown} sx={sx}>
-      {children}
+    <Container id={id} ref={ref} onMouseDown={onMouseDown} sx={sx}>
+      {typeof children === 'function' ? children() : children}
     </Container>
   );
-}
+});

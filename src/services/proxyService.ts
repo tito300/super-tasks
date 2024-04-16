@@ -2,6 +2,7 @@ import { MessageEngine } from "@src/messageEngine/MessageEngine";
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { ServiceMethodName } from "./Task/Task.service";
 import { ServiceName } from ".";
+import { constants } from "@src/config/constants";
 
 const config: {
   scriptType: ScriptType | null;
@@ -20,21 +21,36 @@ const config: {
  */
 const proxy = {
   get(target: any, prop: ServiceMethodName, receiver: any) {
-    const targetMethod = target[prop];
+    const targetMethod = target[prop] as (...args: any[]) => Promise<any>;
     if (typeof targetMethod === "function") {
-      return function (...args: any[]) {
+      return async function (...args: any[]) {
         if (config.scriptType === "Background") {
-          return targetMethod(...args);
+        // Cache is tricky because of optimistic update on consumers, leaving in case needed
+        //   const cachedResponse = await chrome.storage.local.get("cache");
+        //   if (isCachedResponseValid(cachedResponse, prop)) {
+        //     return cachedResponse.cache[prop].response;
+        //   }
+
+          return targetMethod(...args).then((response) => {
+            // cache response in chrome storage
+            // chrome.storage.local.set({
+            //   cache: { ...cachedResponse.cache, [prop]: { response, timestamp: Date.now() } },
+            // });
+            return response;
+          });
         } else {
-          return config.messageEngine?.sendMessage("ServiceCall", {
+          return config.messageEngine
+            ?.sendMessage("ServiceCall", {
               method: prop,
               args,
               serviceName: config.serviceName!,
             })
             .then((res) => {
               if (res.error) throw new Error(res.error, { cause: res.payload });
-              return res.payload;
-            })
+              const response = res.payload;
+
+              return response;
+            });
         }
       };
     } else {
@@ -52,4 +68,14 @@ export function proxyService(
   config.serviceName = name;
   config.messageEngine = new MessageEngine(scriptType);
   return new Proxy(service, proxy);
+}
+
+function isCachedResponseValid(cachedResponse: any, prop: string) {
+  return (
+    cachedResponse &&
+    cachedResponse.cache &&
+    cachedResponse.cache[prop] &&
+    cachedResponse.cache[prop].timestamp >
+      Date.now() - constants.CACHE_TIME_TO_LIVE
+  );
 }

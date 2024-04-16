@@ -18,10 +18,11 @@ import { MenuOpen } from "@mui/icons-material";
 import { useUIControls } from "@src/components/Providers/UIControlsProvider";
 import { Draggable } from "@src/components/Draggable";
 import { constants } from "@src/config/constants";
+import { DraggablePopper } from "@src/components/DraggablePopper";
 
 export function DockStationContainer({ children }: PropsWithChildren) {
   const { userSettings, isNewTab } = useUIControls();
-  const buttonRef = useRef<HTMLButtonElement>(null);
+
   const [open, setOpen] = useState(
     isNewTab && userSettings.tasksOpenOnNewTab
       ? true
@@ -34,29 +35,31 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     return null;
   }
 
+  const defaultPositions = {
+    x: window.innerWidth - 32,
+    y: window.innerHeight - 16,
+  };
+
   return (
-    <>
-      <Popper
-        keepMounted
-        placement="top-start"
-        open={open}
-        anchorEl={() => buttonRef.current!}
-      >
-        <DockStationControls
-          onMinimize={() => setOpen(false)}
-          onRemove={() => setRemoved(true)}
-        />
-        <Box sx={{ display: open ? "block" : "none" }}>{children}</Box>
-      </Popper>
-      <Draggable>
+    <DraggablePopper
+      id={`${constants.EXTENSION_NAME}-expand-wrapper`}
+      defaultPosition={defaultPositions}
+      sx={{ width: open ? 0 : 51, height: 51 }}
+      popperProps={{ open, placement: "right-end", keepMounted: true }}
+      popperChildren={
+        <>
+          <DockStationControls
+            onMinimize={() => setOpen(false)}
+            onRemove={() => setRemoved(true)}
+          />
+          <Box sx={{ display: open ? "block" : "none" }}>{children}</Box>
+        </>
+      }
+    >
+      {!open && (
         <IconButton
-          ref={buttonRef}
           id={`${constants.EXTENSION_NAME}-expand-button`}
           sx={{
-            opacity: open ? 0 : 1,
-            pointerEvents: open ? "none" : "auto",
-            marginRight: open ? "-100%" : 0,
-            marginBottom: open ? "-100%" : 0,
             boxShadow: theme.shadows[3],
             backgroundColor: theme.palette.background.accent,
             fontSize: 0,
@@ -69,7 +72,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
         >
           <MenuOpen fontSize="large" />
         </IconButton>
-      </Draggable>
-    </>
+      )}
+    </DraggablePopper>
   );
 }

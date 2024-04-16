@@ -23,6 +23,7 @@ export function DockStationControls({
   onMinimize: () => void;
   onRemove: () => void;
 }) {
+  console.log("render")
   return (
     <Container>
       <IconButton onClick={onRemove} size="small" sx={{ fontSize: 15 }}>
