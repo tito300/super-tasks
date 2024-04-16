@@ -7,6 +7,7 @@ export const AddTaskButton = styled(Button)(({ theme }) => {
     paddingTop: theme.spacing(0.5),
     paddingBottom: theme.spacing(0.5),
     paddingLeft: theme.spacing(2),
+    marginBottom: theme.spacing(1),
   };
 });
 

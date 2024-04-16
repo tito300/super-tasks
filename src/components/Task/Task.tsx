@@ -3,7 +3,7 @@ import { StyledTask } from "./Task.styles";
 import { DragIndicator } from "@mui/icons-material";
 import { TaskOptionsMenu } from "./components/TaskOptionsMenu";
 import { useRef, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { TaskTitleField } from "./components/TaskTitleField";
 import { DescriptionTextField } from "./components/DescriptionTextField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
@@ -48,9 +48,14 @@ export function Task({
     transition,
   };
 
-  const formFields = useForm<TaskForm>({ defaultValues: { ...data } });
+  const formFields = useForm<TaskForm>({
+    defaultValues: { ...data },
+  });
+  const formState = useFormState({ control: formFields.control });
 
   const onSubmit = (form: TaskForm) => {
+    if (!formState.isDirty) return;
+
     if (temporary) {
       if (!shouldSaveTempTask(form)) return onSaved?.();
       addMutation
@@ -59,12 +64,12 @@ export function Task({
           previousTaskId: tasks.length ? tasks[tasks.length - 1].id : undefined,
         })
         .then(() => onSaved?.());
-          // chrome.runtime.sendMessage<TaskMessage>({
-          //   action: "BroadcastMessage",
-          //   payload: {
-              
-          //   },
-          // });
+      // chrome.runtime.sendMessage<TaskMessage>({
+      //   action: "BroadcastMessage",
+      //   payload: {
+
+      //   },
+      // });
     } else {
       updateMutation.mutate(form);
     }
@@ -95,7 +100,7 @@ export function Task({
           {...attributes}
           onFocus={() => (activeRef.current = true)}
         >
-          <Stack direction="row" alignItems="start">
+          <Stack direction="row" alignItems="start" width="100%">
             {/* <IconButton
               className="supertasks-drag-icon"
               sx={{
@@ -110,14 +115,11 @@ export function Task({
               <DragIndicator fontSize="small" />
             </IconButton> */}
             <CompletedCheckbox listId={listId} />
-            <Stack>
+            <Stack flexGrow={1}>
               <TaskTitleField
                 strikeThrough={data.status === "completed" && !temporary}
-                focused={temporary}
-                onblur={() =>
-                  formFields.formState.isDirty &&
-                  formFields.handleSubmit(onSubmit)()
-                }
+                focused={focused}
+                onblur={() => formFields.handleSubmit(onSubmit)()}
                 onFocus={() => setFocused(true)}
               />
               {/* <Collapse in={expanded}>

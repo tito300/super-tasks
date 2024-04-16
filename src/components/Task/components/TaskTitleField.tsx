@@ -40,9 +40,15 @@ export const TaskTitleField = forwardRef<
             sx={{
               pt: 0.7,
               ml: 1,
+
               textDecoration: strikeThrough ? "line-through" : "auto",
             }}
-            inputProps={{ style: { paddingBottom: 0 } }}
+            inputProps={{
+              style: {
+                paddingBottom: 0,
+                cursor: focused ? "text" : "pointer",
+              },
+            }}
             onFocus={onFocus}
             InputProps={{ disableUnderline: true }}
           />

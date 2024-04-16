@@ -12,7 +12,7 @@ export const useTasks = ({
   enabled,
   listId,
 }: {
-  listId: string;
+  listId: string | null;
   enabled?: boolean;
 }) => {
   const { task } = useServices();

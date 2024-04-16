@@ -7,6 +7,7 @@ import { MessageEngineProvider } from "./Providers/MessageEngineProvider";
 import { theme as v1Theme } from "../theme/v1.theme";
 import { deepmerge } from "@mui/utils";
 import { UIControlsProvider } from "./Providers/UIControlsProvider";
+import { TasksGlobalStateProvider } from "./Providers/TasksGlobalStateProvider";
 
 const queryClient = new QueryClient();
 
@@ -29,8 +30,8 @@ export const Main = ({
       <QueryClientProvider client={queryClient}>
         <MessageEngineProvider scriptType={scriptType}>
           <ServicesProvider scriptType={scriptType}>
-            <UIControlsProvider >
-              {children}
+            <UIControlsProvider>
+              <TasksGlobalStateProvider>{children}</TasksGlobalStateProvider>
             </UIControlsProvider>
           </ServicesProvider>
         </MessageEngineProvider>

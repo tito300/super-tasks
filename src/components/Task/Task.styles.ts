@@ -4,6 +4,7 @@ export const StyledTask = styled("div")(({ theme }) => ({
   display: "flex",
   justifyContent: "space-between",
   width: "100%",
+  cursor: "pointer",
   paddingTop: theme.spacing(0),
   paddingBottom: theme.spacing(0),
   paddingRight: theme.spacing(1.5),

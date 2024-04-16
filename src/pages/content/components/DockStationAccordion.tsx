@@ -5,7 +5,9 @@ import { useMemo } from "react";
 export function DockStationAccordion({ children, ...props }: AccordionProps) {
   const { userSettings } = useUIControls();
   const defaultExpanded = useMemo(
-    () => userSettings.tasksOpenOnNewTab && document.location.search.includes('=newtab'),
+    () =>
+      userSettings.tasksOpenOnNewTab &&
+      document.location.search.includes("=newtab"),
     [userSettings.tasksOpenOnNewTab]
   );
 

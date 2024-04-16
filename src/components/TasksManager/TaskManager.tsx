@@ -1,33 +1,25 @@
-import { Alert, Box, Collapse, Stack, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { Alert, Collapse, Stack, Typography } from "@mui/material";
+import { useState } from "react";
 import { Task, createEmptyTask } from "../Task/Task";
 import { useMoveTask, useTasks } from "../../api/task.api";
 import {
   Active,
   DndContext,
   DragEndEvent,
-  KeyboardSensor,
   Over,
   PointerSensor,
   closestCenter,
-  useDroppable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { AddTask } from "../AddTask/AddTask";
 import { TaskSkeleton } from "../Task/Task.skeleton";
-import {
-  ArrowDropDown,
-  ArrowRight,
-  ChevronRight,
-  ExpandMore,
-} from "@mui/icons-material";
+import { ArrowDropDown, ArrowRight } from "@mui/icons-material";
+import { useUIControls } from "../Providers/UIControlsProvider";
 
 export function TaskManager({ listId }: { listId: string }) {
   const [tempTaskPending, setTempTaskPending] = useState(false);
@@ -36,6 +28,7 @@ export function TaskManager({ listId }: { listId: string }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
+  const { isNewTab } = useUIControls();
 
   const moveMutation = useMoveTask(listId);
 
@@ -64,7 +57,7 @@ export function TaskManager({ listId }: { listId: string }) {
         {!!listId && !tempTaskPending && (
           <AddTask
             sx={{ mt: 1 }}
-            autoFocus
+            autoFocus={!isNewTab}
             onClick={() => setTempTaskPending(true)}
           />
         )}
@@ -87,12 +80,12 @@ export function TaskManager({ listId }: { listId: string }) {
           )}
 
           {data
-            ?.filter((task) => task.status !== "completed")
+            ?.filter((task) => task.status !== "completed" && !!task.title)
             .map((task) => (
               <Task key={task.id} listId={listId} data={task} />
             ))}
         </SortableContext>
-        
+
         {isError && <Alert severity="error">Error Fetching Tasks</Alert>}
         {!!completedTasks.length && (
           <Stack>

@@ -3,7 +3,7 @@ import { createTheme, Theme } from "@mui/material";
 export const theme: Theme = createTheme({
   palette: {
     background: {
-      accent: "#dbeff5",
+      accent: "#cee7f1",
     },
   },
 });

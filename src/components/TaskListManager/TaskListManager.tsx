@@ -9,19 +9,21 @@ import {
 import React, { useEffect } from "react";
 import { useTaskLists } from "../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
+import { useTasksGlobalState } from "../Providers/TasksGlobalStateProvider";
 
 export function TaskListManager() {
-  const [listId, setListId] = React.useState("");
   const { data } = useTaskLists();
+  const { selectedTaskListId: listId, updateSelectedTaskListId } =
+    useTasksGlobalState();
 
   useEffect(() => {
     if (!listId && data?.length) {
-      setListId(data[0].id);
+      updateSelectedTaskListId(data[0].id);
     }
   }, [data]);
 
   const handleChange = (event: SelectChangeEvent) => {
-    setListId(event.target.value);
+    updateSelectedTaskListId(event.target.value);
   };
   return (
     <>
@@ -31,7 +33,7 @@ export function TaskListManager() {
           labelId="tasks-list-title"
           id="demo-simple-select-standard"
           disableUnderline
-          value={listId}
+          value={listId ?? ""}
           onChange={handleChange}
           label="TASKS"
         >
@@ -46,7 +48,7 @@ export function TaskListManager() {
         </Select>
       </FormControl>
       <Divider sx={{ mb: 1 }} />
-      <TaskManager listId={listId} />
+      <TaskManager listId={listId ?? ""} />
     </>
   );
 }

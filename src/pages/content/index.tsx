@@ -15,7 +15,7 @@ function hook() {
   const rootContainer = document.createElement("div");
   const headElement = document.createElement("head");
   const shadowRootEl = document.createElement("div");
-  rootContainer.style.zIndex = "6000";
+  rootContainer.style.zIndex = "2147483647";
   rootContainer.style.position = "relative";
 
   rootContainer.id = "__root";
@@ -53,10 +53,7 @@ function hook() {
 
   root.render(
     <CacheProvider value={stylesCache}>
-      <Main
-        theme={theme}
-        scriptType="Content"
-      >
+      <Main theme={theme} scriptType="Content">
         <Content />
       </Main>
     </CacheProvider>
