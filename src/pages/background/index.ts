@@ -10,6 +10,8 @@ const services = setupServices('Background');
 
 messageEngine.onMessage('ServiceCall', async (message) => {
   const service = services[message.payload.serviceName];
+  console.log('service', service);
+  // @ts-ignore
   const response = await service[message.payload.method](
     // @ts-ignore
     ...message.payload.args);

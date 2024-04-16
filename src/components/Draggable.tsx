@@ -20,7 +20,10 @@ export const Draggable = forwardRef<
   }));
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const startTime = Date.now();
     const onMouseMove = (e: MouseEvent) => {
+      if (Date.now() - startTime < 200) return;
+      
       const x = e.clientX;
       const y = e.clientY;
 

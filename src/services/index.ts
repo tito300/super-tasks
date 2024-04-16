@@ -1,10 +1,12 @@
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { TaskServices } from "./Task/Task.service";
 import { proxyService } from "./proxyService";
+import { userService } from "./User/User.service";
 
 let initiated: boolean = false;
 const services = {
   task: TaskServices,
+  user: userService
 };
 
 export type ServiceName = keyof typeof services;

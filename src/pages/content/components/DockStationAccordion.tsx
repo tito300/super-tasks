@@ -1,9 +1,9 @@
 import Accordion, { AccordionProps } from "@mui/material/Accordion";
-import { useUIControls } from "@src/components/Providers/UIControlsProvider";
+import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { useMemo } from "react";
 
 export function DockStationAccordion({ children, ...props }: AccordionProps) {
-  const { userSettings } = useUIControls();
+  const { userSettings } = useUserSettingsContext();
   const defaultExpanded = useMemo(
     () =>
       userSettings.tasksOpenOnNewTab &&

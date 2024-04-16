@@ -1,5 +1,5 @@
 import { Alert, Collapse, Stack, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Task, createEmptyTask } from "../Task/Task";
 import { useMoveTask, useTasks } from "../../api/task.api";
 import {
@@ -19,18 +19,34 @@ import {
 import { AddTask } from "../AddTask/AddTask";
 import { TaskSkeleton } from "../Task/Task.skeleton";
 import { ArrowDropDown, ArrowRight } from "@mui/icons-material";
-import { useUIControls } from "../Providers/UIControlsProvider";
+import { useUserSettingsContext } from "../Providers/UserSettingsContext";
 
 export function TaskManager({ listId }: { listId: string }) {
   const [tempTaskPending, setTempTaskPending] = useState(false);
   const [completedOpen, setCompletedOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const { data, isFetching, isError } = useTasks({ listId });
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
-  const { isNewTab } = useUIControls();
+  const { isNewTab } = useUserSettingsContext();
 
   const moveMutation = useMoveTask(listId);
+
+  useEffect(() => {
+    let eventListener = (e: MouseEvent) => {
+      e.stopPropagation();
+    }
+    if (rootRef.current) {
+      rootRef.current.addEventListener("mousemove", eventListener)
+    }
+
+    return () => {
+      if (rootRef.current) {
+        rootRef.current.removeEventListener("mousemove", eventListener)
+      }
+    }
+  }, []);
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -48,7 +64,12 @@ export function TaskManager({ listId }: { listId: string }) {
   const completedTasks = data.filter((task) => task.status === "completed");
 
   return (
-    <Stack sx={{ width: 350 }}>
+    <Stack
+      sx={{ width: 350 }}
+      ref={rootRef
+        
+      }
+    >
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

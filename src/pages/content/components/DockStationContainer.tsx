@@ -1,33 +1,21 @@
 import {
   PropsWithChildren,
-  useCallback,
-  useEffect,
-  useRef,
   useState,
 } from "react";
 import { DockStationControls } from "./DockStationControls";
 import {
   Box,
   IconButton,
-  Popper,
-  SxProps,
-  styled,
   useTheme,
 } from "@mui/material";
 import { MenuOpen } from "@mui/icons-material";
-import { useUIControls } from "@src/components/Providers/UIControlsProvider";
-import { Draggable } from "@src/components/Draggable";
+import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 
 export function DockStationContainer({ children }: PropsWithChildren) {
-  const { userSettings, isNewTab } = useUIControls();
+  const { userSettings, isNewTab, updateUserSettings } = useUserSettingsContext();
 
-  const [open, setOpen] = useState(
-    isNewTab && userSettings.tasksOpenOnNewTab
-      ? true
-      : userSettings.taskButtonExpanded
-  );
   const [removed, setRemoved] = useState(false);
   const theme = useTheme();
 
@@ -40,6 +28,8 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     y: window.innerHeight - 16,
   };
 
+  const open = userSettings.taskButtonExpanded;
+
   return (
     <DraggablePopper
       id={`${constants.EXTENSION_NAME}-expand-wrapper`}
@@ -49,7 +39,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       popperChildren={
         <>
           <DockStationControls
-            onMinimize={() => setOpen(false)}
+            onMinimize={() => updateUserSettings({ taskButtonExpanded: false })}
             onRemove={() => setRemoved(true)}
           />
           <Box sx={{ display: open ? "block" : "none" }}>{children}</Box>
@@ -68,7 +58,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
               opacity: open ? 0 : 0.9,
             },
           }}
-          onClick={() => setOpen(true)}
+          onClick={() => updateUserSettings({ taskButtonExpanded: true })}
         >
           <MenuOpen fontSize="large" />
         </IconButton>

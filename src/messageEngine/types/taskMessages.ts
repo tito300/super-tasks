@@ -1,6 +1,7 @@
 import { Task } from "@src/components/Task/Task";
 import { ServiceName } from "@src/services";
 import { ServiceMethodName } from "@src/services/Task/Task.service";
+import { UserServiceMethodName } from "@src/services/User/User.service";
 
 export type TaskMessage<T = TaskAction> = T extends "DockTask"
   ? DockTaskMessage
@@ -36,7 +37,7 @@ export type BroadcastMessage = {
 export type ServiceCallMessage = {
   action: "ServiceCall";
   sourceScript: ScriptType;
-  payload: { method: ServiceMethodName; args: any[]; serviceName: ServiceName };
+  payload: { method: ServiceMethodName | UserServiceMethodName; args: any[]; serviceName: ServiceName };
 };
 
 export const taskActions = [
