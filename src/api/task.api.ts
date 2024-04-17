@@ -37,7 +37,7 @@ export const useTasks = ({
 export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
   const { task } = useServices();
   return useQuery<TaskList[]>({
-    queryKey: ["taskList"],
+    queryKey: ["taskLists"],
     initialData: [],
     queryFn: async () => {
       return task.getTaskLists();
@@ -91,10 +91,6 @@ export const useMoveTask = (listId: string) => {
       console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
     },
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["tasks", listId] });
-    },
   });
 };
 
@@ -133,10 +129,6 @@ export const useDeleteTask = (listId: string) => {
       console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
     },
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["tasks", listId] });
-    },
   });
 };
 
@@ -164,8 +156,8 @@ export const useAddTask = (listId: string) => {
 
       // Optimistically update to the new value
       queryClient.setQueryData(["tasks", listId], (old?: Task[]) => {
-        [...(old || [])].push(task);
-        return old;
+        const newData = [task, ...(old || [])];
+        return newData;
       });
 
       // Return a context object with the snapshotted value
@@ -176,10 +168,6 @@ export const useAddTask = (listId: string) => {
     onError: (err, newTodo, context) => {
       console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
-    },
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["tasks", listId] });
     },
   });
 };
@@ -218,10 +206,6 @@ export const useUpdateTask = (listId: string) => {
     onError: (err, newTodo, context) => {
       console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
-    },
-    onSuccess: async () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["tasks", listId] });
     },
   });
 };

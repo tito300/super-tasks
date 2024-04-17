@@ -3,7 +3,7 @@ import { StyledTask } from "./Task.styles";
 import { DragIndicator } from "@mui/icons-material";
 import { TaskOptionsMenu } from "./components/TaskOptionsMenu";
 import { useRef, useState } from "react";
-import { FormProvider, useForm, useFormState } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { TaskTitleField } from "./components/TaskTitleField";
 import { DescriptionTextField } from "./components/DescriptionTextField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
@@ -11,6 +11,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { useAddTask, useTasks, useUpdateTask } from "../../api/task.api";
 import { TaskMessage } from "@src/messageEngine/types/taskMessages";
+import { TaskSkeleton } from "./Task.skeleton";
 
 export type Task = {
   id: string;
@@ -27,14 +28,18 @@ export function Task({
   data,
   temporary,
   listId,
+  loading,
+  autoFocus,
   onSaved,
 }: {
   data: Task;
   listId: string;
   temporary?: boolean;
+  loading?: boolean;
+  autoFocus?: boolean;
   onSaved?: () => void;
 }) {
-  const [focused, setFocused] = useState(false);
+  const [focused, setFocused] = useState(autoFocus);
   const activeRef = useRef(false);
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: data.id });
@@ -51,11 +56,9 @@ export function Task({
   const formFields = useForm<TaskForm>({
     defaultValues: { ...data },
   });
-  const formState = useFormState({ control: formFields.control });
+  // const formState = useFormState({ control: formFields.control });
 
   const onSubmit = (form: TaskForm) => {
-    if (!formState.isDirty) return;
-
     if (temporary) {
       if (!shouldSaveTempTask(form)) return onSaved?.();
       addMutation
@@ -64,13 +67,9 @@ export function Task({
           previousTaskId: tasks.length ? tasks[tasks.length - 1].id : undefined,
         })
         .then(() => onSaved?.());
-      // chrome.runtime.sendMessage<TaskMessage>({
-      //   action: "BroadcastMessage",
-      //   payload: {
-
-      //   },
-      // });
     } else {
+      // todo: figure out why formState.isDirty is not working
+      if (!formFields.getFieldState("title").isDirty) return;
       updateMutation.mutate(form);
     }
   };
@@ -88,6 +87,7 @@ export function Task({
   };
 
   const expanded = focused || !!formFields.getValues("notes");
+  if (loading) return <TaskSkeleton />;
 
   return (
     <FormProvider {...formFields}>

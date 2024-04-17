@@ -21,7 +21,11 @@ export const TaskServices = {
         return (res?.items || []) as Task[];
       });
   },
-  addTask: async (listId: string, task: Task, previousTaskId?: string) => {
+  addTask: async (
+    listId: string,
+    task: Task,
+    previousTaskId?: string | null
+  ) => {
     return fetcher
       .post(
         `${urls.BASE_URL}/tasks/${listId}/tasks?previous=${
@@ -36,15 +40,17 @@ export const TaskServices = {
   },
   updateTask: async (listId: string, task: Task) => {
     return fetcher
-      .post(
-        `${urls.BASE_URL}/tasks/${listId}/tasks/${task.id}`, task
-      )
+      .post(`${urls.BASE_URL}/tasks/${listId}/tasks/${task.id}`, task)
       .then((res) => res.json())
       .then((res) => {
         return res as Task;
       });
   },
-  moveTask: async (listId: string, taskId: string, previousTaskId?: string | null) => {
+  moveTask: async (
+    listId: string,
+    taskId: string,
+    previousTaskId?: string | null
+  ) => {
     return fetcher
       .post(`${urls.BASE_URL}/tasks/${listId}/tasks/${taskId}/move`, {
         previousTaskId,

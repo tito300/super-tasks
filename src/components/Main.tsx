@@ -1,5 +1,5 @@
 import { Theme, ThemeProvider } from "@mui/material";
-import { PropsWithChildren, useMemo } from "react";
+import { PropsWithChildren, useMemo, useState } from "react";
 import { ServicesProvider } from "./Providers/ServicesProvider";
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,6 +21,7 @@ export const Main = ({
 }: PropsWithChildren & {
   scriptType: ScriptType;
   theme?: Theme;
+  remount?: () => void;
 }) => {
   const enhancedTheme = useMemo(() => {
     return deepmerge(theme ?? {}, v1Theme);

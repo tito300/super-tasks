@@ -36,16 +36,16 @@ export function TaskManager({ listId }: { listId: string }) {
   useEffect(() => {
     let eventListener = (e: MouseEvent) => {
       e.stopPropagation();
-    }
+    };
     if (rootRef.current) {
-      rootRef.current.addEventListener("mousemove", eventListener)
+      rootRef.current.addEventListener("mousemove", eventListener);
     }
 
     return () => {
       if (rootRef.current) {
-        rootRef.current.removeEventListener("mousemove", eventListener)
+        rootRef.current.removeEventListener("mousemove", eventListener);
       }
-    }
+    };
   }, []);
 
   function handleDragEnd(event: DragEndEvent) {
@@ -64,12 +64,7 @@ export function TaskManager({ listId }: { listId: string }) {
   const completedTasks = data.filter((task) => task.status === "completed");
 
   return (
-    <Stack
-      sx={{ width: 350 }}
-      ref={rootRef
-        
-      }
-    >
+    <Stack sx={{ width: 350 }} ref={rootRef}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -85,9 +80,10 @@ export function TaskManager({ listId }: { listId: string }) {
         {tempTaskPending && (
           <Task
             temporary
+            autoFocus
             listId={listId}
             onSaved={() => setTempTaskPending(false)}
-            data={createEmptyTask({ id: "3dfs" })}
+            data={createEmptyTask()}
           ></Task>
         )}
         <SortableContext items={data!} strategy={verticalListSortingStrategy}>
@@ -103,7 +99,12 @@ export function TaskManager({ listId }: { listId: string }) {
           {data
             ?.filter((task) => task.status !== "completed" && !!task.title)
             .map((task) => (
-              <Task key={task.id} listId={listId} data={task} />
+              <Task
+                loading={isFetching}
+                key={task.id}
+                listId={listId}
+                data={task}
+              />
             ))}
         </SortableContext>
 

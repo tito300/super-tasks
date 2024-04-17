@@ -7,22 +7,16 @@ import { DockStationAccordion } from "./DockStationAccordion";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useTasks } from "@src/api/task.api";
 import { DockStationAccordionSummary } from "./DockStationAccordionSummary";
+import { DockStationAccordionDetails } from "./DockStationAccordionDetails";
 
 export function DockStation() {
   return (
     <DockStationContainer>
-      <DockStationAccordion>
+      <DockStationAccordion sx={{ width: 385 }}>
         <DockStationAccordionSummary />
-        <AccordionDetails
-          sx={{
-            maxHeight: "50vh",
-            overflowY: "auto",
-            overflowX: "clip",
-            padding: (theme) => theme.spacing(1),
-          }}
-        >
+        <DockStationAccordionDetails>
           <TaskListManager />
-        </AccordionDetails>
+        </DockStationAccordionDetails>
       </DockStationAccordion>
     </DockStationContainer>
   );

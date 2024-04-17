@@ -16,7 +16,19 @@ function hook() {
   const headElement = document.createElement("head");
   const shadowRootEl = document.createElement("div");
   rootContainer.style.zIndex = "2147483647";
-  rootContainer.style.position = "relative";
+  rootContainer.style.position = "absolute";
+
+  rootContainer.addEventListener("keydown", (e) => e.stopPropagation());
+  rootContainer.addEventListener("keypress", (e) => e.stopPropagation());
+  rootContainer.addEventListener("keyup", (e) => e.stopPropagation());
+  rootContainer.addEventListener("input", (e) => e.stopPropagation());
+  rootContainer.addEventListener("change", (e) => e.stopPropagation());
+  rootContainer.addEventListener("focus", (e) => e.stopPropagation());
+  rootContainer.addEventListener("drag", (e) => e.stopPropagation());
+  rootContainer.addEventListener("dragenter", (e) => e.stopPropagation());
+  rootContainer.addEventListener("dragleave", (e) => e.stopPropagation());
+  rootContainer.addEventListener("dragstart", (e) => e.stopPropagation());
+  rootContainer.addEventListener("auxclick", (e) => e.stopPropagation());
 
   rootContainer.id = "__root";
   document.body.appendChild(rootContainer);

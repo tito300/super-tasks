@@ -16,6 +16,8 @@ export const TaskTitleField = forwardRef<
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
 
   function handleKeyDown(e: KeyboardEvent) {
+    // some websites take focus away on certain
+    e.stopPropagation();
     if (e.key === "Enter") {
       onblur();
       textFieldRef.current?.blur();
