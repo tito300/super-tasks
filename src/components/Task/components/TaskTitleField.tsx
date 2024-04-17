@@ -2,6 +2,7 @@ import { TextField } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
+import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 
 export const TaskTitleField = forwardRef<
   HTMLDivElement,
@@ -14,6 +15,7 @@ export const TaskTitleField = forwardRef<
 >(({ onFocus, focused, onblur, strikeThrough }) => {
   const { control } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
+  const { userSettings } = useUserSettingsContext();
 
   function handleKeyDown(e: KeyboardEvent) {
     // some websites take focus away on certain
@@ -42,7 +44,7 @@ export const TaskTitleField = forwardRef<
             sx={{
               pt: 0.7,
               ml: 1,
-
+              filter: userSettings.blurText ? "blur(5px)" : "none",
               textDecoration: strikeThrough ? "line-through" : "auto",
             }}
             inputProps={{

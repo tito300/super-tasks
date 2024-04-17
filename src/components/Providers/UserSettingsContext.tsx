@@ -32,10 +32,10 @@ export function UseSettingsProvider({
   const mutateUserSettings = useUpdateUserSettings();
 
   const updateUserSettings = useCallback(
-    (newSettings: Partial<UserSettings>) =>{
-
-      const settings = {...userSettings, ...newSettings} as UserSettings;
-      mutateUserSettings.mutateAsync(settings)},
+    (newSettings: Partial<UserSettings>) => {
+      const settings = { ...userSettings, ...newSettings } as UserSettings;
+      mutateUserSettings.mutateAsync(settings);
+    },
     [userSettings, mutateUserSettings]
   );
 
