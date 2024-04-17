@@ -44,7 +44,7 @@ export function DockStationAccordionSummary() {
           whiteSpace="nowrap"
           textOverflow="ellipsis"
           overflow="hidden"
-          sx={{ filter: userSettings.blurText ? "blur(5px)" : "none" }}
+          sx={{ filter: userSettings.blurText ? "blur(7px)" : "none" }}
         >
           {title}
         </Typography>

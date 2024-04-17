@@ -7,17 +7,22 @@ import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { setupServices } from "@src/services";
 import { setupToken } from "@src/oauth/setupToken";
 import { Main } from "@src/components/Main";
+import { OauthRequired } from "@src/components/Oauth/OauthGate";
 
-const messageEngine = getMessageEngine('Popup');
-setupServices('Popup');
-setupToken()
+setupServices("Popup");
 
 async function init() {
   const rootContainer = document.querySelector("#__root");
   if (!rootContainer) throw new Error("Can't find Popup root element");
 
   const root = createRoot(rootContainer);
-  root.render(<Main scriptType="Popup"><Popup /></Main>);
+  root.render(
+    <Main scriptType="Popup">
+      <OauthRequired>
+        <Popup />
+      </OauthRequired>
+    </Main>
+  );
 }
 
 init();

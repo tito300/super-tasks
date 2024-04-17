@@ -1,5 +1,5 @@
 import { Theme, ThemeProvider } from "@mui/material";
-import { PropsWithChildren, useMemo, useState } from "react";
+import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { ServicesProvider } from "./Providers/ServicesProvider";
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { theme as v1Theme } from "../theme/v1.theme";
 import { deepmerge } from "@mui/utils";
 import { UseSettingsProvider } from "./Providers/UserSettingsContext";
 import { TasksGlobalStateProvider } from "./Providers/TasksGlobalStateProvider";
+import { OauthRequired } from "./Oauth/OauthGate";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,9 @@ export const Main = ({
   const enhancedTheme = useMemo(() => {
     return deepmerge(theme ?? {}, v1Theme);
   }, [theme]);
+
+  useEffect(() => {}, []);
+
   return (
     <ThemeProvider theme={enhancedTheme ?? {}}>
       <QueryClientProvider client={queryClient}>

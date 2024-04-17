@@ -44,7 +44,7 @@ export const TaskTitleField = forwardRef<
             sx={{
               pt: 0.7,
               ml: 1,
-              filter: userSettings.blurText ? "blur(5px)" : "none",
+              filter: userSettings.blurText && !focused ? "blur(7px)" : "none",
               textDecoration: strikeThrough ? "line-through" : "auto",
             }}
             inputProps={{

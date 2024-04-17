@@ -12,23 +12,23 @@ const Accordion = styled(MuiAccordion)(() => ({
 }));
 
 export function DockStationAccordion({ children, ...props }: AccordionProps) {
-  const { userSettings } = useUserSettingsContext();
+  const { userSettings, updateUserSettings } = useUserSettingsContext();
   const { selectedTaskListId } = useTasksGlobalState();
   const queryClient = useQueryClient();
 
-  const [expanded, setExpanded] = useState<boolean>(() => {
-    return userSettings.tasksOpenOnNewTab &&
-      !!document.location.search.includes("=newtab")
-  });
-
   const handleExpansion = useCallback(() => {
-    setExpanded((prevExpanded) => {
-      const expanded = !prevExpanded === true;
-      if (expanded) queryClient.invalidateQueries({ queryKey: ["tasks", selectedTaskListId] });
-      
-      return !prevExpanded
-    });
-  }, [selectedTaskListId]);
+    const newValue = !userSettings.tasksExpanded;
+    if (newValue)
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", selectedTaskListId],
+      });
+
+    updateUserSettings({ tasksExpanded: newValue });
+  }, [selectedTaskListId, userSettings, queryClient]);
+
+  const expanded = document.location?.search?.includes?.("=newtab")
+    ? userSettings.tasksOpenOnNewTab
+    : userSettings.tasksExpanded;
 
   return (
     <Accordion expanded={expanded} onChange={handleExpansion} {...props}>

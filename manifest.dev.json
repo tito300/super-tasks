@@ -1,6 +1,7 @@
 {
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiuKr34K37js9DL8AldjxpzF45ybkHCy3tKuzQAZtfeVWE4LAv9DiWZKv+SV0BQbIEKfg4u57nr9uPQivnrjW8bXKXovKQPPybLs5FvqcJBXvmZkyHFuSAMwNZL0gw1UpNZZ90WovHIbV2ubZOklERoIuE+lF0Hw0wOTBRDMZAW4j4fsMzz/NFMoNQ5JXo1TtGe34RYqCV0CcO0Y3vtawcaywc5TNY6+2YYi9VAAh+PSscXptGhyDn3gdpxRpKiE4D1JolaXLF8r+kft91QFum4z79KXmIOcSfMAhVgnDH7Kqx5ivASPGu940oSNCdCwu3DZoiRIHEcGxImjieMJ2twIDAQAB",
   "action": {
+    "default_popup": "src/pages/popup/index.html",
     "default_icon": "public/dev-icon-32.png"
   },
   "icons": {
