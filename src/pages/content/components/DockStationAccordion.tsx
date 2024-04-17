@@ -1,5 +1,6 @@
 import { collapseClasses, styled } from "@mui/material";
 import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
+import { useTaskLists, useTasks } from "@src/api/task.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,7 +13,8 @@ const Accordion = styled(MuiAccordion)(() => ({
 }));
 
 export function DockStationAccordion({ children, ...props }: AccordionProps) {
-  const { userSettings, updateUserSettings } = useUserSettingsContext();
+  const { userSettings, updateUserSettings, isNewTab } =
+    useUserSettingsContext();
   const { selectedTaskListId } = useTasksGlobalState();
   const queryClient = useQueryClient();
 
@@ -23,10 +25,13 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
         queryKey: ["tasks", selectedTaskListId],
       });
 
-    updateUserSettings({ tasksExpanded: newValue });
+    updateUserSettings({
+      tasksExpanded: newValue,
+      tasksOpenOnNewTab: isNewTab ? newValue : userSettings.tasksOpenOnNewTab,
+    });
   }, [selectedTaskListId, userSettings, queryClient]);
 
-  const expanded = document.location?.search?.includes?.("=newtab")
+  const expanded = isNewTab
     ? userSettings.tasksOpenOnNewTab
     : userSettings.tasksExpanded;
 
