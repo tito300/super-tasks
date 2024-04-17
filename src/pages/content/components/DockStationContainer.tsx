@@ -1,20 +1,14 @@
-import {
-  PropsWithChildren,
-  useState,
-} from "react";
+import { PropsWithChildren, useState } from "react";
 import { DockStationControls } from "./DockStationControls";
-import {
-  Box,
-  IconButton,
-  useTheme,
-} from "@mui/material";
+import { Box, IconButton, useTheme } from "@mui/material";
 import { MenuOpen } from "@mui/icons-material";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 
 export function DockStationContainer({ children }: PropsWithChildren) {
-  const { userSettings, isNewTab, updateUserSettings } = useUserSettingsContext();
+  const { userSettings, isNewTab, updateUserSettings } =
+    useUserSettingsContext();
 
   const [removed, setRemoved] = useState(false);
   const theme = useTheme();
@@ -59,7 +53,12 @@ export function DockStationContainer({ children }: PropsWithChildren) {
               opacity: open ? 0 : 0.9,
             },
           }}
-          onClick={() => updateUserSettings({ taskButtonExpanded: true })}
+          onClick={() =>
+            updateUserSettings({
+              taskButtonExpanded: true,
+              tasksExpanded: true,
+            })
+          }
         >
           <MenuOpen fontSize="large" />
         </IconButton>
