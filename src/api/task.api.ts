@@ -2,20 +2,49 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Task } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useServices } from "@src/components/Providers/ServicesProvider";
+import { useCallback, useEffect, useState } from "react";
+import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
+import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 
 export type TaskList = {
   id: string;
   title: string;
 };
 
+export function useTasksState() {
+  const [tasksState, setTasksState] = useState<TasksGlobalState>({});
+
+  useEffect(() => {
+    chrome.storage.local.get("tasksState").then((data) => {
+      setTasksState({...data?.tasksState});
+    })
+
+    chrome.storage.local.onChanged.addListener((changes) => {
+      if (changes.tasksState) {
+        setTasksState(changes.tasksState.newValue);
+      }
+    });
+  }, []);
+
+  const updateTasksState = useCallback((newState: Partial<TasksGlobalState>) => {
+    setTasksState((oldState) => { 
+      const mergedState = {...oldState, ...newState};
+      chrome.storage.local.set({ tasksState: mergedState });
+      return (mergedState)});
+  }, []);
+
+  return {tasksState, updateTasksState};
+}
+
 export const useTasks = ({
   enabled,
   listId,
 }: {
-  listId: string | null;
+  listId: string | null | undefined;
   enabled?: boolean;
 }) => {
   const { task } = useServices();
+
   return useQuery<Task[]>({
     queryKey: ["tasks", listId],
     initialData: [],

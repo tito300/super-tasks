@@ -16,3 +16,9 @@ export function useServices() {
     return services;
 }
     
+
+/**
+ * if dock is open + active tab 
+ * if user opens dock 
+ * on new tab
+ */

@@ -13,15 +13,3 @@ export const userService = {
         return chrome.storage.local.set({ userSettings: {...userSettingsDefaults, ...settings} });
     }
 }
-
-function safeParse(json?: string | null, defaultValue?: any) {
-    if (!json) {
-        return defaultValue;
-    }
-
-    try {
-        return JSON.parse(json);
-    } catch (e) {
-        return defaultValue;
-    }
-}

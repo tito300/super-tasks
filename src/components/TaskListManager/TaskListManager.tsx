@@ -20,19 +20,20 @@ export function TaskListManager() {
   const [active, setActive] = React.useState(false);
   const { data } = useTaskLists();
   const queryClient = useQueryClient();
-  const { selectedTaskListId: listId, updateSelectedTaskListId } =
+  const { selectedTaskListId, updateSelectedTaskListId } =
     useTasksGlobalState();
 
   useEffect(() => {
-    if (!listId && data?.length) {
+    if (!selectedTaskListId && data?.length) {
       updateSelectedTaskListId(data[0].id);
     }
   }, [data]);
 
   const selectedList = useMemo(
-    () => data.find((list) => list.id === listId),
-    [data, listId]
+    () => data.find((list) => list.id === selectedTaskListId),
+    [data, selectedTaskListId]
   );
+
   const selectedListTitle = selectedList?.title ?? "Tasks";
 
   const handleChange = (event: SelectChangeEvent) => {
@@ -66,7 +67,7 @@ export function TaskListManager() {
               id="demo-simple-select-standard"
               disableUnderline
               defaultOpen={true}
-              value={listId ?? ""}
+              value={selectedTaskListId ?? ""}
               onChange={handleChange}
               onBlur={() => setActive(false)}
               label="TASKS"
@@ -81,7 +82,7 @@ export function TaskListManager() {
         )}
         <IconButton
           onClick={() => {
-            queryClient.invalidateQueries({ queryKey: ["tasks", listId] });
+            queryClient.invalidateQueries({ queryKey: ["tasks", selectedTaskListId] });
             queryClient.invalidateQueries({ queryKey: ["taskLists"] });
           }}
         >
@@ -89,7 +90,7 @@ export function TaskListManager() {
         </IconButton>
       </Stack>
       <Divider sx={{ mb: 1 }} />
-      <TaskManager listId={listId ?? ""} />
+      <TaskManager listId={selectedTaskListId ?? ""} />
     </>
   );
 }

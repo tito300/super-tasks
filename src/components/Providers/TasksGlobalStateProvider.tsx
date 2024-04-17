@@ -1,12 +1,21 @@
+import { useTasksState } from "@src/api/task.api";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
-export type TasksGlobalStateContextType = {
-  selectedTaskListId: string | null;
+import { useMessageEngine } from "./MessageEngineProvider";
+
+export type TasksGlobalState = {
+  selectedTaskListId?: string | null;
+  defaultTaskListId?: string | null;
+};
+
+export type TasksGlobalStateContextType = TasksGlobalState & {
   updateSelectedTaskListId: (id: string) => void;
 };
 
@@ -18,20 +27,36 @@ export function TasksGlobalStateProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [selectedTaskListId, setSelectedTaskListId] = useState<string | null>(
-    ""
-  );
+  const { tasksState, updateTasksState } = useTasksState();
+  const queryClient = useQueryClient();
+  const messageEngine = useMessageEngine();
+
+  /**
+   * Invalidate tasks query when tasks are updated on background script
+   * due to alarm trigger
+   */
+  useEffect(() => {
+    console.log("useEffect");
+    const cleanup = messageEngine.onMessage("TasksUpdated", async () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", tasksState.selectedTaskListId]});
+      console.log("TasksUpdated")
+    })
+    return () => {
+      cleanup();
+    }
+  }, [tasksState.selectedTaskListId, messageEngine, queryClient]);
 
   const updateSelectedTaskListId = useCallback((id: string) => {
-    setSelectedTaskListId(id);
+    updateTasksState({ selectedTaskListId: id });
   }, []);
 
   const value = useMemo(
     () => ({
-      selectedTaskListId,
+      selectedTaskListId: tasksState.selectedTaskListId,
+      defaultTaskListId: tasksState.selectedTaskListId,
       updateSelectedTaskListId,
     }),
-    [selectedTaskListId, updateSelectedTaskListId]
+    [tasksState.selectedTaskListId, updateSelectedTaskListId]
   );
 
   return (

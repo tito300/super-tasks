@@ -49,13 +49,17 @@ export class MessageEngine {
   broadcastMessage<T extends TaskAction>(
     action: T,
     payload: TaskMessage<T>["payload"],
-    sourceScript?: ScriptType
+    sourceScript?: ScriptType,
+    options?: { activeTabOnly?: boolean, highlightedOnly?: boolean }
   ) {
     if (this.scriptType === "Popup" || this.scriptType === "Content") {
       this.sendMessage("BroadcastMessage", { action, payload });
     } else {
       chrome.tabs.query({}, (tabs) => {
         tabs.forEach((tab) => {
+          if (options?.highlightedOnly && !tab.highlighted) return;
+          if (options?.activeTabOnly && !tab.active) return;
+
           this.sendMessageToTab(tab.id!, action, payload, sourceScript);
         });
       });
@@ -81,25 +85,26 @@ export class MessageEngine {
       message: TaskMessage<T>
     ) => Promise<any>
   ) {
-    chrome.runtime.onMessage.addListener(
-      (message: unknown, sender, sendResponse: (response: MessageResponse) => void) => {
-        if (this.isValidMessage(message) && message.action === action) {
-          callback(message as TaskMessage<T>)
-            .then((response) => {
-              sendResponse({
-                payload: response,
-              });
-            })
-            .catch(err => {
-              sendResponse({
-                payload: err,
-                error: err.message
-              });
+    const handler = 
+    (message: unknown, sender: any, sendResponse: (response: MessageResponse) => void) => {
+      if (this.isValidMessage(message) && message.action === action) {
+        callback(message as TaskMessage<T>)
+          .then((response) => {
+            sendResponse({
+              payload: response,
             });
-          return true;
-        }
+          })
+          .catch(err => {
+            sendResponse({
+              payload: err,
+              error: err.message
+            });
+          });
+        return true;
       }
-    );
+    }
+    chrome.runtime.onMessage.addListener(handler);
+    return () => chrome.runtime.onMessage.removeListener(handler)
   }
 
   isBroadcastMessage(message: unknown): message is BroadcastMessage {

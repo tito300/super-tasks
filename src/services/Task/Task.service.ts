@@ -1,9 +1,22 @@
 import { Task } from "@src/components/Task/Task";
 import { fetcher } from "../fetcher";
 import { urls } from "@src/config/urls";
+import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 
 export type ServiceMethodName = keyof typeof TaskServices;
 export const TaskServices = {
+  updateTasksState: async (newState: Partial<TasksGlobalState>) => {
+    chrome.storage.local.get("tasksState").then((data) => {
+      chrome.storage.local.set({
+        tasksState: { ...data?.tasksState, ...newState },
+      });
+    });
+  },
+  getTasksState: async () => {
+    return chrome.storage.local.get("tasksState").then((data) => {
+      return (data.tasksState || {}) as TasksGlobalState;
+    });
+  },
   getTasks: async (listId: string) => {
     return fetcher
       .get(`${urls.BASE_URL}/tasks/${listId}/tasks`)

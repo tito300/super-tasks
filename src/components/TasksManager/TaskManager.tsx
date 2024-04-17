@@ -25,7 +25,7 @@ export function TaskManager({ listId }: { listId: string }) {
   const [tempTaskPending, setTempTaskPending] = useState(false);
   const [completedOpen, setCompletedOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const { data, isFetching, isError } = useTasks({ listId });
+  const { data, isLoading, isError } = useTasks({ listId });
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
@@ -87,7 +87,7 @@ export function TaskManager({ listId }: { listId: string }) {
           ></Task>
         )}
         <SortableContext items={data!} strategy={verticalListSortingStrategy}>
-          {isFetching && !data.length && (
+          {isLoading && !data.length && (
             <>
               <TaskSkeleton />
               <TaskSkeleton />
@@ -100,8 +100,8 @@ export function TaskManager({ listId }: { listId: string }) {
             ?.filter((task) => task.status !== "completed" && !!task.title)
             .map((task) => (
               <Task
-                loading={isFetching}
-                key={task.id}
+                loading={isLoading}
+                key={task.id || task.title}
                 listId={listId}
                 data={task}
               />

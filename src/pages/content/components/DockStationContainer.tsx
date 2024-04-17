@@ -53,6 +53,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
             boxShadow: theme.shadows[3],
             backgroundColor: theme.palette.background.accent,
             fontSize: 0,
+            cursor: "grab",
             [":hover"]: {
               backgroundColor: theme.palette.background.accent,
               opacity: open ? 0 : 0.9,

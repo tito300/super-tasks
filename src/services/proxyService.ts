@@ -47,6 +47,8 @@ function getProxy(config: Config) {
                   throw new Error(res.error, { cause: res.payload });
                 const response = res.payload;
 
+                // todo: broadcast new resources to all active tabs
+                // config.messageEngine?.broadcastMessage("prop", args, )
                 return response;
               });
           }
