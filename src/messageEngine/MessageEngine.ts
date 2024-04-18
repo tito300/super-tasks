@@ -52,6 +52,7 @@ export class MessageEngine {
     sourceScript?: ScriptType,
     options?: { activeTabOnly?: boolean, highlightedOnly?: boolean }
   ) {
+    console.log("Broadcasting message", action, payload);
     if (this.scriptType === "Popup" || this.scriptType === "Content") {
       this.sendMessage("BroadcastMessage", { action, payload });
     } else {
@@ -95,9 +96,10 @@ export class MessageEngine {
             });
           })
           .catch(err => {
+            console.error(err);
             sendResponse({
-              payload: err,
-              error: err.message
+              payload: err.message,
+              error: err.status || err.message
             });
           });
         return true;

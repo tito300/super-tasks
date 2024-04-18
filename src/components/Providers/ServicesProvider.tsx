@@ -1,11 +1,11 @@
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
-import { setupServices } from "@src/services";
+import { initializeServices } from "@src/services";
 import React, { PropsWithChildren, useMemo } from "react";
 
-export const ServicesContext = React.createContext<ReturnType<typeof setupServices>>(null as any);
+export const ServicesContext = React.createContext<ReturnType<typeof initializeServices>>(null as any);
 
 export function ServicesProvider({ children, scriptType }: PropsWithChildren & { scriptType: ScriptType }) {
-    const services = useMemo(() => setupServices(scriptType), [scriptType]);
+    const services = useMemo(() => initializeServices(scriptType), [scriptType]);
     return <ServicesContext.Provider value={services}>{children}</ServicesContext.Provider>;
 }
 

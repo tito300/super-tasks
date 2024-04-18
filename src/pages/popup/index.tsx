@@ -4,12 +4,12 @@ import "@pages/popup/index.css";
 import "@assets/styles/tailwind.css";
 import Popup from "@pages/popup/Popup";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
-import { setupServices } from "@src/services";
+import { initializeServices } from "@src/services";
 import { setupToken } from "@src/oauth/setupToken";
 import { Main } from "@src/components/Main";
 import { OauthRequired } from "@src/components/Oauth/OauthGate";
 
-setupServices("Popup");
+initializeServices("Popup");
 
 async function init() {
   const rootContainer = document.querySelector("#__root");

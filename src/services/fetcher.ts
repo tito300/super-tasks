@@ -19,7 +19,12 @@ export function fetcher(url: string, options: RequestInit = {}) {
     headers,
   };
 
-  return fetch(url, newOptions);
+  return fetch(url, newOptions).then(response => {
+    if (!response.ok) {
+      throw response;
+    }
+    return response;
+  });
 }
 
 fetcher.get = (url: string, options: RequestInit = {}) => {

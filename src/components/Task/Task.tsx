@@ -137,7 +137,7 @@ export function Task({
               </Collapse> */}
             </Stack>
           </Stack>
-          <TaskOptionsMenu listId={listId} />
+          {!temporary && <TaskOptionsMenu listId={listId} />}
         </StyledTask>
       </ClickAwayListener>
     </FormProvider>

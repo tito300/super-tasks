@@ -3,17 +3,22 @@ import { ServiceName } from "@src/services";
 import { ServiceMethodName } from "@src/services/Task/Task.service";
 import { UserServiceMethodName } from "@src/services/User/User.service";
 
-export type TaskMessage<T = TaskAction> = T extends "DockTask"
-  ? DockTaskMessage
-  : T extends "UnDockTask"
-  ? UnDockTaskMessage
-  : T extends "BroadcastMessage"
-  ? BroadcastMessage
-  : T extends "ServiceCall"
-  ? ServiceCallMessage
-  : T extends "UpdateTasks"
-  ? UpdateTasksMessage
-  : never;
+export type TaskMessage<T extends TaskAction = TaskAction> =
+  T extends "DockTask"
+    ? DockTaskMessage
+    : T extends "UnDockTask"
+    ? UnDockTaskMessage
+    : T extends "BroadcastMessage"
+    ? BroadcastMessage
+    : T extends "ServiceCall"
+    ? ServiceCallMessage
+    : T extends "UpdateTasks"
+    ? UpdateTasksMessage
+    : T extends "StartFetchTasksTimer" | "StopFetchTasksTimer"
+    ? FetchTasksTimerMessage
+    : T extends "ReAuthenticate"
+    ? ReAuthenticateMessage
+    : never;
 
 export type ScriptType = "Popup" | "Content" | "Background";
 
@@ -52,12 +57,27 @@ export type ServiceCallMessage = {
   };
 };
 
+export type ReAuthenticateMessage = {
+  action: "ReAuthenticate";
+  sourceScript: ScriptType;
+  payload?: null;
+};
+
+export type FetchTasksTimerMessage = {
+  action: "StartFetchTasksTimer" | "StopFetchTasksTimer";
+  sourceScript: ScriptType;
+  payload?: null;
+};
+
 export const taskActions = [
   "DockTask",
   "UnDockTask",
   "BroadcastMessage",
   "ServiceCall",
   "UpdateTasks",
+  "StartFetchTasksTimer",
+  "StopFetchTasksTimer",
+  "ReAuthenticate",
 ] as const;
 export type TaskAction = (typeof taskActions)[number];
 

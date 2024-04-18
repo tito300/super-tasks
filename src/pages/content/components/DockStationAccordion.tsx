@@ -4,6 +4,7 @@ import { useTaskLists, useTasks } from "@src/api/task.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
+import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
@@ -18,13 +19,19 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
     useUserSettingsContext();
   const { selectedTaskListId } = useTasksGlobalState();
   const queryClient = useQueryClient();
+  const messageEngine = getMessageEngine("Content");
 
   const handleExpansion = useCallback(() => {
     const newValue = !userSettings.tasksExpanded;
-    if (newValue)
+    if (newValue) {
       queryClient.invalidateQueries({
         queryKey: ["tasks", selectedTaskListId],
       });
+      messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
+    } else {
+      messageEngine.sendMessage("StopFetchTasksTimer", null, "Background");
+    }
+
 
     updateUserSettings({
       tasksExpanded: newValue,

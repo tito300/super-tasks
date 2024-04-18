@@ -1,24 +1,15 @@
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { setupToken } from "@src/oauth/setupToken";
-import { setupServices } from "@src/services";
+import { initializeServices } from "@src/services";
 import { Alarms } from "webextension-polyfill";
 
 const htmlFile = "oauth.html";
 
 // setupToken();
 const messageEngine = getMessageEngine("Background");
-const services = setupServices("Background");
+const services = initializeServices("Background");
 
-messageEngine.onMessage("ServiceCall", async (message) => {
-  const service = services[message.payload.serviceName];
-  console.log("service", service);
-  // @ts-ignore
-  const response = await service[message.payload.method](
-    // @ts-ignore
-    ...message.payload.args
-  );
-  return response;
-});
+
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
@@ -26,39 +17,39 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
+// #region Task Timer
 const handleFetchTasksAlarm = async () => {
   const userSettings = await services.user.getUserSettings();
 
   if (userSettings?.taskButtonExpanded && userSettings?.tasksExpanded) {
     const { selectedTaskListId } = await services.task.getTasksState();
-    console.log("selectedTaskListId: ", selectedTaskListId);
     if (selectedTaskListId) {
-      await services.task.getTasks(selectedTaskListId);
-      messageEngine.broadcastMessage("UpdateTasks", null, "Background", {
-        activeTabOnly: true,
-      });
+      try {
+        await services.task.getTasks(selectedTaskListId);
+        messageEngine.broadcastMessage("UpdateTasks", null, "Background", {
+          activeTabOnly: true,
+        });
+      } catch (error) {
+        console.error("Error fetching tasks", error);
+      }
     }
   }
 };
 
 const handleAlarms = async (alarm: Alarms.Alarm) => {
-  if (alarm.name === "fetchTasks") {
+  if (alarm.name === "fetchTasksTimer") {
     handleFetchTasksAlarm();
   }
 };
 
-chrome.alarms.clear("fetchTasks").then(() => {
-  // data will be fetched on demand when the user opens the docking station
-  // todo: should we store alarm if user does not have the tasks open? probably not
-  chrome.alarms.create("fetchTasks", { periodInMinutes: 3 });
+messageEngine.onMessage("StartFetchTasksTimer", async () => {
+  chrome.alarms.create("fetchTasksTimer", { periodInMinutes: 0.5 });
 });
+
+messageEngine.onMessage("StopFetchTasksTimer", async () => {
+  chrome.alarms.clear("fetchTasksTimer");
+});
+
 chrome.alarms.onAlarm.addListener(handleAlarms);
 
-// chrome.runtime.onSuspend.addListener(() => {
-//   chrome.alarms.clearAll();
-//   console.log('Suspended');
-// })
-
-// chrome.runtime.onStartup.addListener(() => {
-//   fetchInterval();
-// });
+// #endregion

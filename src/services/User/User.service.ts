@@ -1,3 +1,4 @@
+import { requiredScopes } from "@src/config/googleScopes";
 import {
   UserSettings,
   userSettingsDefaults,
@@ -24,10 +25,19 @@ export const userService = {
       const tokenRes = await chrome.identity.getAuthToken({
         interactive: !!options?.interactive,
       });
+      const requiredScopesGranted = tokenRes?.token
+        ? requiredScopes.every((scope) =>
+            tokenRes?.grantedScopes?.includes?.(scope)
+          )
+        : false;
+
       setupToken(tokenRes.token);
-      return tokenRes;
-    } catch (err) {
-      return { token: undefined };
+      return {
+        token: tokenRes.token,
+        requiredScopesGranted,
+      };
+    } catch (err: any) {
+      return { token: null, requiredScopesGranted: false };
     }
   },
 };

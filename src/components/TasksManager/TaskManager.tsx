@@ -26,11 +26,10 @@ export function TaskManager({ listId }: { listId: string }) {
   const [tempTaskPending, setTempTaskPending] = useState(false);
   const [completedOpen, setCompletedOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const { data, isLoading, isError } = useTasks({ listId });
+  const { data, isLoading, isFetching, isError } = useTasks({ listId });
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } })
   );
-  const { isNewTab } = useUserSettingsContext();
 
   const moveMutation = useMoveTask(listId);
 
@@ -88,7 +87,7 @@ export function TaskManager({ listId }: { listId: string }) {
           ></Task>
         )}
         <SortableContext items={data!} strategy={verticalListSortingStrategy}>
-          {isLoading && !data.length && (
+          {isFetching && !data.length && (
             <>
               <TaskSkeleton />
               <TaskSkeleton />

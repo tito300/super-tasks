@@ -43,6 +43,7 @@ function getProxy(config: Config) {
                 serviceName: config.serviceName!,
               })
               .then((res) => {
+                console.log({ res });
                 if (res.error)
                   throw new Error(res.error, { cause: res.payload });
                 const response = res.payload;
@@ -70,6 +71,7 @@ export function proxyService(
     serviceName: name,
     messageEngine: new MessageEngine(scriptType),
   };
+  
   return new Proxy(service, getProxy(config));
 }
 

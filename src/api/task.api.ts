@@ -51,13 +51,19 @@ export const useTasks = ({
     queryFn: async () => {
       if (!listId) return [];
 
-      const data = await task.getTasks(listId);
-
-      const sortedData = data.sort((a, b) =>
-        a.position.localeCompare(b.position)
-      );
-
-      return sortedData;
+      try {
+        const data = await task.getTasks(listId);
+        console.log({ data });
+        const sortedData = data.sort((a, b) =>
+          a.position.localeCompare(b.position)
+        );
+  
+        return sortedData;
+      } catch (err) {
+        console.log('error fetching tasks')
+        console.error(err);
+        return [];
+      }
     },
     enabled,
   });
@@ -173,7 +179,7 @@ export const useAddTask = (listId: string) => {
       task: Task;
       previousTaskId?: string;
     }) => {
-      return taskService.addTask(listId, task, previousTaskId);
+      return taskService.addTask(listId, task, null);
     },
     onMutate: async ({ task }) => {
       // Cancel any outgoing refetches
@@ -198,6 +204,9 @@ export const useAddTask = (listId: string) => {
       console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", listId]});
+    }
   });
 };
 

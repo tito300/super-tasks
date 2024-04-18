@@ -1,3 +1,4 @@
+import { Warning } from "@mui/icons-material";
 import {
   Button,
   Card,
@@ -8,7 +9,13 @@ import {
 } from "@mui/material";
 import { constants } from "@src/config/constants";
 
-export function OauthScreen({ onLoginCLick }: { onLoginCLick: () => void }) {
+export function OauthScreen({
+  onLoginCLick,
+  missingRequiredScopes,
+}: {
+  onLoginCLick: () => void;
+  missingRequiredScopes: boolean;
+}) {
   return (
     <Card variant="outlined" sx={{ pb: 1 }}>
       <CardContent>
@@ -20,13 +27,29 @@ export function OauthScreen({ onLoginCLick }: { onLoginCLick: () => void }) {
         >
           {constants.EXTENSION_NAME}
         </Typography>
-        <Typography variant="h5" component="div">
+        <Typography
+          variant="h5"
+          component="div"
+          display={"flex"}
+          alignItems={"center"}
+        >
+          {missingRequiredScopes && (
+            <Warning fontSize="medium" color="warning" sx={{ mr: 0.5 }} />
+          )}{" "}
           Google Authorization
         </Typography>
-        <Typography variant="body2">
-          In order to use {capitalize(constants.EXTENSION_NAME)} browser
-          extension, you need to give authorize your account with Google.
-        </Typography>
+        {missingRequiredScopes ? (
+          <Typography variant="body2">
+            You did not provide the required permissions to use{" "}
+            {capitalize(constants.EXTENSION_NAME)}. Please try again and make
+            sure to check all the required boxes.
+          </Typography>
+        ) : (
+          <Typography variant="body2">
+            In order to use {capitalize(constants.EXTENSION_NAME)} browser
+            extension, you need to give authorize your account with Google.
+          </Typography>
+        )}
       </CardContent>
       <CardActions>
         <Button onClick={onLoginCLick} size="small">
