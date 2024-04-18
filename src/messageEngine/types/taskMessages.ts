@@ -11,8 +11,8 @@ export type TaskMessage<T = TaskAction> = T extends "DockTask"
   ? BroadcastMessage
   : T extends "ServiceCall"
   ? ServiceCallMessage
-  : T extends "TasksUpdated"
-  ? TasksUpdatedMessage
+  : T extends "UpdateTasks"
+  ? UpdateTasksMessage
   : never;
 
 export type ScriptType = "Popup" | "Content" | "Background";
@@ -29,8 +29,8 @@ export type UnDockTaskMessage = {
   payload: Task;
 };
 
-export type TasksUpdatedMessage = {
-  action: "TasksUpdated";
+export type UpdateTasksMessage = {
+  action: "UpdateTasks";
   sourceScript: ScriptType;
   payload?: null;
 };
@@ -57,7 +57,7 @@ export const taskActions = [
   "UnDockTask",
   "BroadcastMessage",
   "ServiceCall",
-  "TasksUpdated",
+  "UpdateTasks",
 ] as const;
 export type TaskAction = (typeof taskActions)[number];
 

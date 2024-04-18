@@ -114,7 +114,12 @@ export function Task({
             >
               <DragIndicator fontSize="small" />
             </IconButton> */}
-            <CompletedCheckbox listId={listId} />
+            {
+              <CompletedCheckbox
+                sx={{ opacity: temporary ? "0" : "1" }}
+                listId={listId}
+              />
+            }
             <Stack flexGrow={1}>
               <TaskTitleField
                 strikeThrough={data.status === "completed" && !temporary}

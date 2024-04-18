@@ -19,7 +19,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
 
   const defaultPositions = {
     x: window.innerWidth - 32,
-    y: window.innerHeight - 16,
+    y: window.innerHeight - 32,
   };
 
   const open = userSettings.taskButtonExpanded;

@@ -25,11 +25,13 @@ export function DockStationAccordionSummary() {
   const { selectedTaskListId } = useTasksGlobalState();
   const [hovered, setHovered] = useState(false);
   const { userSettings, updateUserSettings } = useUserSettingsContext();
-  const { data: tasks, isLoading } = useTasks({ listId: selectedTaskListId });
-  const title = isLoading
-    ? "loading..."
-    : tasks.find((task) => task.status !== "completed" && task.title && task.id)
-        ?.title;
+  const { data: tasks, isFetching } = useTasks({ listId: selectedTaskListId });
+  const title =
+    isFetching && !tasks.length
+      ? "loading..."
+      : tasks.find(
+          (task) => task.status !== "completed" && task.title && task.id
+        )?.title;
 
   return (
     <AccordionSummary

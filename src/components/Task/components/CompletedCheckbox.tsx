@@ -1,10 +1,13 @@
-import { Checkbox, TextField } from "@mui/material";
+import { Checkbox, CheckboxProps, TextField } from "@mui/material";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { CheckCircle, CircleOutlined } from "@mui/icons-material";
 import { useUpdateTask } from "../../../api/task.api";
 
-export function CompletedCheckbox({ listId }: { listId: string }) {
+export function CompletedCheckbox({
+  listId,
+  ...rest
+}: { listId: string } & CheckboxProps) {
   const { control, getValues } = useFormContext<TaskForm>();
 
   const updateMutation = useUpdateTask(listId);
@@ -35,6 +38,7 @@ export function CompletedCheckbox({ listId }: { listId: string }) {
           size="small"
           icon={<CircleOutlined fontSize="small" />}
           checkedIcon={<CheckCircle fontSize="small" />}
+          {...rest}
         />
       )}
     ></Controller>

@@ -26,42 +26,33 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
-// chrome.action.onClicked.addListener(async () => {
-//   let token;
-//   try {
-//     const tokenRes = await chrome.identity.getAuthToken({ interactive: false });
-//     token = tokenRes.token;
-//   } catch (err) {
-//     // ignore
-//   }
+const handleFetchTasksAlarm = async () => {
+  const userSettings = await services.user.getUserSettings();
 
-//   if (!token) {
-//     await chrome.tabs.create({ url: htmlFile });
-//   }
-
-//   await chrome.action.setPopup({ popup: "src/pages/popup/index.html" });
-//   // await chrome.action.openPopup();
-// });
-
-const handleFetchTasks = async (alarm: Alarms.Alarm) => {
-  if (alarm.name === "fetchTasks") {
+  if (userSettings?.taskButtonExpanded && userSettings?.tasksExpanded) {
     const { selectedTaskListId } = await services.task.getTasksState();
     console.log("selectedTaskListId: ", selectedTaskListId);
     if (selectedTaskListId) {
       await services.task.getTasks(selectedTaskListId);
-      messageEngine.broadcastMessage("TasksUpdated", null, "Background", {
+      messageEngine.broadcastMessage("UpdateTasks", null, "Background", {
         activeTabOnly: true,
       });
     }
   }
 };
 
+const handleAlarms = async (alarm: Alarms.Alarm) => {
+  if (alarm.name === "fetchTasks") {
+    handleFetchTasksAlarm();
+  }
+};
+
 chrome.alarms.clear("fetchTasks").then(() => {
   // data will be fetched on demand when the user opens the docking station
   // todo: should we store alarm if user does not have the tasks open? probably not
-  chrome.alarms.create("fetchTasks", { periodInMinutes: 1 });
+  chrome.alarms.create("fetchTasks", { periodInMinutes: 3 });
 });
-chrome.alarms.onAlarm.addListener(handleFetchTasks);
+chrome.alarms.onAlarm.addListener(handleAlarms);
 
 // chrome.runtime.onSuspend.addListener(() => {
 //   chrome.alarms.clearAll();

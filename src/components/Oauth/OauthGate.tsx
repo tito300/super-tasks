@@ -3,6 +3,7 @@ import {
   PropsWithChildren,
   useEffect,
   useLayoutEffect,
+  useRef,
   useState,
 } from "react";
 import { useServices } from "../Providers/ServicesProvider";
@@ -12,12 +13,14 @@ export function OauthRequired({
   children,
   ...rest
 }: PropsWithChildren & HTMLProps<HTMLDivElement>) {
+  const tokenSetRef = useRef(false);
   const [token, setToken] = useState<string | undefined>(undefined);
   const { user: userServices } = useServices();
 
   useLayoutEffect(() => {
     userServices.getAuthToken({ interactive: false }).then((tokenRes) => {
       setToken(tokenRes.token);
+      tokenSetRef.current = true;
     });
   }, []);
 
@@ -32,7 +35,11 @@ export function OauthRequired({
 
   return (
     <div {...rest}>
-      {!token ? <OauthScreen onLoginCLick={handleClick} /> : children}
+      {!tokenSetRef.current ? null : !token ? (
+        <OauthScreen onLoginCLick={handleClick} />
+      ) : (
+        children
+      )}
     </div>
   );
 }

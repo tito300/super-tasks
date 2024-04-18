@@ -3,6 +3,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
+import { constants } from "@src/config/constants";
 
 export const TaskTitleField = forwardRef<
   HTMLDivElement,
@@ -35,6 +36,7 @@ export const TaskTitleField = forwardRef<
           <TextField
             inputRef={textFieldRef}
             {...field}
+            id={`${constants.EXTENSION_NAME}-task-title-field`}
             autoFocus={focused}
             multiline
             onKeyDown={handleKeyDown}

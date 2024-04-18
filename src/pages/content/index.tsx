@@ -13,10 +13,15 @@ hook();
  */
 function hook() {
   const rootContainer = document.createElement("div");
-  const headElement = document.createElement("head");
-  const shadowRootEl = document.createElement("div");
+  rootContainer.id = `${constants.EXTENSION_NAME}-root`;
   rootContainer.style.zIndex = "2147483647";
   rootContainer.style.position = "absolute";
+  rootContainer.style.opacity = "0";
+
+  const headElement = document.createElement("head");
+
+  const shadowRootEl = document.createElement("div");
+  shadowRootEl.id = `${constants.EXTENSION_NAME}-shadow-root`;
 
   rootContainer.addEventListener("keydown", (e) => e.stopPropagation());
   rootContainer.addEventListener("keypress", (e) => e.stopPropagation());
@@ -30,7 +35,6 @@ function hook() {
   rootContainer.addEventListener("dragstart", (e) => e.stopPropagation());
   rootContainer.addEventListener("auxclick", (e) => e.stopPropagation());
 
-  rootContainer.id = "__root";
   document.body.appendChild(rootContainer);
   const shadowRoot = rootContainer.attachShadow({ mode: "open" });
   shadowRoot.appendChild(headElement); // used like document.head (styles only)

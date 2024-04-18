@@ -37,13 +37,15 @@ export function TasksGlobalStateProvider({
    */
   useEffect(() => {
     console.log("useEffect");
-    const cleanup = messageEngine.onMessage("TasksUpdated", async () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", tasksState.selectedTaskListId]});
-      console.log("TasksUpdated")
-    })
+    const cleanup = messageEngine.onMessage("UpdateTasks", async () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", tasksState.selectedTaskListId],
+      });
+      console.log("UpdateTasks");
+    });
     return () => {
       cleanup();
-    }
+    };
   }, [tasksState.selectedTaskListId, messageEngine, queryClient]);
 
   const updateSelectedTaskListId = useCallback((id: string) => {

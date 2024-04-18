@@ -20,6 +20,7 @@ import { AddTask } from "../AddTask/AddTask";
 import { TaskSkeleton } from "../Task/Task.skeleton";
 import { ArrowDropDown, ArrowRight } from "@mui/icons-material";
 import { useUserSettingsContext } from "../Providers/UserSettingsContext";
+import { constants } from "@src/config/constants";
 
 export function TaskManager({ listId }: { listId: string }) {
   const [tempTaskPending, setTempTaskPending] = useState(false);
@@ -72,8 +73,8 @@ export function TaskManager({ listId }: { listId: string }) {
       >
         {!!listId && !tempTaskPending && (
           <AddTask
+            id={`${constants.EXTENSION_NAME}-add-task`}
             sx={{ mt: 1 }}
-            autoFocus={!isNewTab}
             onClick={() => setTempTaskPending(true)}
           />
         )}

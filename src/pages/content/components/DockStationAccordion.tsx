@@ -3,6 +3,7 @@ import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
 import { useTaskLists, useTasks } from "@src/api/task.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
+import { constants } from "@src/config/constants";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
@@ -28,6 +29,26 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
     updateUserSettings({
       tasksExpanded: newValue,
       tasksOpenOnNewTab: isNewTab ? newValue : userSettings.tasksOpenOnNewTab,
+    });
+
+    requestIdleCallback(() => {
+      const shadowHost = document.getElementById(
+        `${constants.EXTENSION_NAME}-root`
+      )?.shadowRoot;
+      const addTaskButton = shadowHost?.getElementById(
+        `${constants.EXTENSION_NAME}-add-task`
+      );
+      if (addTaskButton) {
+        addTaskButton.click();
+      }
+      requestAnimationFrame(() => {
+        const taskTitle = shadowHost?.getElementById(
+          `${constants.EXTENSION_NAME}-task-title-field`
+        );
+        if (taskTitle) {
+          taskTitle.focus();
+        }
+      });
     });
   }, [selectedTaskListId, userSettings, queryClient]);
 
