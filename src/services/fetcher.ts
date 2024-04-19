@@ -11,7 +11,6 @@ export function fetcher(url: string, options: RequestInit = {}) {
       headers.append(key, value);
     }
   });
-  console.log("headers", headers);
 
   // Merge the rest of the options from the original call with the new headers
   const newOptions = {
@@ -19,7 +18,7 @@ export function fetcher(url: string, options: RequestInit = {}) {
     headers,
   };
 
-  return fetch(url, newOptions).then(response => {
+  return fetch(url, newOptions).then((response) => {
     if (!response.ok) {
       throw response;
     }

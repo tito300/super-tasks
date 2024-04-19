@@ -5,6 +5,7 @@ import { useServices } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { useUserSettings } from "./user.api";
 
 export type TaskList = {
   id: string;
@@ -16,8 +17,8 @@ export function useTasksState() {
 
   useEffect(() => {
     chrome.storage.local.get("tasksState").then((data) => {
-      setTasksState({...data?.tasksState});
-    })
+      setTasksState({ ...data?.tasksState });
+    });
 
     chrome.storage.local.onChanged.addListener((changes) => {
       if (changes.tasksState) {
@@ -26,14 +27,18 @@ export function useTasksState() {
     });
   }, []);
 
-  const updateTasksState = useCallback((newState: Partial<TasksGlobalState>) => {
-    setTasksState((oldState) => { 
-      const mergedState = {...oldState, ...newState};
-      chrome.storage.local.set({ tasksState: mergedState });
-      return (mergedState)});
-  }, []);
+  const updateTasksState = useCallback(
+    (newState: Partial<TasksGlobalState>) => {
+      setTasksState((oldState) => {
+        const mergedState = { ...oldState, ...newState };
+        chrome.storage.local.set({ tasksState: mergedState });
+        return mergedState;
+      });
+    },
+    []
+  );
 
-  return {tasksState, updateTasksState};
+  return { tasksState, updateTasksState };
 }
 
 export const useTasks = ({
@@ -53,14 +58,13 @@ export const useTasks = ({
 
       try {
         const data = await task.getTasks(listId);
-        console.log({ data });
         const sortedData = data.sort((a, b) =>
           a.position.localeCompare(b.position)
         );
-  
+
         return sortedData;
       } catch (err) {
-        console.log('error fetching tasks')
+        console.log("error fetching tasks");
         console.error(err);
         return [];
       }
@@ -205,8 +209,8 @@ export const useAddTask = (listId: string) => {
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", listId]});
-    }
+      queryClient.invalidateQueries({ queryKey: ["tasks", listId] });
+    },
   });
 };
 

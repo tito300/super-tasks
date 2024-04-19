@@ -7,14 +7,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useUserSettings() {
   const { user: userService } = useServices();
+
   return useQuery({
     queryKey: ["userSettings"],
     queryFn: async () => {
       const userSettings = await userService.getUserSettings();
+
       return userSettings;
     },
     initialData: userSettingsDefaults,
-    throwOnError: true,
   });
 }
 

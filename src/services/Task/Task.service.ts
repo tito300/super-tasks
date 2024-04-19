@@ -30,7 +30,6 @@ export const TaskServices = {
       .get(`${urls.BASE_URL}/tasks`)
       .then((res) => res.json())
       .then((res) => {
-        console.log({ res });
         return (res?.items || []) as Task[];
       });
   },

@@ -38,7 +38,6 @@ export const initializeServices = (scriptType: ScriptType) => {
             ...message.payload.args
           );
 
-          console.log({ response });
           return response;
         } catch (error) {
           const response = await handle401Errors(error, () =>

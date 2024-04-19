@@ -36,12 +36,10 @@ export function TasksGlobalStateProvider({
    * due to alarm trigger
    */
   useEffect(() => {
-    console.log("useEffect");
     const cleanup = messageEngine.onMessage("UpdateTasks", async () => {
       queryClient.invalidateQueries({
         queryKey: ["tasks", tasksState.selectedTaskListId],
       });
-      console.log("UpdateTasks");
     });
     return () => {
       cleanup();

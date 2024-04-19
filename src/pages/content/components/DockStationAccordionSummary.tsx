@@ -1,6 +1,5 @@
 import { ArrowDropDown, Visibility, VisibilityOff } from "@mui/icons-material";
 import {
-  Box,
   IconButton,
   AccordionSummary as MuiAccordionSummary,
   Stack,
@@ -8,9 +7,8 @@ import {
   accordionSummaryClasses,
   styled,
 } from "@mui/material";
-import { useTasks } from "@src/api/task.api";
-import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
+import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { useState } from "react";
 
 const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
@@ -22,14 +20,14 @@ const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
 }));
 
 export function DockStationAccordionSummary() {
-  const { selectedTaskListId } = useTasksGlobalState();
   const [hovered, setHovered] = useState(false);
   const { userSettings, updateUserSettings } = useUserSettingsContext();
-  const { data: tasks, isFetching } = useTasks({ listId: selectedTaskListId });
+  const { filteredTasks, isFetching } = useFilteredTasks();
+
   const title =
-    isFetching && !tasks.length
+    isFetching && !filteredTasks.length
       ? "loading..."
-      : tasks.find(
+      : filteredTasks.find(
           (task) => task.status !== "completed" && task.title && task.id
         )?.title;
 

@@ -14,7 +14,6 @@ export function Content() {
     }
     messageEngine.onMessage("DockTask", async (message) => {
       alert("DockTask");
-      console.log(message);
     });
   }, []);
 

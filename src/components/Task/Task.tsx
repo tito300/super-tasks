@@ -19,8 +19,11 @@ export type Task = {
   notes?: string;
   completed?: string;
   position: string;
+  due?: string;
   status: "needsAction" | "completed";
 };
+
+export type enhancedTask = Task & {};
 
 export interface TaskForm extends Task {}
 
@@ -124,6 +127,7 @@ export function Task({
               <TaskTitleField
                 strikeThrough={data.status === "completed" && !temporary}
                 focused={focused}
+                taskDue={data.due}
                 onblur={() => formFields.handleSubmit(onSubmit)()}
                 onFocus={() => setFocused(true)}
               />

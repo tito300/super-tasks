@@ -50,19 +50,23 @@ export class MessageEngine {
     action: T,
     payload: TaskMessage<T>["payload"],
     sourceScript?: ScriptType,
-    options?: { activeTabOnly?: boolean, highlightedOnly?: boolean }
+    options?: { activeTabOnly?: boolean; highlightedOnly?: boolean }
   ) {
-    console.log("Broadcasting message", action, payload);
     if (this.scriptType === "Popup" || this.scriptType === "Content") {
       this.sendMessage("BroadcastMessage", { action, payload });
     } else {
       chrome.tabs.query({}, (tabs) => {
-        tabs.forEach((tab) => {
-          if (options?.highlightedOnly && !tab.highlighted) return;
-          if (options?.activeTabOnly && !tab.active) return;
+        tabs
+          .sort((tab) => {
+            if (tab.active) return -1;
+            return 1;
+          })
+          .forEach((tab) => {
+            if (options?.highlightedOnly && !tab.highlighted) return;
+            if (options?.activeTabOnly && !tab.active) return;
 
-          this.sendMessageToTab(tab.id!, action, payload, sourceScript);
-        });
+            this.sendMessageToTab(tab.id!, action, payload, sourceScript);
+          });
       });
     }
   }
@@ -82,12 +86,13 @@ export class MessageEngine {
 
   onMessage<T extends TaskAction>(
     action: T | null,
-    callback: (
-      message: TaskMessage<T>
-    ) => Promise<any>
+    callback: (message: TaskMessage<T>) => Promise<any>
   ) {
-    const handler = 
-    (message: unknown, sender: any, sendResponse: (response: MessageResponse) => void) => {
+    const handler = (
+      message: unknown,
+      sender: any,
+      sendResponse: (response: MessageResponse) => void
+    ) => {
       if (this.isValidMessage(message) && message.action === action) {
         callback(message as TaskMessage<T>)
           .then((response) => {
@@ -95,18 +100,18 @@ export class MessageEngine {
               payload: response,
             });
           })
-          .catch(err => {
+          .catch((err) => {
             console.error(err);
             sendResponse({
               payload: err.message,
-              error: err.status || err.message
+              error: err.status || err.message,
             });
           });
         return true;
       }
-    }
+    };
     chrome.runtime.onMessage.addListener(handler);
-    return () => chrome.runtime.onMessage.removeListener(handler)
+    return () => chrome.runtime.onMessage.removeListener(handler);
   }
 
   isBroadcastMessage(message: unknown): message is BroadcastMessage {

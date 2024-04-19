@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MessageEngineProvider } from "./Providers/MessageEngineProvider";
 import { theme as v1Theme } from "../theme/v1.theme";
 import { deepmerge } from "@mui/utils";
-import { UseSettingsProvider } from "./Providers/UserSettingsContext";
+import { UserSettingsProvider } from "./Providers/UserSettingsContext";
 import { TasksGlobalStateProvider } from "./Providers/TasksGlobalStateProvider";
 import { OauthRequired } from "./Oauth/OauthGate";
 
@@ -35,9 +35,9 @@ export const Main = ({
       <QueryClientProvider client={queryClient}>
         <MessageEngineProvider scriptType={scriptType}>
           <ServicesProvider scriptType={scriptType}>
-            <UseSettingsProvider>
+            <UserSettingsProvider>
               <TasksGlobalStateProvider>{children}</TasksGlobalStateProvider>
-            </UseSettingsProvider>
+            </UserSettingsProvider>
           </ServicesProvider>
         </MessageEngineProvider>
       </QueryClientProvider>

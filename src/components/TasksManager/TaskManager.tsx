@@ -19,8 +19,9 @@ import {
 import { AddTask } from "../AddTask/AddTask";
 import { TaskSkeleton } from "../Task/Task.skeleton";
 import { ArrowDropDown, ArrowRight } from "@mui/icons-material";
-import { useUserSettingsContext } from "../Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
+import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
+import { TasksFilters } from "./TasksFilters";
 
 export function TaskManager({ listId }: { listId: string }) {
   const [tempTaskPending, setTempTaskPending] = useState(false);
@@ -61,10 +62,11 @@ export function TaskManager({ listId }: { listId: string }) {
     }
   }
 
-  const completedTasks = data.filter((task) => task.status === "completed");
+  const { filteredTasks, completedTasks } = useFilteredTasks();
 
   return (
     <Stack sx={{ width: 350 }} ref={rootRef}>
+      <TasksFilters />
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -96,9 +98,8 @@ export function TaskManager({ listId }: { listId: string }) {
             </>
           )}
 
-          {data
-            ?.filter((task) => task.status !== "completed" && !!task.title)
-            .map((task) => (
+          {!!filteredTasks?.length &&
+            filteredTasks.map((task) => (
               <Task
                 loading={isLoading}
                 key={task.id || task.title}
@@ -109,26 +110,26 @@ export function TaskManager({ listId }: { listId: string }) {
         </SortableContext>
 
         {isError && <Alert severity="error">Error Fetching Tasks</Alert>}
-        {!!completedTasks.length && (
-          <Stack>
-            <Stack
-              direction="row"
-              alignItems="center"
-              sx={{ cursor: "pointer", px: 1, mt: 2 }}
-              onClick={() => setCompletedOpen(!completedOpen)}
-            >
-              {!completedOpen && <ArrowRight fontSize="small" />}
-              {completedOpen && <ArrowDropDown fontSize="small" />}
-              <Typography sx={{ ml: 1 }}>Completed</Typography>
-            </Stack>
-            <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
-              {completedTasks.map((task) => (
-                <Task listId={listId} key={task.id + "completed"} data={task} />
-              ))}
-            </Collapse>
-          </Stack>
-        )}
       </DndContext>
+      {!!completedTasks.length && (
+        <Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{ cursor: "pointer", px: 1, mt: 2 }}
+            onClick={() => setCompletedOpen(!completedOpen)}
+          >
+            {!completedOpen && <ArrowRight fontSize="small" />}
+            {completedOpen && <ArrowDropDown fontSize="small" />}
+            <Typography sx={{ ml: 1 }}>Completed</Typography>
+          </Stack>
+          <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
+            {completedTasks.map((task) => (
+              <Task listId={listId} key={task.id + "completed"} data={task} />
+            ))}
+          </Collapse>
+        </Stack>
+      )}
     </Stack>
   );
 }

@@ -3,7 +3,7 @@ import {
   userSettingsDefaults,
 } from "@src/config/userSettingsDefaults";
 import { deepmerge } from "@mui/utils";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   PropsWithChildren,
   createContext,
@@ -12,6 +12,8 @@ import {
   useState,
 } from "react";
 import { useUpdateUserSettings, useUserSettings } from "@src/api/user.api";
+import { useMessageEngine } from "./MessageEngineProvider";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type UserSettingsContext = {
   userSettings: UserSettings;
@@ -21,7 +23,7 @@ export type UserSettingsContext = {
 
 const userSettingsContext = createContext<UserSettingsContext>(null!);
 
-export function UseSettingsProvider({
+export function UserSettingsProvider({
   children,
   userSettings: inUserSettings,
 }: PropsWithChildren & { userSettings?: Partial<UserSettings> }) {
@@ -30,13 +32,27 @@ export function UseSettingsProvider({
   // );
   const { data: userSettings } = useUserSettings();
   const mutateUserSettings = useUpdateUserSettings();
+  const messageEngine = useMessageEngine();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    return messageEngine.onMessage("UserSettingsUpdated", async (settings) => {
+      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
+    });
+  }, [queryClient, messageEngine]);
 
   const updateUserSettings = useCallback(
     (newSettings: Partial<UserSettings>) => {
       const settings = { ...userSettings, ...newSettings } as UserSettings;
-      mutateUserSettings.mutateAsync(settings);
+      mutateUserSettings.mutateAsync(settings).then(() => {
+        messageEngine.broadcastMessage(
+          "UserSettingsUpdated",
+          null,
+          messageEngine.scriptType
+        );
+      });
     },
-    [userSettings, mutateUserSettings]
+    [userSettings, mutateUserSettings, messageEngine]
   );
 
   const uiControls = useMemo(() => {

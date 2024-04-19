@@ -1,4 +1,5 @@
 import { Task } from "@src/components/Task/Task";
+import { UserSettings } from "@src/config/userSettingsDefaults";
 import { ServiceName } from "@src/services";
 import { ServiceMethodName } from "@src/services/Task/Task.service";
 import { UserServiceMethodName } from "@src/services/User/User.service";
@@ -18,6 +19,8 @@ export type TaskMessage<T extends TaskAction = TaskAction> =
     ? FetchTasksTimerMessage
     : T extends "ReAuthenticate"
     ? ReAuthenticateMessage
+    : T extends "UserSettingsUpdated"
+    ? UserSettingsUpdatedMessage
     : never;
 
 export type ScriptType = "Popup" | "Content" | "Background";
@@ -69,6 +72,12 @@ export type FetchTasksTimerMessage = {
   payload?: null;
 };
 
+export type UserSettingsUpdatedMessage = {
+  action: "UserSettingsUpdated";
+  sourceScript: ScriptType;
+  payload?: null;
+};
+
 export const taskActions = [
   "DockTask",
   "UnDockTask",
@@ -78,6 +87,7 @@ export const taskActions = [
   "StartFetchTasksTimer",
   "StopFetchTasksTimer",
   "ReAuthenticate",
+  "UserSettingsUpdated",
 ] as const;
 export type TaskAction = (typeof taskActions)[number];
 

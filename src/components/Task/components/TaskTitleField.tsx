@@ -4,6 +4,8 @@ import { TaskForm } from "../Task";
 import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
+import { isTaskPastDue } from "@src/utils/isTaskPastDue";
+import { Warning } from "@mui/icons-material";
 
 export const TaskTitleField = forwardRef<
   HTMLDivElement,
@@ -12,8 +14,9 @@ export const TaskTitleField = forwardRef<
     focused?: boolean;
     onblur: () => void;
     strikeThrough: boolean;
+    taskDue?: string;
   }
->(({ onFocus, focused, onblur, strikeThrough }) => {
+>(({ onFocus, focused, onblur, strikeThrough, taskDue }) => {
   const { control } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
   const { userSettings } = useUserSettingsContext();
@@ -56,7 +59,13 @@ export const TaskTitleField = forwardRef<
               },
             }}
             onFocus={onFocus}
-            InputProps={{ disableUnderline: true }}
+            InputProps={{
+              disableUnderline: true,
+              startAdornment:
+                isTaskPastDue(taskDue) && !strikeThrough ? (
+                  <Warning color="warning" fontSize="small" sx={{ mr: 0.5 }} />
+                ) : undefined,
+            }}
           />
         );
       }}
