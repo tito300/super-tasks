@@ -8,6 +8,8 @@ import { userService } from "./User/User.service";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { setupToken } from "@src/oauth/setupToken";
 import { requiredScopes } from "@src/config/googleScopes";
+import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { TaskType } from "@src/components/Task/Task";
 
 let initiated: boolean = false;
 const services = {
@@ -47,6 +49,20 @@ export const initializeServices = (scriptType: ScriptType) => {
           if (response) return response;
 
           throw error;
+        }
+      });
+
+      chrome.alarms.onAlarm.addListener((alarm) => {
+        if (alarm.name.startsWith("TaskReminder-")) {
+          const taskListId = alarm.name.split("-")[1];
+          const taskId = alarm.name.split("-")[2];
+
+          messageEngine.broadcastMessage(
+            "TaskReminder",
+            { taskId, taskListId },
+            "Background"
+          );
+          services.task.updateTaskReminder(taskId, taskListId);
         }
       });
     }

@@ -2,9 +2,12 @@ import { useMessageEngine } from "@src/components/Providers/MessageEngineProvide
 import { useEffect } from "react";
 import { DockStation } from "./components/DockStation";
 import { constants } from "@src/config/constants";
+import { useTaskReminders } from "@src/hooks/useTaskReminders";
 
 export function Content() {
   const messageEngine = useMessageEngine();
+  useTaskReminders();
+
   useEffect(() => {
     const rootEl = document.getElementById(`${constants.EXTENSION_NAME}-root`);
     if (rootEl) {

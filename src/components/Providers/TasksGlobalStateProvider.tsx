@@ -9,10 +9,14 @@ import {
   useState,
 } from "react";
 import { useMessageEngine } from "./MessageEngineProvider";
+import { TaskType } from "../Task/Task";
 
 export type TasksGlobalState = {
   selectedTaskListId?: string | null;
   defaultTaskListId?: string | null;
+  tasks?: {
+    [taskId: string]: TaskType | undefined 
+  }
 };
 
 export type TasksGlobalStateContextType = TasksGlobalState & {
@@ -54,9 +58,10 @@ export function TasksGlobalStateProvider({
     () => ({
       selectedTaskListId: tasksState.selectedTaskListId,
       defaultTaskListId: tasksState.selectedTaskListId,
+      tasks: tasksState.tasks,
       updateSelectedTaskListId,
     }),
-    [tasksState.selectedTaskListId, updateSelectedTaskListId]
+    [tasksState, updateSelectedTaskListId]
   );
 
   return (

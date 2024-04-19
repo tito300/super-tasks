@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Task } from "../components/Task/Task";
+import { SavedTask, TaskEnhanced } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useServices } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
@@ -50,7 +50,7 @@ export const useTasks = ({
 }) => {
   const { task } = useServices();
 
-  return useQuery<Task[]>({
+  return useQuery<SavedTask[]>({
     queryKey: ["tasks", listId],
     initialData: [],
     queryFn: async () => {
@@ -94,7 +94,7 @@ export const useMoveTask = (listId: string) => {
       previousTaskId,
     }: {
       taskId: string;
-      previousTaskId: string | null;
+      previousTaskId?: string | null;
     }) => {
       return taskService.moveTask(listId, taskId, previousTaskId);
     },
@@ -107,7 +107,7 @@ export const useMoveTask = (listId: string) => {
       const previousTasks = queryClient.getQueryData(["tasks", listId]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(["tasks", listId], (old: Task[]) => {
+      queryClient.setQueryData(["tasks", listId], (old: SavedTask[]) => {
         const oldUncomplete = old.filter((task) => task.status !== "completed");
         const oldIndex = old?.findIndex((task) => taskId === task.id);
         const newIndex = old?.findIndex((task) => previousTaskId === task.id);
@@ -149,7 +149,7 @@ export const useDeleteTask = (listId: string) => {
       const previousTasks = queryClient.getQueryData(["tasks", listId]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(["tasks", listId], (old: Task[]) =>
+      queryClient.setQueryData(["tasks", listId], (old: SavedTask[]) =>
         old
           .map((task) => {
             if (task.id === id) return null;
@@ -180,7 +180,7 @@ export const useAddTask = (listId: string) => {
       task,
       previousTaskId,
     }: {
-      task: Task;
+      task: SavedTask;
       previousTaskId?: string;
     }) => {
       return taskService.addTask(listId, task, null);
@@ -194,7 +194,7 @@ export const useAddTask = (listId: string) => {
       const previousTasks = queryClient.getQueryData(["tasks", listId]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(["tasks", listId], (old?: Task[]) => {
+      queryClient.setQueryData(["tasks", listId], (old?: SavedTask[]) => {
         const newData = [task, ...(old || [])];
         return newData;
       });
@@ -219,7 +219,7 @@ export const useUpdateTask = (listId: string) => {
   const { task: taskService } = useServices();
 
   return useMutation({
-    mutationFn: async (task: Task) => {
+    mutationFn: async (task: SavedTask) => {
       return taskService.updateTask(listId, task);
     },
     onMutate: async (task) => {
@@ -232,7 +232,7 @@ export const useUpdateTask = (listId: string) => {
 
       // Optimistically update to the new value
 
-      queryClient.setQueryData(["tasks", listId], (old: Task[]) => {
+      queryClient.setQueryData(["tasks", listId], (old: SavedTask[]) => {
         return old.map((currentTask) => {
           if (task.id === currentTask.id) return task;
 

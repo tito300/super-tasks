@@ -1,20 +1,35 @@
-import { ClickAwayListener, Collapse, IconButton, Stack } from "@mui/material";
+import { ClickAwayListener, Stack } from "@mui/material";
 import { StyledTask } from "./Task.styles";
-import { DragIndicator } from "@mui/icons-material";
 import { TaskOptionsMenu } from "./components/TaskOptionsMenu";
 import { useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { TaskTitleField } from "./components/TaskTitleField";
-import { DescriptionTextField } from "./components/DescriptionTextField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { useAddTask, useTasks, useUpdateTask } from "../../api/task.api";
-import { TaskMessage } from "@src/messageEngine/types/taskMessages";
 import { TaskSkeleton } from "./Task.skeleton";
 
-export type Task = {
+export type TaskType = SavedTask | NewTask;
+
+export type TaskEnhanced = {
+  alertOn?: boolean | null;
+  alert?: number | null; // in minutes
+  listId?: string;
+};
+
+export type SavedTask = TaskEnhanced & {
   id: string;
+  title?: string;
+  notes?: string;
+  completed?: string;
+  position: string;
+  due?: string;
+  status: "needsAction" | "completed";
+};
+
+export type NewTask = TaskEnhanced & {
+  id?: string;
   title: string;
   notes?: string;
   completed?: string;
@@ -23,9 +38,7 @@ export type Task = {
   status: "needsAction" | "completed";
 };
 
-export type enhancedTask = Task & {};
-
-export interface TaskForm extends Task {}
+export interface TaskForm extends SavedTask {}
 
 export function Task({
   data,
@@ -35,7 +48,7 @@ export function Task({
   autoFocus,
   onSaved,
 }: {
-  data: Task;
+  data: SavedTask;
   listId: string;
   temporary?: boolean;
   loading?: boolean;
@@ -45,7 +58,7 @@ export function Task({
   const [focused, setFocused] = useState(autoFocus);
   const activeRef = useRef(false);
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: data.id });
+    useSortable({ id: data.id || data.title || data.notes || 'temp' });
   const { data: tasks } = useTasks({ enabled: false, listId });
 
   const addMutation = useAddTask(listId);
@@ -128,6 +141,7 @@ export function Task({
                 strikeThrough={data.status === "completed" && !temporary}
                 focused={focused}
                 taskDue={data.due}
+                taskId={data.id}
                 onblur={() => formFields.handleSubmit(onSubmit)()}
                 onFocus={() => setFocused(true)}
               />
@@ -148,7 +162,7 @@ export function Task({
   );
 }
 
-export const createEmptyTask = (task?: Partial<Task>): Task => {
+export const createEmptyTask = (task?: Partial<SavedTask>): SavedTask => {
   return {
     id: "",
     completed: "",
@@ -159,7 +173,7 @@ export const createEmptyTask = (task?: Partial<Task>): Task => {
     ...task,
   };
 };
-export const shouldSaveTempTask = (task?: Partial<Task>) => {
+export const shouldSaveTempTask = (task?: Partial<SavedTask>) => {
   if (task?.title) return true;
   if (task?.notes) return true;
 

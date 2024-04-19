@@ -1,6 +1,6 @@
 import { Alert, Collapse, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { Task, createEmptyTask } from "../Task/Task";
+import { SavedTask, Task, createEmptyTask } from "../Task/Task";
 import { useMoveTask, useTasks } from "../../api/task.api";
 import {
   Active,
@@ -88,7 +88,7 @@ export function TaskManager({ listId }: { listId: string }) {
             data={createEmptyTask()}
           ></Task>
         )}
-        <SortableContext items={data!} strategy={verticalListSortingStrategy}>
+        <SortableContext items={filteredTasks!} strategy={verticalListSortingStrategy}>
           {isFetching && !data.length && (
             <>
               <TaskSkeleton />
@@ -134,7 +134,7 @@ export function TaskManager({ listId }: { listId: string }) {
   );
 }
 
-function getPreviousId(tasks: Task[], over: Over, active: Active) {
+function getPreviousId(tasks: SavedTask[], over: Over, active: Active) {
   const activeIndex = tasks.findIndex((task) => task.id === active.id);
   const overIndex = tasks.findIndex((task) => task.id === over.id);
 

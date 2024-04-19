@@ -1,4 +1,4 @@
-import { Task } from "@src/components/Task/Task";
+import { SavedTask } from "@src/components/Task/Task";
 
 export function isTaskPastDue(due?: string) {
   if (!due) return false;

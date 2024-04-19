@@ -1,7 +1,6 @@
 import { useTasks } from "@src/api/task.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
-import { isTaskPastDue } from "@src/utils/isTaskPastDue";
 import { useMemo } from "react";
 
 export function useFilteredTasks() {

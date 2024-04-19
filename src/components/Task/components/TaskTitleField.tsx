@@ -1,11 +1,14 @@
-import { TextField } from "@mui/material";
+import { IconButton, Menu, MenuItem, TextField } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
 import { isTaskPastDue } from "@src/utils/isTaskPastDue";
-import { Warning } from "@mui/icons-material";
+import { NotificationAdd, Warning } from "@mui/icons-material";
+import React from "react";
+import { useServices } from "@src/components/Providers/ServicesProvider";
+import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 
 export const TaskTitleField = forwardRef<
   HTMLDivElement,
@@ -15,8 +18,9 @@ export const TaskTitleField = forwardRef<
     onblur: () => void;
     strikeThrough: boolean;
     taskDue?: string;
+    taskId?: string;
   }
->(({ onFocus, focused, onblur, strikeThrough, taskDue }) => {
+>(({ onFocus, focused, onblur, strikeThrough, taskDue, taskId }) => {
   const { control } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
   const { userSettings } = useUserSettingsContext();
@@ -65,6 +69,7 @@ export const TaskTitleField = forwardRef<
                 isTaskPastDue(taskDue) && !strikeThrough ? (
                   <Warning color="warning" fontSize="small" sx={{ mr: 0.5 }} />
                 ) : undefined,
+              endAdornment: taskId && <AddReminder taskId={taskId} />,
             }}
           />
         );
@@ -72,3 +77,54 @@ export const TaskTitleField = forwardRef<
     ></Controller>
   );
 });
+
+function AddReminder({ taskId }: { taskId: string }) {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLButtonElement>(
+    null
+  );
+  const open = Boolean(anchorEl);
+  const { task } = useServices();
+  const { selectedTaskListId } = useTasksGlobalState();
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = (timeInMinutes: number) => {
+    task.setReminder(taskId, selectedTaskListId!, timeInMinutes);
+    setAnchorEl(null);
+  };
+
+  return (
+    <>
+      <IconButton
+        size="small"
+        onClick={handleClick}
+        sx={{
+          maxLines: 0.5,
+        }}
+      >
+        <NotificationAdd fontSize="small" />
+      </IconButton>
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          "aria-labelledby": "basic-button",
+          sx: { maxHeight: "200px", overflow: "auto" },
+        }}
+      >
+        <MenuItem onClick={() => handleClose(0.5)}>30 seconds</MenuItem>
+        <MenuItem onClick={() => handleClose(5)}>5 minutes</MenuItem>
+        <MenuItem onClick={() => handleClose(15)}>15 minutes</MenuItem>
+        <MenuItem onClick={() => handleClose(30)}>30 minutes</MenuItem>
+        <MenuItem onClick={() => handleClose(60)}>1 hour</MenuItem>
+        <MenuItem onClick={() => handleClose(60 * 2)}>2 hours</MenuItem>
+        <MenuItem onClick={() => handleClose(60 * 4)}>4 hours</MenuItem>
+        <MenuItem onClick={() => handleClose(60 * 8)}>8 hours</MenuItem>
+        <MenuItem onClick={() => handleClose(60 * 24)}>1 day</MenuItem>
+      </Menu>
+    </>
+  );
+}
