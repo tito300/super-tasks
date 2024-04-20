@@ -16,6 +16,7 @@ export type TaskEnhanced = {
   alertOn?: boolean | null;
   alert?: number | null; // in minutes
   listId?: string;
+  // add updated date
 };
 
 export type SavedTask = TaskEnhanced & {
@@ -58,7 +59,7 @@ export function Task({
   const [focused, setFocused] = useState(autoFocus);
   const activeRef = useRef(false);
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: data.id || data.title || data.notes || 'temp' });
+    useSortable({ id: data.id || data.title || data.notes || "temp" });
   const { data: tasks } = useTasks({ enabled: false, listId });
 
   const addMutation = useAddTask(listId);

@@ -61,7 +61,7 @@ export const useTasks = ({
         const sortedData = data.sort((a, b) =>
           a.position.localeCompare(b.position)
         );
-
+        console.log("sortedData: ", sortedData);
         return sortedData;
       } catch (err) {
         console.log("error fetching tasks");
@@ -214,12 +214,17 @@ export const useAddTask = (listId: string) => {
   });
 };
 
-export const useUpdateTask = (listId: string) => {
+export const useUpdateTask = (listId?: string) => {
   const queryClient = useQueryClient();
   const { task: taskService } = useServices();
 
   return useMutation({
     mutationFn: async (task: SavedTask) => {
+      if (!listId) {
+        console.error("listId is required to update task");
+        return task;
+      }
+
       return taskService.updateTask(listId, task);
     },
     onMutate: async (task) => {
@@ -230,11 +235,11 @@ export const useUpdateTask = (listId: string) => {
       // Snapshot the previous value
       const previousTasks = queryClient.getQueryData(["tasks", listId]);
 
-      // Optimistically update to the new value
-
       queryClient.setQueryData(["tasks", listId], (old: SavedTask[]) => {
         return old.map((currentTask) => {
-          if (task.id === currentTask.id) return task;
+          if (task.id === currentTask.id) {
+            return task;
+          }
 
           return currentTask;
         });

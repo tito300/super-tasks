@@ -86,6 +86,7 @@ export type TaskReminderMessage = {
   payload: {
     taskId: string;
     taskListId: string;
+    alert: number;
   };
 };
 

@@ -1,14 +1,20 @@
 import { IconButton, Menu, MenuItem, TextField } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
-import { TaskForm } from "../Task";
+import { SavedTask, TaskForm, TaskType } from "../Task";
 import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
 import { isTaskPastDue } from "@src/utils/isTaskPastDue";
-import { NotificationAdd, Warning } from "@mui/icons-material";
+import {
+  NotificationAdd,
+  Notifications,
+  NotificationsOff,
+  Warning,
+} from "@mui/icons-material";
 import React from "react";
 import { useServices } from "@src/components/Providers/ServicesProvider";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { useTasks, useUpdateTask } from "@src/api/task.api";
 
 export const TaskTitleField = forwardRef<
   HTMLDivElement,
@@ -24,6 +30,11 @@ export const TaskTitleField = forwardRef<
   const { control } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
   const { userSettings } = useUserSettingsContext();
+  const [hovered, setHovered] = React.useState(false);
+  const { selectedTaskListId } = useTasksGlobalState();
+  const { data: tasks } = useTasks({ listId: selectedTaskListId });
+
+  const task = tasks.find((task) => task.id === taskId)!;
 
   function handleKeyDown(e: KeyboardEvent) {
     // some websites take focus away on certain
@@ -34,6 +45,7 @@ export const TaskTitleField = forwardRef<
     }
   }
 
+  const showReminder = task?.alertOn || (taskId && hovered);
   return (
     <Controller
       control={control}
@@ -43,6 +55,8 @@ export const TaskTitleField = forwardRef<
           <TextField
             inputRef={textFieldRef}
             {...field}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
             id={`${constants.EXTENSION_NAME}-task-title-field`}
             autoFocus={focused}
             multiline
@@ -51,7 +65,7 @@ export const TaskTitleField = forwardRef<
             variant="standard"
             size="small"
             sx={{
-              pt: 0.7,
+              pt: 0.25,
               ml: 1,
               filter: userSettings.blurText && !focused ? "blur(7px)" : "none",
               textDecoration: strikeThrough ? "line-through" : "auto",
@@ -69,7 +83,8 @@ export const TaskTitleField = forwardRef<
                 isTaskPastDue(taskDue) && !strikeThrough ? (
                   <Warning color="warning" fontSize="small" sx={{ mr: 0.5 }} />
                 ) : undefined,
-              endAdornment: taskId && <AddReminder taskId={taskId} />,
+              endAdornment: showReminder && <AddReminder task={task} />,
+              sx: { paddingBottom: 0 },
             }}
           />
         );
@@ -78,19 +93,29 @@ export const TaskTitleField = forwardRef<
   );
 });
 
-function AddReminder({ taskId }: { taskId: string }) {
+function AddReminder({ task }: { task: SavedTask }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLButtonElement>(
     null
   );
   const open = Boolean(anchorEl);
-  const { task } = useServices();
+  const { task: taskService } = useServices();
   const { selectedTaskListId } = useTasksGlobalState();
+  const mutateTask = useUpdateTask(selectedTaskListId!);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+    event.stopPropagation();
+    if (task.alertOn) {
+      mutateTask.mutate({
+        ...task,
+        alertOn: false,
+        alert: 0,
+      });
+    } else {
+      setAnchorEl(event.currentTarget);
+    }
   };
   const handleClose = (timeInMinutes: number) => {
-    task.setReminder(taskId, selectedTaskListId!, timeInMinutes);
+    taskService.setReminder(task.id, selectedTaskListId!, timeInMinutes);
     setAnchorEl(null);
   };
 
@@ -103,7 +128,13 @@ function AddReminder({ taskId }: { taskId: string }) {
           maxLines: 0.5,
         }}
       >
-        <NotificationAdd fontSize="small" />
+        {task.alertOn ? (
+          <NotificationsOff sx={{ fontSize: 20 }} color="warning" />
+        ) : task.alert ? (
+          <Notifications color="success" sx={{ fontSize: 20 }} />
+        ) : (
+          <NotificationAdd sx={{ fontSize: 20 }} />
+        )}
       </IconButton>
       <Menu
         id="basic-menu"
@@ -112,7 +143,7 @@ function AddReminder({ taskId }: { taskId: string }) {
         onClose={handleClose}
         MenuListProps={{
           "aria-labelledby": "basic-button",
-          sx: { maxHeight: "200px", overflow: "auto" },
+          sx: { maxHeight: "150px", overflow: "auto" },
         }}
       >
         <MenuItem onClick={() => handleClose(0.5)}>30 seconds</MenuItem>
