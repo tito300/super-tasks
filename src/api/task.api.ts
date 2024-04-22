@@ -214,7 +214,7 @@ export const useAddTask = (listId: string) => {
   });
 };
 
-export const useUpdateTask = (listId?: string) => {
+export const useUpdateTask = (listId: string) => {
   const queryClient = useQueryClient();
   const { task: taskService } = useServices();
 
@@ -224,7 +224,9 @@ export const useUpdateTask = (listId?: string) => {
         console.error("listId is required to update task");
         return task;
       }
-
+      if (task.alert && !task.alertOn) {
+        taskService.setReminder(task.id, listId, task.alert);
+      }
       return taskService.updateTask(listId, task);
     },
     onMutate: async (task) => {

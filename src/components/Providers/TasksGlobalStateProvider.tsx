@@ -42,7 +42,7 @@ export function TasksGlobalStateProvider({
   useEffect(() => {
     const cleanup = messageEngine.onMessage("UpdateTasks", async () => {
       queryClient.invalidateQueries({
-        queryKey: ["tasks", tasksState.selectedTaskListId],
+        queryKey: ["tasks", tasksState.selectedTaskListId], // needs to update all tasks
       });
     });
     return () => {

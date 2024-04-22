@@ -4,8 +4,10 @@ import { urls } from "@src/config/urls";
 import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { TaskList } from "@src/api/task.api";
 import { deepmerge } from "@mui/utils";
+import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 
 export type ServiceMethodName = keyof typeof TaskServices;
+const messageEngine = getMessageEngine("Background");
 
 /**
  * only use services from within api hooks
@@ -89,14 +91,27 @@ export const TaskServices = {
   setReminder: async (
     taskId: string,
     taskListId: string,
-    timeInMinutes: number
+    timeInMinutes: number,
+    repeating?: boolean
   ) => {
+    const alarmName = `TaskReminder-${taskListId}-${taskId}-${timeInMinutes}`;
     chrome.alarms.create(
-      `TaskReminder-${taskListId}-${taskId}-${timeInMinutes}`,
+      alarmName,
       {
         delayInMinutes: timeInMinutes,
       }
     );
+
+    chrome.alarms.onAlarm.addListener((alarm) => {
+      if (alarm.name === alarmName) {
+        const taskId = alarm.name.split("-")[2];
+
+        TaskServices.updateLocalTaskState({ id: taskId, alertOn: true, alert: 0 })
+        messageEngine.broadcastMessage("UpdateTasks", null);
+
+        console.log('Task reminder triggered')
+      }
+    });
   },
   removeReminder: async (taskId: string, taskListId: string) => {
     chrome.alarms.clear(`TaskReminder-${taskListId}-${taskId}`);
@@ -112,23 +127,6 @@ export const TaskServices = {
       chrome.storage.local.set({ tasksState: updatedTasksState });
     });
   },
-  // updateTaskReminder: async (
-  //   taskId: string,
-  //   timeInMinutes: number | null | undefined,
-  //   alertOn?: boolean | null
-  // ) => {
-  //   chrome.storage.local.get("tasksState", (inData) => {
-  //     const data = inData as { tasksState: TasksGlobalState };
-  //     const tasksState = data.tasksState || {};
-
-  //     const updatedTasksState = deepmerge(tasksState, {
-  //       tasks: {
-  //         [taskId]: { alertOn, alert: timeInMinutes },
-  //       },
-  //     });
-  //     chrome.storage.local.set({ tasksState: updatedTasksState });
-  //   });
-  // },
   mergeWithLocalState: async (tasks: SavedTask[]) => {
     const localTasksState = await TaskServices.getTasksState();
     const localTasks = localTasksState.tasks || {};
@@ -142,7 +140,7 @@ export const TaskServices = {
 
     return mergedTasks;
   },
-  updateLocalTaskState: async (task: TaskType) => {
+  updateLocalTaskState: async (task: Partial<TaskType> & { id: string }) => {
     chrome.storage.local.get("tasksState", (inData) => {
       const data = inData as { tasksState: TasksGlobalState };
       const tasksState = data.tasksState || {};
@@ -159,7 +157,7 @@ export const TaskServices = {
 
 function filterEnhancedProperties(
   task: SavedTask | TaskEnhanced | TaskType
-): TaskEnhanced {
-  const { alert, alertOn } = task;
-  return { alert, alertOn };
+): Record<Exclude<keyof TaskEnhanced, 'id'>, any> {
+  const { alert, alertOn, alertSeen, listId, id } = task;
+  return { alert, alertOn, alertSeen, listId };
 }

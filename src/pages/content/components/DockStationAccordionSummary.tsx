@@ -13,11 +13,11 @@ import {
   accordionSummaryClasses,
   styled,
 } from "@mui/material";
-import { TaskList } from "@src/api/task.api";
+import { TaskList, useUpdateTask } from "@src/api/task.api";
 import { useServices } from "@src/components/Providers/ServicesProvider";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
-import { TaskType } from "@src/components/Task/Task";
+import { SavedTask, TaskType } from "@src/components/Task/Task";
 import { useTasks } from "@src/api/task.api";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { useQueryClient } from "@tanstack/react-query";
@@ -98,13 +98,15 @@ function ReminderBadge({
 }: {
   onAlarms: (hasAlarm: boolean) => void;
 }) {
-  const [tasksWithAlert, setTasksWithAlert] = useState<TaskType[]>([]);
+  const [tasksWithAlertNotSeen, setTasksWithAlert] = useState<SavedTask[]>([]);
   const queryClient = useQueryClient();
   const { selectedTaskListId } = useTasksGlobalState();
   const { data: tasks } = useTasks({ listId: selectedTaskListId });
+  const { userSettings } = useUserSettingsContext();
+  const mutateTask = useUpdateTask(selectedTaskListId!);
 
   useEffect(() => {
-    const allTasks: TaskType[] = [];
+    const allTasks: SavedTask[] = [];
 
     const queryState = queryClient.getQueryState<TaskList[]>(["taskLists"]);
     console.log({ queryState });
@@ -112,41 +114,33 @@ function ReminderBadge({
     if (queryState?.status === "success") {
       queryState.data?.forEach((list) => {
         allTasks.push(
-          ...(queryClient.getQueryData<TaskType[]>(["tasks", list.id]) || [])
+          ...(queryClient.getQueryData<SavedTask[]>(["tasks", list.id]) || [])
         );
       });
     }
 
-    const alertOnTasks = allTasks.filter((task) => task.alertOn);
-    setTasksWithAlert(alertOnTasks);
-    onAlarms(!!tasksWithAlert.length);
+    const alertOnTasksNotSeen = allTasks.filter((task) => task.alertOn && !task.alertSeen);
+    setTasksWithAlert(alertOnTasksNotSeen);
+    onAlarms(!!tasksWithAlertNotSeen.length);
   }, [queryClient, tasks]);
 
-  // keeping in case we want to remove reminders on expand
-  // useEffect(() => {
-  //   if (userSettings.tasksExpanded) {
-  //     // update tasks within current selected list alertOn status;
-  //     tasksWithAlert.forEach((task) => {
-  //       if (task.listId === selectedTaskListId) {
-  //         taskService.updateTaskReminder(task.id!, task.listId!);
-  //         return true;
-  //       }
-  //     });
-  //     const invisibleAlertTasks = tasksWithAlert.filter(
-  //       (task) => task.listId !== selectedTaskListId
-  //     );
-  //     setTasksWithAlert(invisibleAlertTasks);
-  //     taskService.updateTaskReminder(selectedTaskListId);
-  //   }
-  //   // intentionally not including tasksWithAlert in the dependencies
-  //   // to avoid infinite loop, we only care about last state when tasksExpanded changes
-  // }, [userSettings.tasksExpanded]);
+  useEffect(() => {
+    if (userSettings.tasksExpanded) {
+      tasksWithAlertNotSeen.forEach((task) => {
+        if (!task.alertSeen) {
+          mutateTask.mutateAsync({...task, alertSeen: true});
+        }
+      })
+    }
+    // intentionally not including tasksWithAlertNotSeen in the dependencies
+    // to avoid infinite loop, we only care about last state when tasksExpanded changes
+  }, [userSettings.tasksExpanded]);
 
-  if (!tasksWithAlert.length) return null;
+  if (!tasksWithAlertNotSeen.length) return null;
 
   return (
     <Badge
-      badgeContent={tasksWithAlert.length}
+      badgeContent={tasksWithAlertNotSeen.length}
       color="warning"
       sx={{ mx: 1 }}
     ></Badge>

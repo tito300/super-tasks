@@ -34,7 +34,7 @@ export const TaskTitleField = forwardRef<
   const { selectedTaskListId } = useTasksGlobalState();
   const { data: tasks } = useTasks({ listId: selectedTaskListId });
 
-  const task = tasks.find((task) => task.id === taskId)!;
+  const task = tasks.find((task) => task.id === taskId);
 
   function handleKeyDown(e: KeyboardEvent) {
     // some websites take focus away on certain
@@ -45,7 +45,7 @@ export const TaskTitleField = forwardRef<
     }
   }
 
-  const showReminder = task?.alertOn || (taskId && hovered);
+  const showReminder = task?.alertOn || task?.alert || (taskId && hovered);
   return (
     <Controller
       control={control}
@@ -79,11 +79,11 @@ export const TaskTitleField = forwardRef<
             onFocus={onFocus}
             InputProps={{
               disableUnderline: true,
-              startAdornment:
-                isTaskPastDue(taskDue) && !strikeThrough ? (
-                  <Warning color="warning" fontSize="small" sx={{ mr: 0.5 }} />
-                ) : undefined,
-              endAdornment: showReminder && <AddReminder task={task} />,
+              // startAdornment:
+              //   isTaskPastDue(taskDue) && !strikeThrough ? (
+              //     <Warning color="warning" fontSize="small" sx={{ mr: 0.5 }} />
+              //   ) : undefined,
+              endAdornment: showReminder && <AddReminder task={task!} />,
               sx: { paddingBottom: 0 },
             }}
           />
@@ -98,7 +98,6 @@ function AddReminder({ task }: { task: SavedTask }) {
     null
   );
   const open = Boolean(anchorEl);
-  const { task: taskService } = useServices();
   const { selectedTaskListId } = useTasksGlobalState();
   const mutateTask = useUpdateTask(selectedTaskListId!);
 
@@ -109,13 +108,20 @@ function AddReminder({ task }: { task: SavedTask }) {
         ...task,
         alertOn: false,
         alert: 0,
+        alertSeen: false
       });
     } else {
       setAnchorEl(event.currentTarget);
     }
   };
-  const handleClose = (timeInMinutes: number) => {
-    taskService.setReminder(task.id, selectedTaskListId!, timeInMinutes);
+  const handleClose = (timeInMinutes?: number) => {
+    if (timeInMinutes) {
+      mutateTask.mutate({
+        ...task,
+        alertOn: false,
+        alert: timeInMinutes,
+      });
+    }
     setAnchorEl(null);
   };
 
@@ -140,7 +146,7 @@ function AddReminder({ task }: { task: SavedTask }) {
         id="basic-menu"
         anchorEl={anchorEl}
         open={open}
-        onClose={handleClose}
+        onClose={() => handleClose()}
         MenuListProps={{
           "aria-labelledby": "basic-button",
           sx: { maxHeight: "150px", overflow: "auto" },

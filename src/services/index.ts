@@ -52,20 +52,7 @@ export const initializeServices = (scriptType: ScriptType) => {
         }
       });
 
-      chrome.alarms.onAlarm.addListener((alarm) => {
-        if (alarm.name.startsWith("TaskReminder-")) {
-          const taskListId = alarm.name.split("-")[1];
-          const taskId = alarm.name.split("-")[2];
-          const alert = parseInt(alarm.name.split("-")[3]);
-
-          messageEngine.broadcastMessage(
-            "TaskReminder",
-            { taskId, taskListId, alert },
-            "Background"
-          );
-          // services.task.updateTaskReminder(taskId, null);
-        }
-      });
+     
     }
 
     initiated = true;

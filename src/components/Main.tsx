@@ -9,6 +9,8 @@ import { deepmerge } from "@mui/utils";
 import { UserSettingsProvider } from "./Providers/UserSettingsContext";
 import { TasksGlobalStateProvider } from "./Providers/TasksGlobalStateProvider";
 import { OauthRequired } from "./Oauth/OauthGate";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 const queryClient = new QueryClient();
 
@@ -35,9 +37,11 @@ export const Main = ({
       <QueryClientProvider client={queryClient}>
         <MessageEngineProvider scriptType={scriptType}>
           <ServicesProvider scriptType={scriptType}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
             <UserSettingsProvider>
               <TasksGlobalStateProvider>{children}</TasksGlobalStateProvider>
             </UserSettingsProvider>
+          </LocalizationProvider>
           </ServicesProvider>
         </MessageEngineProvider>
       </QueryClientProvider>

@@ -1,20 +1,24 @@
-import { ClickAwayListener, Stack } from "@mui/material";
+import { Chip, ClickAwayListener, Collapse, Stack } from "@mui/material";
 import { StyledTask } from "./Task.styles";
 import { TaskOptionsMenu } from "./components/TaskOptionsMenu";
 import { useRef, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { TaskTitleField } from "./components/TaskTitleField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { useAddTask, useTasks, useUpdateTask } from "../../api/task.api";
 import { TaskSkeleton } from "./Task.skeleton";
+import { DatePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
 
 export type TaskType = SavedTask | NewTask;
 
 export type TaskEnhanced = {
+  id?: string;
   alertOn?: boolean | null;
   alert?: number | null; // in minutes
+  alertSeen?: boolean | null;
   listId?: string;
   // add updated date
 };
@@ -71,7 +75,7 @@ export function Task({
   };
 
   const formFields = useForm<TaskForm>({
-    defaultValues: { ...data },
+    defaultValues: data,
   });
   // const formState = useFormState({ control: formFields.control });
 
@@ -86,7 +90,12 @@ export function Task({
         .then(() => onSaved?.());
     } else {
       // todo: figure out why formState.isDirty is not working
-      if (!formFields.getFieldState("title").isDirty) return;
+      if (
+        !formFields.getFieldState("title").isDirty &&
+        !formFields.getFieldState("due").isDirty
+      )
+        return;
+
       updateMutation.mutate(form);
     }
   };
@@ -146,14 +155,43 @@ export function Task({
                 onblur={() => formFields.handleSubmit(onSubmit)()}
                 onFocus={() => setFocused(true)}
               />
-              {/* <Collapse in={expanded}>
-                <DescriptionTextField
+              <Stack direction="row" alignItems="center" gap={0.5} mb={0.25}>
+                {!expanded && data.due && (
+                  <Chip
+                    onClick={() => setFocused(true)}
+                    label={dayjs(data.due).format("DD/MM/YYYY")}
+                    size="small"
+                  />
+                )}
+              </Stack>
+              <Collapse in={expanded}>
+                {!temporary && (
+                  <Controller
+                    control={formFields.control}
+                    name="due"
+                    render={({ field }) => (
+                      <DatePicker
+                        value={field.value ? dayjs(field.value) : null}
+                        onChange={(date) => {
+                          field.onChange(date ? date?.toISOString() : null);
+                          setTimeout(
+                            () => formFields.handleSubmit(onSubmit)(),
+                            30
+                          );
+                        }}
+                        sx={{ py: 1 }}
+                        slotProps={{ textField: { size: "small" } }}
+                      />
+                    )}
+                  />
+                )}
+                {/* <DescriptionTextField
                   onblur={() =>
                     formFields.formState.isDirty &&
                     formFields.handleSubmit(onSubmit)
                   }
-                />
-              </Collapse> */}
+                /> */}
+              </Collapse>
             </Stack>
           </Stack>
           {!temporary && <TaskOptionsMenu listId={listId} />}
