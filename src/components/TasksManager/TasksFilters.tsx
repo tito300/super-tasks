@@ -3,12 +3,17 @@ import { useUserSettingsContext } from "../Providers/UserSettingsContext";
 
 export function TasksFilters() {
   const { userSettings, updateUserSettings } = useUserSettingsContext();
+  const {
+    tasks: { tasksFilters },
+  } = userSettings;
 
-  function handleFilterClick(filter: keyof typeof userSettings.tasksFilters) {
+  function handleFilterClick(filter: keyof typeof tasksFilters) {
     updateUserSettings({
-      tasksFilters: {
-        ...userSettings.tasksFilters,
-        [filter]: !userSettings.tasksFilters[filter],
+      tasks: {
+        tasksFilters: {
+          ...tasksFilters,
+          [filter]: !tasksFilters[filter],
+        },
       },
     });
   }
@@ -16,17 +21,17 @@ export function TasksFilters() {
     <Stack direction="row" mb={0.5} px={0.5} gap={0.5}>
       <TaskFilterChip
         onClick={() => handleFilterClick("today")}
-        selected={userSettings.tasksFilters.today}
+        selected={tasksFilters.today}
         label="Today"
       />
       <TaskFilterChip
         onClick={() => handleFilterClick("pastDue")}
-        selected={userSettings.tasksFilters.pastDue}
+        selected={tasksFilters.pastDue}
         label="Past Due"
       />
       <TaskFilterChip
         onClick={() => handleFilterClick("upcoming")}
-        selected={userSettings.tasksFilters.upcoming}
+        selected={tasksFilters.upcoming}
         label="Upcoming"
       />
     </Stack>

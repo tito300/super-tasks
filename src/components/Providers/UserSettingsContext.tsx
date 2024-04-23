@@ -14,11 +14,12 @@ import {
 import { useUpdateUserSettings, useUserSettings } from "@src/api/user.api";
 import { useMessageEngine } from "./MessageEngineProvider";
 import { useQueryClient } from "@tanstack/react-query";
+import { DeepPartial } from "react-hook-form";
 
 export type UserSettingsContext = {
   userSettings: UserSettings;
   isNewTab: boolean;
-  updateUserSettings: (newSettings: Partial<UserSettings>) => void;
+  updateUserSettings: (newSettings: DeepPartial<UserSettings>) => void;
 };
 
 const userSettingsContext = createContext<UserSettingsContext>(null!);
@@ -26,7 +27,7 @@ const userSettingsContext = createContext<UserSettingsContext>(null!);
 export function UserSettingsProvider({
   children,
   userSettings: inUserSettings,
-}: PropsWithChildren & { userSettings?: Partial<UserSettings> }) {
+}: PropsWithChildren & { userSettings?: DeepPartial<UserSettings> }) {
   // const [userSettings, setUserSettings] = useState<UserSettings>(() =>
   //   deepmerge(userSettingsDefaults, inUserSettings ?? {})
   // );
@@ -44,8 +45,8 @@ export function UserSettingsProvider({
   }, []);
 
   const updateUserSettings = useCallback(
-    (newSettings: Partial<UserSettings>) => {
-      const settings = { ...userSettings, ...newSettings } as UserSettings;
+    (newSettings: DeepPartial<UserSettings>) => {
+      const settings = deepmerge(userSettings, newSettings) as UserSettings;
       mutateUserSettings.mutate(settings);
     },
     [userSettings, mutateUserSettings, messageEngine]

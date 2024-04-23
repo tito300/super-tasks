@@ -13,7 +13,7 @@ import { useState } from "react";
 import { ReminderBadge } from "./ReminderBadge";
 
 const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
-  backgroundColor: theme.palette.background.accent,
+  backgroundColor: theme.palette.background.gTasks,
   width: "100%",
   [`& .${accordionSummaryClasses.content}`]: {
     width: "100%",
@@ -47,7 +47,7 @@ export function DockStationAccordionSummary() {
           whiteSpace="nowrap"
           textOverflow="ellipsis"
           overflow="hidden"
-          sx={{ filter: userSettings.blurText ? "blur(7px)" : "none" }}
+          sx={{ filter: userSettings.tasks.blurText ? "blur(7px)" : "none" }}
         >
           {title}
         </Typography>
@@ -56,17 +56,17 @@ export function DockStationAccordionSummary() {
             onClick={(e) => e.stopPropagation()}
             sx={{ opacity: hovered ? 1 : 0 }}
           >
-            {userSettings.blurText ? (
+            {userSettings.tasks.blurText ? (
               <Visibility
                 color="action"
                 fontSize="small"
-                onClick={() => updateUserSettings({ blurText: false })}
+                onClick={() => updateUserSettings({ tasks: {blurText: false} })}
               />
             ) : (
               <VisibilityOff
                 color="action"
                 fontSize="small"
-                onClick={() => updateUserSettings({ blurText: true })}
+                onClick={() => updateUserSettings({ tasks: {blurText: true} })}
               />
             )}
           </IconButton>

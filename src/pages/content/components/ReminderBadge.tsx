@@ -34,7 +34,7 @@ export function ReminderBadge(props: BadgeProps) {
   }, [queryClient, tasks]);
 
   useEffect(() => {
-    if (userSettings.tasksExpanded) {
+    if (userSettings.accordionExpanded) {
       tasksWithAlertNotSeen.forEach((task) => {
         if (!task.alertSeen) {
           mutateTask.mutateAsync({ ...task, alertSeen: true });
@@ -43,7 +43,7 @@ export function ReminderBadge(props: BadgeProps) {
     }
     // intentionally not including tasksWithAlertNotSeen in the dependencies
     // to avoid infinite loop, we only care about last state when tasksExpanded changes
-  }, [userSettings.tasksExpanded, userSettings.taskButtonExpanded]);
+  }, [userSettings.accordionExpanded, userSettings.buttonExpanded]);
 
   return (
     <Badge

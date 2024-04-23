@@ -1,15 +1,26 @@
 export const userSettingsDefaults = {
+  currentTab: "tasks",
   darkMode: false,
-  tasksOpenOnNewTab: true,
-  taskButtonExpanded: true,
-  tasksExpanded: false,
-  blurText: false,
-  persistPosition: false,
-  tasksFilters: {
-    today: true,
-    pastDue: true,
-    upcoming: false,
+  buttonExpanded: false,
+  accordionExpanded: false,
+  calendar: {
+    blurText: false,
+    persistPosition: false,
+    calendarFilters: {
+      today: true,
+      pastDue: true,
+      upcoming: false,
+    },
   },
+  tasks: {
+    blurText: false,
+    persistPosition: false,
+    tasksFilters: {
+      today: true,
+      pastDue: true,
+      upcoming: false,
+    },
+  }
 };
 
 export type UserSettings = typeof userSettingsDefaults;

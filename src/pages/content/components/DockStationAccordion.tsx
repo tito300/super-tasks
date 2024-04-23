@@ -25,7 +25,7 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
   const messageEngine = getMessageEngine("Content");
 
   const handleExpansion = useCallback(() => {
-    const newValue = !userSettings.tasksExpanded;
+    const newValue = !userSettings.accordionExpanded;
     if (newValue) {
       queryClient.invalidateQueries({
         queryKey: ["tasks", selectedTaskListId],
@@ -36,14 +36,13 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
     }
 
     updateUserSettings({
-      tasksExpanded: newValue,
-      tasksOpenOnNewTab: isNewTab ? newValue : userSettings.tasksOpenOnNewTab,
+      accordionExpanded: newValue,
     });
 
     focusAddTaskInput();
   }, [selectedTaskListId, userSettings, queryClient]);
 
-  const expanded = userSettings.tasksExpanded;
+  const expanded = userSettings.accordionExpanded;
 
   return (
     <Accordion

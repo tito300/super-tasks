@@ -23,7 +23,7 @@ import {
   Settings,
 } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
-import { TasksSettings } from "../TasksSettings/tasksSettings";
+import { TasksSettings } from "../TasksSettings/TasksSettings";
 
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);

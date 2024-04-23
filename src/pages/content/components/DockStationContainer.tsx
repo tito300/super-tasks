@@ -3,7 +3,10 @@ import { DockStationControls } from "./DockStationControls";
 import {
   Badge,
   Box,
+  Grow,
   IconButton,
+  Slide,
+  Stack,
   badgeClasses,
   styled,
   useTheme,
@@ -14,6 +17,7 @@ import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 import { ReminderBadge } from "./ReminderBadge";
 import { focusAddTaskInput } from "./DockStationAccordion";
+import { CalendarIcon } from "@mui/x-date-pickers";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -35,18 +39,18 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     y: window.innerHeight - 32,
   };
 
-  const open = userSettings.taskButtonExpanded;
+  const open = userSettings.buttonExpanded;
 
   return (
     <DraggablePopper
       id={`${constants.EXTENSION_NAME}-expand-wrapper`}
       defaultPosition={defaultPositions}
-      sx={{ width: open ? 0 : 51, height: 51 }}
+      // sx={{ width: open ? 0 : 51, height: 51 }}
       popperProps={{ open, placement: "right-end", keepMounted: true }}
       popperChildren={
         <>
           <DockStationControls
-            onMinimize={() => updateUserSettings({ taskButtonExpanded: false })}
+            onMinimize={() => updateUserSettings({ buttonExpanded: false })}
             onRemove={() => setRemoved(true)}
           />
           <Box sx={{ display: open ? "block" : "none" }}>{children}</Box>
@@ -54,41 +58,46 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       }
     >
       {!open && (
-        <ExtensionIconButton
-          id={`${constants.EXTENSION_NAME}-expand-button`}
-          onClick={() => {
-            updateUserSettings({
-              taskButtonExpanded: true,
-              tasksExpanded: true,
-            });
-            focusAddTaskInput();
-          }}
-        >
-          <ReminderBadge>
-            <BadgeStyled
-              slotProps={{
-                badge: {
-                  id: `${constants.EXTENSION_NAME}-remove-button`,
-                },
-              }}
-              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-              color="default"
-              badgeContent={
-                <IconButton
-                  sx={{ padding: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRemoved(true);
-                  }}
-                >
-                  <Close sx={{ fontSize: 14, color: "white" }} />
-                </IconButton>
-              }
-            >
-              <MenuOpen fontSize="large" />
-            </BadgeStyled>
-          </ReminderBadge>
-        </ExtensionIconButton>
+        <ButtonsContainer>
+          <ExtensionCalendarButton id={`${constants.EXTENSION_NAME}-calendar-btn`}>
+            <CalendarIcon />
+          </ExtensionCalendarButton>
+          <ExtensionIconButton
+            id={`${constants.EXTENSION_NAME}-tasks-button`}
+            onClick={() => {
+              updateUserSettings({
+               buttonExpanded: true,
+                accordionExpanded: true
+              });
+              focusAddTaskInput();
+            }}
+          >
+            <ReminderBadge>
+              <BadgeStyled
+                slotProps={{
+                  badge: {
+                    id: `${constants.EXTENSION_NAME}-remove-button`,
+                  },
+                }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                color="default"
+                badgeContent={
+                  <IconButton
+                    sx={{ padding: 0 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRemoved(true);
+                    }}
+                  >
+                    <Close sx={{ fontSize: 14, color: "white" }} />
+                  </IconButton>
+                }
+              >
+                <MenuOpen fontSize="large" />
+              </BadgeStyled>
+            </ReminderBadge>
+          </ExtensionIconButton>
+        </ButtonsContainer>
       )}
     </DraggablePopper>
   );
@@ -109,17 +118,47 @@ const BadgeStyled = styled(Badge)(() => {
 const ExtensionIconButton = styled(IconButton)(({ theme }) => {
   return {
     boxShadow: theme.shadows[3],
-    backgroundColor: theme.palette.background.accent,
+    backgroundColor: theme.palette.background.gTasks,
     fontSize: 0,
     cursor: "grab",
     [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
       display: "none",
     },
     [":hover"]: {
-      backgroundColor: theme.palette.background.accent,
+      backgroundColor: theme.palette.background.gTasks,
       [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
         display: "block",
       },
     },
   };
 });
+
+const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
+  return {
+    boxShadow: theme.shadows[3],
+    padding: 14,
+    marginBottom: 6,
+    backgroundColor: theme.palette.background.gCalendar,
+    color: 'white',
+    transform: 'translateY(93%)',
+    fontSize: 0,
+    cursor: "grab",
+    [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
+      display: "none",
+    },
+    [":hover"]: {
+      backgroundColor: theme.palette.background.gCalendar,
+      [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
+        display: "block",
+      },
+    },
+  };
+});
+
+const ButtonsContainer = styled(Stack)(({ theme }) => {
+  return {
+    [`:hover& #${constants.EXTENSION_NAME}-calendar-btn`]: {
+      transform: 'translateY(0)',
+    },
+  };
+})
