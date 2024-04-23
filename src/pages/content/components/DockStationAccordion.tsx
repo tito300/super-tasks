@@ -32,40 +32,41 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
       messageEngine.sendMessage("StopFetchTasksTimer", null, "Background");
     }
 
-
     updateUserSettings({
       tasksExpanded: newValue,
       tasksOpenOnNewTab: isNewTab ? newValue : userSettings.tasksOpenOnNewTab,
     });
 
-    requestIdleCallback(() => {
-      const shadowHost = document.getElementById(
-        `${constants.EXTENSION_NAME}-root`
-      )?.shadowRoot;
-      const addTaskButton = shadowHost?.getElementById(
-        `${constants.EXTENSION_NAME}-add-task`
-      );
-      if (addTaskButton) {
-        addTaskButton.click();
-      }
-      requestAnimationFrame(() => {
-        const taskTitle = shadowHost?.getElementById(
-          `${constants.EXTENSION_NAME}-task-title-field`
-        );
-        if (taskTitle) {
-          taskTitle.focus();
-        }
-      });
-    });
+    focusAddTaskInput();
   }, [selectedTaskListId, userSettings, queryClient]);
 
-  const expanded = isNewTab
-    ? userSettings.tasksOpenOnNewTab
-    : userSettings.tasksExpanded;
+  const expanded = userSettings.tasksExpanded;
 
   return (
     <Accordion expanded={expanded} onChange={handleExpansion} {...props}>
       {children}
     </Accordion>
   );
+}
+
+export function focusAddTaskInput() {
+  requestIdleCallback(() => {
+    const shadowHost = document.getElementById(
+      `${constants.EXTENSION_NAME}-root`
+    )?.shadowRoot;
+    const addTaskButton = shadowHost?.getElementById(
+      `${constants.EXTENSION_NAME}-add-task`
+    );
+    if (addTaskButton) {
+      addTaskButton.click();
+    }
+    requestAnimationFrame(() => {
+      const taskTitle = shadowHost?.getElementById(
+        `${constants.EXTENSION_NAME}-task-title-field`
+      );
+      if (taskTitle) {
+        taskTitle.focus();
+      }
+    });
+  });
 }

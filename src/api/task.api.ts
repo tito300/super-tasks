@@ -61,7 +61,7 @@ export const useTasks = ({
         const sortedData = data.sort((a, b) =>
           a.position.localeCompare(b.position)
         );
-        console.log("sortedData: ", sortedData);
+
         return sortedData;
       } catch (err) {
         console.log("error fetching tasks");

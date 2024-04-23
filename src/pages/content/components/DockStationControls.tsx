@@ -25,11 +25,11 @@ export function DockStationControls({
 }) {
   return (
     <Container>
-      <IconButton onClick={onRemove} size="small" sx={{ fontSize: 15 }}>
-        <Close fontSize="inherit" />
-      </IconButton>
-      <IconButton onClick={onMinimize} size="small" sx={{ fontSize: 15 }}>
+      {/* <IconButton onClick={onMinimize} size="small" sx={{ fontSize: 15 }}>
         <Remove fontSize="inherit" />
+      </IconButton> */}
+      <IconButton onClick={onMinimize} size="small" sx={{ fontSize: 15 }}>
+        <Close fontSize="inherit" />
       </IconButton>
     </Container>
   );

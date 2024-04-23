@@ -1,17 +1,30 @@
 import { PropsWithChildren, useState } from "react";
 import { DockStationControls } from "./DockStationControls";
-import { Box, IconButton, useTheme } from "@mui/material";
-import { MenuOpen } from "@mui/icons-material";
+import {
+  Badge,
+  Box,
+  IconButton,
+  badgeClasses,
+  styled,
+  useTheme,
+} from "@mui/material";
+import { Close, MenuOpen } from "@mui/icons-material";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
+import { ReminderBadge } from "./ReminderBadge";
+import { focusAddTaskInput } from "./DockStationAccordion";
+
+// const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
+//   position: "absolute",
+//   top: 0,
+//   right: 0,
+// }));
 
 export function DockStationContainer({ children }: PropsWithChildren) {
-  const { userSettings, isNewTab, updateUserSettings } =
-    useUserSettingsContext();
+  const { userSettings, updateUserSettings } = useUserSettingsContext();
 
   const [removed, setRemoved] = useState(false);
-  const theme = useTheme();
 
   if (removed) {
     return null;
@@ -41,28 +54,72 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       }
     >
       {!open && (
-        <IconButton
+        <ExtensionIconButton
           id={`${constants.EXTENSION_NAME}-expand-button`}
-          sx={{
-            boxShadow: theme.shadows[3],
-            backgroundColor: theme.palette.background.accent,
-            fontSize: 0,
-            cursor: "grab",
-            [":hover"]: {
-              backgroundColor: theme.palette.background.accent,
-              opacity: open ? 0 : 0.9,
-            },
-          }}
-          onClick={() =>
+          onClick={() => {
             updateUserSettings({
               taskButtonExpanded: true,
               tasksExpanded: true,
-            })
-          }
+            });
+            focusAddTaskInput();
+          }}
         >
-          <MenuOpen fontSize="large" />
-        </IconButton>
+          <ReminderBadge>
+            <BadgeStyled
+              slotProps={{
+                badge: {
+                  id: `${constants.EXTENSION_NAME}-remove-button`,
+                },
+              }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              color="default"
+              badgeContent={
+                <IconButton
+                  sx={{ padding: 0 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRemoved(true);
+                  }}
+                >
+                  <Close sx={{ fontSize: 14, color: "white" }} />
+                </IconButton>
+              }
+            >
+              <MenuOpen fontSize="large" />
+            </BadgeStyled>
+          </ReminderBadge>
+        </ExtensionIconButton>
       )}
     </DraggablePopper>
   );
 }
+
+const BadgeStyled = styled(Badge)(() => {
+  return {
+    "& .MuiBadge-badge": {
+      right: -6,
+      padding: "0 0",
+      backgroundColor: "#797979",
+      border: "1px solid white",
+      color: "white",
+    },
+  };
+});
+
+const ExtensionIconButton = styled(IconButton)(({ theme }) => {
+  return {
+    boxShadow: theme.shadows[3],
+    backgroundColor: theme.palette.background.accent,
+    fontSize: 0,
+    cursor: "grab",
+    [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
+      display: "none",
+    },
+    [":hover"]: {
+      backgroundColor: theme.palette.background.accent,
+      [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
+        display: "block",
+      },
+    },
+  };
+});

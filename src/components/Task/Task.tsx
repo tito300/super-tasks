@@ -9,8 +9,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { useAddTask, useTasks, useUpdateTask } from "../../api/task.api";
 import { TaskSkeleton } from "./Task.skeleton";
-import { DatePicker } from "@mui/x-date-pickers";
+
 import dayjs from "dayjs";
+import { TaskDate } from "./components/TaskDate";
 
 export type TaskType = SavedTask | NewTask;
 
@@ -124,6 +125,9 @@ export function Task({
           id="supertasks-task"
           {...listeners}
           {...attributes}
+          sx={{
+            backgroundColor: data.alertOn ? "rgb(255, 234, 194)" : undefined,
+          }}
           onFocus={() => (activeRef.current = true)}
         >
           <Stack direction="row" alignItems="start" width="100%">
@@ -146,7 +150,7 @@ export function Task({
                 listId={listId}
               />
             }
-            <Stack flexGrow={1}>
+            <Stack flexGrow={1} pt={temporary ? 0.5 : 0}>
               <TaskTitleField
                 strikeThrough={data.status === "completed" && !temporary}
                 focused={focused}
@@ -165,26 +169,11 @@ export function Task({
                 )}
               </Stack>
               <Collapse in={expanded}>
-                {!temporary && (
-                  <Controller
-                    control={formFields.control}
-                    name="due"
-                    render={({ field }) => (
-                      <DatePicker
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(date) => {
-                          field.onChange(date ? date?.toISOString() : null);
-                          setTimeout(
-                            () => formFields.handleSubmit(onSubmit)(),
-                            30
-                          );
-                        }}
-                        sx={{ py: 1 }}
-                        slotProps={{ textField: { size: "small" } }}
-                      />
-                    )}
-                  />
-                )}
+                <TaskDate
+                  onSubmit={() =>
+                    setTimeout(() => formFields.handleSubmit(onSubmit)(), 30)
+                  }
+                />
                 {/* <DescriptionTextField
                   onblur={() =>
                     formFields.formState.isDirty &&

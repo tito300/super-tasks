@@ -82,7 +82,9 @@ export function TaskListManager() {
         )}
         <IconButton
           onClick={() => {
-            queryClient.invalidateQueries({ queryKey: ["tasks", selectedTaskListId] });
+            queryClient.invalidateQueries({
+              queryKey: ["tasks", selectedTaskListId],
+            });
             queryClient.invalidateQueries({ queryKey: ["taskLists"] });
           }}
         >

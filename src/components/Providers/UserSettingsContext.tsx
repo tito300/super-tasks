@@ -36,21 +36,17 @@ export function UserSettingsProvider({
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    return messageEngine.onMessage("UserSettingsUpdated", async (settings) => {
-      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === "local" && changes.userSettings) {
+        queryClient.invalidateQueries({ queryKey: ["userSettings"] });
+      }
     });
-  }, [queryClient, messageEngine]);
+  }, []);
 
   const updateUserSettings = useCallback(
     (newSettings: Partial<UserSettings>) => {
       const settings = { ...userSettings, ...newSettings } as UserSettings;
-      mutateUserSettings.mutateAsync(settings).then(() => {
-        messageEngine.broadcastMessage(
-          "UserSettingsUpdated",
-          null,
-          messageEngine.scriptType
-        );
-      });
+      mutateUserSettings.mutate(settings);
     },
     [userSettings, mutateUserSettings, messageEngine]
   );

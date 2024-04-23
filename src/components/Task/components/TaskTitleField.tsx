@@ -45,7 +45,6 @@ export const TaskTitleField = forwardRef<
     }
   }
 
-  const showReminder = task?.alertOn || task?.alert || (taskId && hovered);
   return (
     <Controller
       control={control}
@@ -83,7 +82,12 @@ export const TaskTitleField = forwardRef<
               //   isTaskPastDue(taskDue) && !strikeThrough ? (
               //     <Warning color="warning" fontSize="small" sx={{ mr: 0.5 }} />
               //   ) : undefined,
-              endAdornment: showReminder && <AddReminder task={task!} />,
+              endAdornment: taskId && (
+                <AddReminder
+                  visible={!!(hovered || task?.alertOn || task?.alert)}
+                  task={task!}
+                />
+              ),
               sx: { paddingBottom: 0 },
             }}
           />
@@ -93,7 +97,13 @@ export const TaskTitleField = forwardRef<
   );
 });
 
-function AddReminder({ task }: { task: SavedTask }) {
+function AddReminder({
+  task,
+  visible,
+}: {
+  task: SavedTask;
+  visible?: boolean;
+}) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLButtonElement>(
     null
   );
@@ -108,7 +118,7 @@ function AddReminder({ task }: { task: SavedTask }) {
         ...task,
         alertOn: false,
         alert: 0,
-        alertSeen: false
+        alertSeen: false,
       });
     } else {
       setAnchorEl(event.currentTarget);
@@ -132,6 +142,7 @@ function AddReminder({ task }: { task: SavedTask }) {
         onClick={handleClick}
         sx={{
           maxLines: 0.5,
+          visibility: visible ? "visible" : "hidden",
         }}
       >
         {task.alertOn ? (
@@ -152,15 +163,48 @@ function AddReminder({ task }: { task: SavedTask }) {
           sx: { maxHeight: "150px", overflow: "auto" },
         }}
       >
-        <MenuItem onClick={() => handleClose(0.5)}>30 seconds</MenuItem>
-        <MenuItem onClick={() => handleClose(5)}>5 minutes</MenuItem>
-        <MenuItem onClick={() => handleClose(15)}>15 minutes</MenuItem>
-        <MenuItem onClick={() => handleClose(30)}>30 minutes</MenuItem>
-        <MenuItem onClick={() => handleClose(60)}>1 hour</MenuItem>
-        <MenuItem onClick={() => handleClose(60 * 2)}>2 hours</MenuItem>
-        <MenuItem onClick={() => handleClose(60 * 4)}>4 hours</MenuItem>
-        <MenuItem onClick={() => handleClose(60 * 8)}>8 hours</MenuItem>
-        <MenuItem onClick={() => handleClose(60 * 24)}>1 day</MenuItem>
+        <MenuItem
+          selected={task.alert === 0.5}
+          onClick={() => handleClose(0.5)}
+        >
+          30 seconds
+        </MenuItem>
+        <MenuItem selected={task.alert === 5} onClick={() => handleClose(5)}>
+          5 minutes
+        </MenuItem>
+        <MenuItem selected={task.alert === 15} onClick={() => handleClose(15)}>
+          15 minutes
+        </MenuItem>
+        <MenuItem selected={task.alert === 30} onClick={() => handleClose(30)}>
+          30 minutes
+        </MenuItem>
+        <MenuItem selected={task.alert === 60} onClick={() => handleClose(60)}>
+          1 hour
+        </MenuItem>
+        <MenuItem
+          selected={task.alert === 60 * 2}
+          onClick={() => handleClose(60 * 2)}
+        >
+          2 hours
+        </MenuItem>
+        <MenuItem
+          selected={task.alert === 60 * 4}
+          onClick={() => handleClose(60 * 4)}
+        >
+          4 hours
+        </MenuItem>
+        <MenuItem
+          selected={task.alert === 60 * 8}
+          onClick={() => handleClose(60 * 8)}
+        >
+          8 hours
+        </MenuItem>
+        <MenuItem
+          selected={task.alert === 60 * 24}
+          onClick={() => handleClose(60 * 24)}
+        >
+          1 day
+        </MenuItem>
       </Menu>
     </>
   );
