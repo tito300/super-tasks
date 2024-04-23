@@ -8,16 +8,26 @@ import {
   Stack,
   IconButton,
   Typography,
+  LinearProgress,
+  Button,
 } from "@mui/material";
 import React, { useEffect, useMemo } from "react";
 import { useTaskLists } from "../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
 import { useTasksGlobalState } from "../Providers/TasksGlobalStateProvider";
-import { Edit, List, Refresh } from "@mui/icons-material";
+import {
+  Edit,
+  KeyboardArrowDown,
+  List,
+  Refresh,
+  Settings,
+} from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
+import { TasksSettings } from "../TasksSettings/tasksSettings";
 
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
   const { data } = useTaskLists();
   const queryClient = useQueryClient();
   const { selectedTaskListId, updateSelectedTaskListId } =
@@ -44,33 +54,24 @@ export function TaskListManager() {
     <>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         {!active && (
-          <Typography
-            pl={1}
-            flexGrow={1}
-            fontWeight={400}
-            display="flex"
-            alignItems="center"
-            sx={{ cursor: "pointer" }}
-            variant="h6"
+          <Button
+            size="small"
+            startIcon={<List fontSize="medium" />}
             onClick={() => setActive(true)}
+            endIcon={<KeyboardArrowDown fontSize="small" />}
           >
-            <List fontSize="medium" sx={{ mr: 1 }} />
-            {selectedListTitle}{" "}
-            <Edit sx={{ fontSize: 16, ml: 1 }} color="action" />
-          </Typography>
+            {selectedListTitle}
+          </Button>
         )}
         {active && (
           <FormControl variant="standard" sx={{ m: 1, pl: 1, minWidth: 120 }}>
-            <InputLabel id="tasks-list-title">TASKS</InputLabel>
             <Select
-              labelId="tasks-list-title"
               id="demo-simple-select-standard"
               disableUnderline
               defaultOpen={true}
               value={selectedTaskListId ?? ""}
               onChange={handleChange}
               onBlur={() => setActive(false)}
-              label="TASKS"
             >
               {data.map((list, i) => (
                 <MenuItem selected={i === 0} key={list.id} value={list.id}>
@@ -80,19 +81,35 @@ export function TaskListManager() {
             </Select>
           </FormControl>
         )}
-        <IconButton
-          onClick={() => {
-            queryClient.invalidateQueries({
-              queryKey: ["tasks", selectedTaskListId],
-            });
-            queryClient.invalidateQueries({ queryKey: ["taskLists"] });
-          }}
-        >
-          <Refresh />
-        </IconButton>
+        <Stack direction="row" alignItems={"center"}>
+          <IconButton
+            color={settingsOpen ? "primary" : "default"}
+            onClick={() => {
+              setSettingsOpen(!settingsOpen);
+            }}
+            size="small"
+          >
+            <Settings fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => {
+              queryClient.invalidateQueries({
+                queryKey: ["tasks", selectedTaskListId],
+              });
+              queryClient.invalidateQueries({ queryKey: ["taskLists"] });
+            }}
+          >
+            <Refresh fontSize="small" />
+          </IconButton>
+        </Stack>
       </Stack>
-      <Divider sx={{ mb: 1 }} />
-      <TaskManager listId={selectedTaskListId ?? ""} />
+      <Divider />
+      {settingsOpen ? (
+        <TasksSettings />
+      ) : (
+        <TaskManager listId={selectedTaskListId ?? ""} />
+      )}
     </>
   );
 }

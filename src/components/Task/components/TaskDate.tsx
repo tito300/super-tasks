@@ -2,7 +2,7 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { DatePicker } from "@mui/x-date-pickers";
 import { useState } from "react";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Chip, Stack, Typography } from "@mui/material";
 import { CalendarMonth } from "@mui/icons-material";
 import dayjs from "dayjs";
 
@@ -11,6 +11,7 @@ export function TaskDate({ onSubmit }: { onSubmit: () => void }) {
   const formFields = useFormContext<TaskForm>();
 
   const title = useWatch({ name: "title", control: formFields.control });
+  const due = formFields.getValues("due");
 
   return (
     <Controller
@@ -24,14 +25,23 @@ export function TaskDate({ onSubmit }: { onSubmit: () => void }) {
               field.onChange(date ? date?.toISOString() : null);
               onSubmit();
             }}
-            sx={{ py: 1 }}
-            slotProps={{ textField: { size: "small" } }}
+            open={focused}
+            onClose={() => setFocused(false)}
+            sx={{ py: 1, textTransform: "none" }}
+            slotProps={{ textField: { size: "small" }, dialog: {} }}
+          />
+        ) : due ? (
+          <Chip
+            onClick={() => setFocused(true)}
+            label={dayjs(due).format("DD/MM/YYYY")}
+            size="small"
           />
         ) : (
           <Button
             disabled={!title}
             startIcon={<CalendarMonth fontSize="small" />}
             onClick={() => setFocused(true)}
+            sx={{ p: (theme) => theme.spacing(0.25, 1.2) }}
           >
             <Typography variant="subtitle2">Date/time</Typography>
           </Button>

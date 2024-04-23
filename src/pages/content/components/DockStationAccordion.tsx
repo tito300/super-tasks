@@ -1,5 +1,8 @@
-import { collapseClasses, styled } from "@mui/material";
-import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
+import { Fade, collapseClasses, styled } from "@mui/material";
+import MuiAccordion, {
+  AccordionProps,
+  AccordionSlots,
+} from "@mui/material/Accordion";
 import { useTaskLists, useTasks } from "@src/api/task.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
@@ -43,7 +46,11 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
   const expanded = userSettings.tasksExpanded;
 
   return (
-    <Accordion expanded={expanded} onChange={handleExpansion} {...props}>
+    <Accordion
+      expanded={expanded}
+      onChange={handleExpansion}
+      {...props}
+    >
       {children}
     </Accordion>
   );

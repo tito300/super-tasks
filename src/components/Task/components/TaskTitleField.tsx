@@ -56,6 +56,8 @@ export const TaskTitleField = forwardRef<
             {...field}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
+            draggable={focused ? false : true}
+            onDragStart={(e) => focused ? e.preventDefault() : undefined}
             id={`${constants.EXTENSION_NAME}-task-title-field`}
             autoFocus={focused}
             multiline

@@ -1,4 +1,11 @@
-import { Alert, Collapse, Stack, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Collapse,
+  LinearProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { SavedTask, Task, createEmptyTask } from "../Task/Task";
 import { useMoveTask, useTasks } from "../../api/task.api";
@@ -22,6 +29,7 @@ import { ArrowDropDown, ArrowRight } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { TasksFilters } from "./TasksFilters";
+import { grey } from "@mui/material/colors";
 
 export function TaskManager({ listId }: { listId: string }) {
   const [tempTaskPending, setTempTaskPending] = useState(false);
@@ -66,6 +74,8 @@ export function TaskManager({ listId }: { listId: string }) {
 
   return (
     <Stack sx={{ width: 350 }} ref={rootRef}>
+      <LinearProgress sx={{ visibility: !isFetching ? 'hidden' : 'visible', color: grey[500] }} />
+      <Box sx={{ height: 8, width: '100%' }} />
       <TasksFilters />
       <DndContext
         sensors={sensors}
@@ -88,7 +98,10 @@ export function TaskManager({ listId }: { listId: string }) {
             data={createEmptyTask()}
           ></Task>
         )}
-        <SortableContext items={filteredTasks!} strategy={verticalListSortingStrategy}>
+        <SortableContext
+          items={filteredTasks!}
+          strategy={verticalListSortingStrategy}
+        >
           {isFetching && !data.length && (
             <>
               <TaskSkeleton />

@@ -68,6 +68,7 @@ export class MessageEngine {
             this.sendMessageToTab(tab.id!, action, payload, sourceScript);
           });
       });
+      this.sendMessage(action, payload, sourceScript)
     }
   }
 

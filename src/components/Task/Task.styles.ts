@@ -7,7 +7,6 @@ export const StyledTask = styled("div")(({ theme }) => ({
   cursor: "pointer",
   paddingTop: theme.spacing(0),
   paddingBottom: theme.spacing(0),
-  paddingRight: theme.spacing(1.5),
   paddingLeft: theme.spacing(0.25),
   backgroundColor: theme.palette.background.paper,
   " #supertasks-options": {

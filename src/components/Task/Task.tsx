@@ -1,8 +1,20 @@
-import { Chip, ClickAwayListener, Collapse, Stack } from "@mui/material";
+import {
+  Button,
+  Chip,
+  ClickAwayListener,
+  Collapse,
+  Stack,
+} from "@mui/material";
 import { StyledTask } from "./Task.styles";
 import { TaskOptionsMenu } from "./components/TaskOptionsMenu";
 import { useRef, useState } from "react";
-import { Controller, FormProvider, useForm } from "react-hook-form";
+import {
+  Controller,
+  FormProvider,
+  useForm,
+  useFormContext,
+  useFormState,
+} from "react-hook-form";
 import { TaskTitleField } from "./components/TaskTitleField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
 import { CSS } from "@dnd-kit/utilities";
@@ -12,6 +24,7 @@ import { TaskSkeleton } from "./Task.skeleton";
 
 import dayjs from "dayjs";
 import { TaskDate } from "./components/TaskDate";
+import { DescriptionTextField } from "./components/DescriptionTextField";
 
 export type TaskType = SavedTask | NewTask;
 
@@ -99,6 +112,8 @@ export function Task({
 
       updateMutation.mutate(form);
     }
+
+    setFocused(false);
   };
 
   const handleClickAway = () => {
@@ -125,6 +140,13 @@ export function Task({
           id="supertasks-task"
           {...listeners}
           {...attributes}
+          onKeyUp={(e) => {
+            if (e.key === "Escape") {
+              formFields.reset();
+              setFocused(false);
+              (e.target as HTMLDivElement)?.blur?.();
+            }
+          }}
           sx={{
             backgroundColor: data.alertOn ? "rgb(255, 234, 194)" : undefined,
           }}
@@ -161,25 +183,43 @@ export function Task({
               />
               <Stack direction="row" alignItems="center" gap={0.5} mb={0.25}>
                 {!expanded && data.due && (
-                  <Chip
-                    onClick={() => setFocused(true)}
-                    label={dayjs(data.due).format("DD/MM/YYYY")}
-                    size="small"
-                  />
+                  <TaskDate onSubmit={() =>
+                    setTimeout(
+                      () => formFields.handleSubmit(onSubmit)(),
+                      30
+                    )} />
                 )}
               </Stack>
               <Collapse in={expanded}>
-                <TaskDate
-                  onSubmit={() =>
-                    setTimeout(() => formFields.handleSubmit(onSubmit)(), 30)
-                  }
-                />
-                {/* <DescriptionTextField
-                  onblur={() =>
-                    formFields.formState.isDirty &&
-                    formFields.handleSubmit(onSubmit)
-                  }
-                /> */}
+                <Stack alignItems="flex-start">
+                  <DescriptionTextField
+                    onblur={() =>
+                      formFields.formState.isDirty &&
+                      formFields.handleSubmit(onSubmit)
+                    }
+                  />
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    width="100%"
+                  >
+                    <TaskDate
+                      onSubmit={() =>
+                        setTimeout(
+                          () => formFields.handleSubmit(onSubmit)(),
+                          30
+                        )
+                      }
+                    />
+                    <SaveButton
+                      pendingSave={
+                        updateMutation.isPending || addMutation.isPending
+                      }
+                      onSubmit={onSubmit}
+                    />
+                  </Stack>
+                </Stack>
               </Collapse>
             </Stack>
           </Stack>
@@ -207,3 +247,23 @@ export const shouldSaveTempTask = (task?: Partial<SavedTask>) => {
 
   return false;
 };
+
+function SaveButton({
+  pendingSave,
+  onSubmit,
+}: {
+  pendingSave: boolean;
+  onSubmit: (form: TaskForm) => void;
+}) {
+  const formFields = useFormContext<TaskForm>();
+  const formState = useFormState({ control: formFields.control });
+
+  return (
+    <Button
+      disabled={pendingSave || !formState.isDirty}
+      onClick={() => onSubmit(formFields.getValues())}
+    >
+      Save
+    </Button>
+  );
+}

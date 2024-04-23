@@ -2,10 +2,11 @@ import { Hidden, TextField } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { Notes } from "@mui/icons-material";
-import { KeyboardEvent, useRef } from "react";
+import { KeyboardEvent, useRef, useState } from "react";
 
 export function DescriptionTextField({ onblur }: { onblur: () => void }) {
-  const { control } = useFormContext<TaskForm>();
+  const [focused, setFocused] = useState(false);
+  const { control, getFieldState } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
 
   function handleKeyDown(e: KeyboardEvent) {
@@ -23,6 +24,13 @@ export function DescriptionTextField({ onblur }: { onblur: () => void }) {
         <TextField
           inputRef={textFieldRef}
           {...field}
+          onFocus={() => setFocused(true)}
+          onBlur={() => {
+            setFocused(false);
+            onblur();
+          }}
+          draggable={focused ? false : true}
+          onDragStart={(e) => (focused ? e.preventDefault() : undefined)}
           multiline
           onKeyDown={handleKeyDown}
           variant="standard"
@@ -30,10 +38,11 @@ export function DescriptionTextField({ onblur }: { onblur: () => void }) {
           sx={{ ml: 1 }}
           InputProps={{
             sx: {
-              textOverflow: "ellipsis",
-              overflow: "hidden",
-              height: (theme) => theme.spacing(2.75),
+              overflow: "auto",
+              width: "100%",
+              maxHeight: (theme) => theme.spacing(10),
               color: (theme) => theme.palette.text.secondary,
+              pb: 0,
             },
             disableUnderline: true,
             placeholder: "Details",
