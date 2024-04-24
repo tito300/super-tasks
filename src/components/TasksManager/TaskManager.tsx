@@ -102,7 +102,7 @@ export function TaskManager({ listId }: { listId: string }) {
           items={filteredTasks!}
           strategy={verticalListSortingStrategy}
         >
-          {isFetching && !data.length && (
+          {isFetching && !data?.length && (
             <>
               <TaskSkeleton />
               <TaskSkeleton />

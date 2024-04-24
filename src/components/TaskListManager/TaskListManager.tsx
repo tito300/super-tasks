@@ -40,7 +40,7 @@ export function TaskListManager() {
   }, [data]);
 
   const selectedList = useMemo(
-    () => data.find((list) => list.id === selectedTaskListId),
+    () => data?.find((list) => list.id === selectedTaskListId),
     [data, selectedTaskListId]
   );
 
@@ -73,7 +73,7 @@ export function TaskListManager() {
               onChange={handleChange}
               onBlur={() => setActive(false)}
             >
-              {data.map((list, i) => (
+              {data?.map((list, i) => (
                 <MenuItem selected={i === 0} key={list.id} value={list.id}>
                   {list.title}
                 </MenuItem>
@@ -97,7 +97,7 @@ export function TaskListManager() {
               queryClient.invalidateQueries({
                 queryKey: ["tasks", selectedTaskListId],
               });
-              queryClient.invalidateQueries({ queryKey: ["taskLists"] });
+              queryClient.invalidateQueries({ queryKey: ["tasks"] });
             }}
           >
             <Refresh fontSize="small" />

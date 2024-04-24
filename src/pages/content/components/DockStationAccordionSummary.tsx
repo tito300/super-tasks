@@ -29,12 +29,12 @@ export function DockStationAccordionSummary() {
   const { userSettings, updateUserSettings } = useUserSettingsContext();
   const { filteredTasks, isFetching } = useFilteredTasks();
 
-  const task = filteredTasks.find(
+  const task = filteredTasks?.find(
     (task) => task.status !== "completed" && task.title && task.id
   );
 
   const title =
-    isFetching && !filteredTasks.length
+    isFetching && !filteredTasks?.length
       ? "loading..."
       : task?.title || "No tasks found";
 

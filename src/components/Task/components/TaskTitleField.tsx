@@ -34,7 +34,7 @@ export const TaskTitleField = forwardRef<
   const { selectedTaskListId } = useTasksGlobalState();
   const { data: tasks } = useTasks({ listId: selectedTaskListId });
 
-  const task = tasks.find((task) => task.id === taskId);
+  const task = tasks?.find((task) => task.id === taskId);
 
   function handleKeyDown(e: KeyboardEvent) {
     // some websites take focus away on certain

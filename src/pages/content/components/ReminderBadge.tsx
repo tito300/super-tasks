@@ -17,7 +17,7 @@ export function ReminderBadge(props: BadgeProps) {
   useEffect(() => {
     const allTasks: SavedTask[] = [];
 
-    const queryState = queryClient.getQueryState<TaskList[]>(["taskLists"]);
+    const queryState = queryClient.getQueryState<TaskList[]>(["tasks"]);
 
     if (queryState?.status === "success") {
       queryState.data?.forEach((list) => {

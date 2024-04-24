@@ -99,7 +99,7 @@ export function Task({
       addMutation
         .mutateAsync({
           task: form,
-          previousTaskId: tasks.length ? tasks[tasks.length - 1].id : undefined,
+          previousTaskId: tasks?.length ? tasks[tasks?.length - 1].id : undefined,
         })
         .then(() => onSaved?.());
     } else {
@@ -149,20 +149,8 @@ export function Task({
           }}
           sx={{
             backgroundColor: data.alertOn ? "rgb(255, 234, 194)" : undefined,
-            ":hover": {
-              backgroundColor: data.alertOn ? "rgb(255, 240, 213)" : undefined,
-            },
           }}
-          onFocus={() => {
-            activeRef.current = true;
-            if (data.alertOn) {
-              updateMutation.mutate({
-                ...data,
-                alertOn: false,
-                alertSeen: true,
-              });
-            }
-          }}
+          onFocus={() => (activeRef.current = true)}
         >
           <Stack direction="row" alignItems="start" width="100%">
             {/* <IconButton
@@ -180,7 +168,7 @@ export function Task({
             </IconButton> */}
             {
               <CompletedCheckbox
-                sx={{ opacity: temporary ? "0" : "1", p: 0.5 }}
+                sx={{ opacity: temporary ? "0" : "1" }}
                 listId={listId}
               />
             }
@@ -195,11 +183,11 @@ export function Task({
               />
               <Stack direction="row" alignItems="center" gap={0.5} mb={0.25}>
                 {!expanded && data.due && (
-                  <TaskDate
-                    onSubmit={() =>
-                      setTimeout(() => formFields.handleSubmit(onSubmit)(), 30)
-                    }
-                  />
+                  <TaskDate onSubmit={() =>
+                    setTimeout(
+                      () => formFields.handleSubmit(onSubmit)(),
+                      30
+                    )} />
                 )}
               </Stack>
               <Collapse in={expanded}>

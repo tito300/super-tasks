@@ -21,7 +21,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 const handleFetchTasksAlarm = async () => {
   const userSettings = await services.user.getUserSettings();
 
-  if (userSettings?.taskButtonExpanded && userSettings?.tasksExpanded) {
+  if (userSettings?.buttonExpanded && userSettings?.accordionExpanded) {
     const { selectedTaskListId } = await services.task.getTasksState();
     if (selectedTaskListId) {
       try {
@@ -43,7 +43,7 @@ const handleAlarms = async (alarm: Alarms.Alarm) => {
 };
 
 messageEngine.onMessage("StartFetchTasksTimer", async () => {
-  chrome.alarms.create("fetchTasksTimer", { periodInMinutes: 0.5 });
+  chrome.alarms.create("fetchTasksTimer", { periodInMinutes: 2 });
 });
 
 messageEngine.onMessage("StopFetchTasksTimer", async () => {

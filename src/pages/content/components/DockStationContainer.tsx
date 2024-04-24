@@ -27,6 +27,7 @@ import { CalendarIcon } from "@mui/x-date-pickers";
 
 export function DockStationContainer({ children }: PropsWithChildren) {
   const { userSettings, updateUserSettings } = useUserSettingsContext();
+  const [localExpanded, setLocalExpanded] = useState(false);
 
   const [removed, setRemoved] = useState(false);
 
@@ -39,7 +40,9 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     y: window.innerHeight - 32,
   };
 
-  const open = userSettings.buttonExpanded;
+  const open = userSettings.syncExpanded
+    ? userSettings.buttonExpanded
+    : localExpanded;
 
   return (
     <DraggablePopper
@@ -50,7 +53,13 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       popperChildren={
         <>
           <DockStationControls
-            onMinimize={() => updateUserSettings({ buttonExpanded: false })}
+            onMinimize={() => {
+              if (userSettings.syncExpanded) {
+                updateUserSettings({ buttonExpanded: false });
+              } else {
+                setLocalExpanded(false);
+              }
+            }}
             onRemove={() => setRemoved(true)}
           />
           <Box sx={{ display: open ? "block" : "none" }}>{children}</Box>
@@ -59,16 +68,22 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     >
       {!open && (
         <ButtonsContainer>
-          <ExtensionCalendarButton id={`${constants.EXTENSION_NAME}-calendar-btn`}>
+          <ExtensionCalendarButton
+            id={`${constants.EXTENSION_NAME}-calendar-btn`}
+          >
             <CalendarIcon />
           </ExtensionCalendarButton>
           <ExtensionIconButton
             id={`${constants.EXTENSION_NAME}-tasks-button`}
             onClick={() => {
-              updateUserSettings({
-               buttonExpanded: true,
-                accordionExpanded: true
-              });
+              if (userSettings.syncExpanded) {
+                updateUserSettings({
+                  buttonExpanded: true,
+                  accordionExpanded: true,
+                });
+              } else {
+                setLocalExpanded(true);
+              }
               focusAddTaskInput();
             }}
           >
@@ -139,8 +154,8 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
     padding: 14,
     marginBottom: 6,
     backgroundColor: theme.palette.background.gCalendar,
-    color: 'white',
-    transform: 'translateY(93%)',
+    color: "white",
+    transform: "translateY(93%)",
     fontSize: 0,
     cursor: "grab",
     [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
@@ -158,7 +173,7 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
 const ButtonsContainer = styled(Stack)(({ theme }) => {
   return {
     [`:hover& #${constants.EXTENSION_NAME}-calendar-btn`]: {
-      transform: 'translateY(0)',
+      transform: "translateY(0)",
     },
   };
-})
+});

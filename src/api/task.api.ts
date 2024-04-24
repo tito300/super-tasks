@@ -52,8 +52,9 @@ export const useTasks = ({
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", listId],
-    initialData: [],
+    placeholderData: [] as SavedTask[],
     queryFn: async () => {
+      console.log('useTasks queryFn called: ', listId)
       if (!listId) return [];
 
       try {
@@ -69,19 +70,21 @@ export const useTasks = ({
         return [];
       }
     },
-    enabled,
+    enabled: !!listId,
+    staleTime: 1000 * 30, // 2 seconds
   });
 };
 
 export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
   const { task } = useServices();
   return useQuery<TaskList[]>({
-    queryKey: ["taskLists"],
-    initialData: [],
+    queryKey: ["tasks"],
+    placeholderData: [] as TaskList[],
     queryFn: async () => {
       return task.getTaskLists();
     },
     enabled,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
@@ -262,9 +265,6 @@ export const useUpdateTask = (listId: string) => {
     onError: (err, newTodo, context) => {
       console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
-    },
-    onSettled: () => {
-      // do nothing
     },
   });
 };

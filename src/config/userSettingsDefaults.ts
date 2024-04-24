@@ -3,6 +3,7 @@ export const userSettingsDefaults = {
   darkMode: false,
   buttonExpanded: false,
   accordionExpanded: false,
+  syncExpanded: false,
   calendar: {
     blurText: false,
     persistPosition: false,

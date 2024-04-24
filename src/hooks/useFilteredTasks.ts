@@ -11,7 +11,7 @@ export function useFilteredTasks() {
   const { data: tasks, ...rest } = useTasks({ listId: selectedTaskListId });
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    return tasks?.filter((task) => {
       if (task.status === "completed") return false;
       if (!task.title) return false;
 
