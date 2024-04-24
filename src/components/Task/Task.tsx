@@ -168,7 +168,7 @@ export function Task({
             </IconButton> */}
             {
               <CompletedCheckbox
-                sx={{ opacity: temporary ? "0" : "1" }}
+                sx={{ opacity: temporary ? "0" : "1", p: 0.5 }}
                 listId={listId}
               />
             }
@@ -183,11 +183,11 @@ export function Task({
               />
               <Stack direction="row" alignItems="center" gap={0.5} mb={0.25}>
                 {!expanded && data.due && (
-                  <TaskDate onSubmit={() =>
-                    setTimeout(
-                      () => formFields.handleSubmit(onSubmit)(),
-                      30
-                    )} />
+                  <TaskDate
+                    onSubmit={() =>
+                      setTimeout(() => formFields.handleSubmit(onSubmit)(), 30)
+                    }
+                  />
                 )}
               </Stack>
               <Collapse in={expanded}>

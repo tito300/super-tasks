@@ -36,6 +36,7 @@ export function TaskOptionsMenu({ listId }: { listId: string }) {
         aria-expanded={open ? "true" : undefined}
         aria-haspopup="true"
         onClick={handleClick}
+        sx={{ p: 0.5 }}
       >
         <MoreVertIcon />
       </IconButton>

@@ -57,7 +57,7 @@ export const TaskTitleField = forwardRef<
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             draggable={focused ? false : true}
-            onDragStart={(e) => focused ? e.preventDefault() : undefined}
+            onDragStart={(e) => (focused ? e.preventDefault() : undefined)}
             id={`${constants.EXTENSION_NAME}-task-title-field`}
             autoFocus={focused}
             multiline
@@ -68,7 +68,9 @@ export const TaskTitleField = forwardRef<
             sx={{
               pt: 0.25,
               ml: 1,
-              filter: userSettings.tasks.blurText && !focused ? "blur(7px)" : "none",
+
+              filter:
+                userSettings.tasks.blurText && !focused ? "blur(7px)" : "none",
               textDecoration: strikeThrough ? "line-through" : "auto",
             }}
             inputProps={{
@@ -90,7 +92,7 @@ export const TaskTitleField = forwardRef<
                   task={task!}
                 />
               ),
-              sx: { paddingBottom: 0 },
+              sx: { paddingBottom: 0, alignItems: "flex-start" },
             }}
           />
         );
@@ -144,6 +146,7 @@ function AddReminder({
         onClick={handleClick}
         sx={{
           maxLines: 0.5,
+          padding: 0.5,
           visibility: visible ? "visible" : "hidden",
         }}
       >

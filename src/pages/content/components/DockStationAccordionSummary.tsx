@@ -17,6 +17,10 @@ const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
   width: "100%",
   [`& .${accordionSummaryClasses.content}`]: {
     width: "100%",
+    margin: 0,
+    [`&.${accordionSummaryClasses.expanded}`]: {
+      margin: 0,
+    },
   },
 }));
 
@@ -60,13 +64,17 @@ export function DockStationAccordionSummary() {
               <Visibility
                 color="action"
                 fontSize="small"
-                onClick={() => updateUserSettings({ tasks: {blurText: false} })}
+                onClick={() =>
+                  updateUserSettings({ tasks: { blurText: false } })
+                }
               />
             ) : (
               <VisibilityOff
                 color="action"
                 fontSize="small"
-                onClick={() => updateUserSettings({ tasks: {blurText: true} })}
+                onClick={() =>
+                  updateUserSettings({ tasks: { blurText: true } })
+                }
               />
             )}
           </IconButton>
