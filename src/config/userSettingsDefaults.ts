@@ -1,5 +1,5 @@
 export const userSettingsDefaults = {
-  currentTab: "tasks",
+  currentTab: "tasks" as "tasks" | "calendar",
   darkMode: false,
   buttonExpanded: false,
   accordionExpanded: false,

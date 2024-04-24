@@ -12,7 +12,7 @@ import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { useState } from "react";
 import { ReminderBadge } from "./ReminderBadge";
 
-const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
+export const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
   backgroundColor: theme.palette.background.gTasks,
   width: "100%",
   [`& .${accordionSummaryClasses.content}`]: {

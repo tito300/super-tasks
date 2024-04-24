@@ -44,6 +44,21 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     ? userSettings.buttonExpanded
     : localExpanded;
 
+    const handleButtonClick = (app: "calendar" | "tasks") => {
+      if (userSettings.syncExpanded) {
+        updateUserSettings({
+          currentTab: app,
+          buttonExpanded: true,
+          accordionExpanded: true,
+        });
+      } else {
+        updateUserSettings({ currentTab: app });
+        setLocalExpanded(true);
+      }
+      focusAddTaskInput();
+    }
+
+
   return (
     <DraggablePopper
       id={`${constants.EXTENSION_NAME}-expand-wrapper`}
@@ -69,23 +84,14 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       {!open && (
         <ButtonsContainer>
           <ExtensionCalendarButton
+            onClick={() => handleButtonClick('calendar')}
             id={`${constants.EXTENSION_NAME}-calendar-btn`}
           >
             <CalendarIcon />
           </ExtensionCalendarButton>
           <ExtensionIconButton
             id={`${constants.EXTENSION_NAME}-tasks-button`}
-            onClick={() => {
-              if (userSettings.syncExpanded) {
-                updateUserSettings({
-                  buttonExpanded: true,
-                  accordionExpanded: true,
-                });
-              } else {
-                setLocalExpanded(true);
-              }
-              focusAddTaskInput();
-            }}
+            onClick={() => handleButtonClick('tasks')}
           >
             <ReminderBadge>
               <BadgeStyled
@@ -132,6 +138,8 @@ const BadgeStyled = styled(Badge)(() => {
 
 const ExtensionIconButton = styled(IconButton)(({ theme }) => {
   return {
+    position: "absolute",
+    bottom: 0,
     boxShadow: theme.shadows[3],
     backgroundColor: theme.palette.background.gTasks,
     fontSize: 0,
@@ -150,12 +158,14 @@ const ExtensionIconButton = styled(IconButton)(({ theme }) => {
 
 const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
   return {
+    position: 'absolute',
+    bottom: 0,
     boxShadow: theme.shadows[3],
     padding: 14,
     marginBottom: 6,
     backgroundColor: theme.palette.background.gCalendar,
     color: "white",
-    transform: "translateY(93%)",
+    transform: "translateY(7%)",
     fontSize: 0,
     cursor: "grab",
     [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
@@ -171,9 +181,15 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
 });
 
 const ButtonsContainer = styled(Stack)(({ theme }) => {
+
   return {
+    height: 51,
+    width: 51,
+    ":hover": {
+      height: 200,
+    },
     [`:hover& #${constants.EXTENSION_NAME}-calendar-btn`]: {
-      transform: "translateY(0)",
+      transform: "translateY(-108%)"
     },
   };
 });
