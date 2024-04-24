@@ -149,8 +149,20 @@ export function Task({
           }}
           sx={{
             backgroundColor: data.alertOn ? "rgb(255, 234, 194)" : undefined,
+            ":hover": {
+              backgroundColor: data.alertOn ? "rgb(255, 240, 213)" : undefined,
+            },
           }}
-          onFocus={() => (activeRef.current = true)}
+          onFocus={() => {
+            activeRef.current = true;
+            if (data.alertOn) {
+              updateMutation.mutate({
+                ...data,
+                alertOn: false,
+                alertSeen: true,
+              });
+            }
+          }}
         >
           <Stack direction="row" alignItems="start" width="100%">
             {/* <IconButton

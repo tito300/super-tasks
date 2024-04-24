@@ -39,11 +39,14 @@ export function TaskDate({ onSubmit }: { onSubmit: () => void }) {
         ) : (
           <Button
             disabled={!title}
-            startIcon={<CalendarMonth fontSize="small" />}
+            size="small"
+            startIcon={<CalendarMonth sx={{ fontSize: 14 }} />}
             onClick={() => setFocused(true)}
             sx={{ p: (theme) => theme.spacing(0.25, 1.2) }}
           >
-            <Typography variant="subtitle2">Date/time</Typography>
+            <Typography fontSize={14} textTransform="none" variant="subtitle2">
+              Date/time
+            </Typography>
           </Button>
         )
       }

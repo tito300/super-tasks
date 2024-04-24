@@ -219,15 +219,22 @@ export const useUpdateTask = (listId: string) => {
   const { task: taskService } = useServices();
 
   return useMutation({
-    mutationFn: async (task: SavedTask) => {
+    mutationFn: async (task: Partial<SavedTask> & { id: string }) => {
       if (!listId) {
         console.error("listId is required to update task");
         return task;
       }
+      const savedTask = queryClient
+        .getQueryData<SavedTask[]>(["tasks", listId])
+        ?.find((cTask) => cTask.id === task.id);
+
       if (task.alert && !task.alertOn) {
         taskService.setReminder(task.id, listId, task.alert);
       }
-      return taskService.updateTask(listId, task);
+      return taskService.updateTask(listId, {
+        ...savedTask,
+        ...(task as SavedTask),
+      });
     },
     onMutate: async (task) => {
       // Cancel any outgoing refetches
@@ -240,7 +247,7 @@ export const useUpdateTask = (listId: string) => {
       queryClient.setQueryData(["tasks", listId], (old: SavedTask[]) => {
         return old.map((currentTask) => {
           if (task.id === currentTask.id) {
-            return task;
+            return { ...currentTask, ...task };
           }
 
           return currentTask;
@@ -255,6 +262,9 @@ export const useUpdateTask = (listId: string) => {
     onError: (err, newTodo, context) => {
       console.error(err);
       queryClient.setQueryData(["tasks", listId], context?.previousTasks || []);
+    },
+    onSettled: () => {
+      // do nothing
     },
   });
 };

@@ -43,11 +43,13 @@ export function DescriptionTextField({ onblur }: { onblur: () => void }) {
               maxHeight: (theme) => theme.spacing(10),
               color: (theme) => theme.palette.text.secondary,
               pb: 0,
+              fontSize: 16,
+              lineHeight: 1,
             },
             disableUnderline: true,
             placeholder: "Details",
             startAdornment: !field.value && (
-              <Notes color="disabled" fontSize="small" sx={{ mr: 1 }} />
+              <Notes color="disabled" sx={{ mr: 1, fontSize: 16 }} />
             ),
           }}
         />

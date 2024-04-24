@@ -1,4 +1,4 @@
-import { TaskType } from "@src/components/Task/Task";
+import { SavedTask, TaskType } from "@src/components/Task/Task";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { TaskReminderMessage } from "@src/messageEngine/types/taskMessages";
 import { useEffect, useState } from "react";
@@ -28,8 +28,8 @@ export function useTaskReminders() {
       const tasks = queryClient.getQueryData<TaskType[]>(["tasks", taskListId]);
       if (!tasks) return; // todo: make robust
 
-      queryClient.setQueryData<TaskType[]>(["tasks", taskListId], (tasks) =>
-        tasks?.map((task: TaskType) => {
+      queryClient.setQueryData<SavedTask[]>(["tasks", taskListId], (tasks) =>
+        tasks?.map((task: SavedTask) => {
           if (task.id === message.payload.taskId) {
             services.task
               .updateLocalTaskState({

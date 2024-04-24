@@ -22,7 +22,7 @@ export function CompletedCheckbox({
             const checked = e.target.checked;
             const now = new Date().toISOString();
             updateMutation.mutate({
-              ...getValues(),
+              id: getValues("id"),
               completed: checked ? now : undefined,
               status: checked ? "completed" : "needsAction",
             });
