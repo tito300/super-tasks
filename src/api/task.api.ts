@@ -6,11 +6,49 @@ import { useCallback, useEffect, useState } from "react";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettings } from "./user.api";
+import {
+  TasksSettings,
+  tasksSettingsDefaults,
+} from "@src/config/userSettingsDefaults";
+import React from "react";
+import { deepmerge } from "@mui/utils";
 
 export type TaskList = {
   id: string;
   title: string;
 };
+
+export function useTasksSettings() {
+  const [tasksSettings, setTasksSettings] = React.useState<TasksSettings>(
+    tasksSettingsDefaults
+  );
+  const { task: taskService } = useServices();
+
+  useEffect(() => {
+    taskService.getTasksSettings().then(setTasksSettings);
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === "local" && changes.tasksSettings) {
+        setTasksSettings(changes.tasksSettings.newValue);
+      }
+    });
+  }, []);
+
+  const updateTasksSettings = useCallback(
+    (newSettings: Partial<TasksSettings>) => {
+      setTasksSettings((prevSettings) => {
+        const settings = deepmerge(prevSettings, newSettings);
+        taskService.updateTasksSettings(settings);
+        return settings;
+      });
+    },
+    [taskService]
+  );
+
+  return {
+    tasksSettings,
+    updateTasksSettings,
+  };
+}
 
 export function useTasksState() {
   const [tasksState, setTasksState] = useState<TasksGlobalState>({});
@@ -54,7 +92,7 @@ export const useTasks = ({
     queryKey: ["tasks", listId],
     placeholderData: [] as SavedTask[],
     queryFn: async () => {
-      console.log('useTasks queryFn called: ', listId)
+      console.log("useTasks queryFn called: ", listId);
       if (!listId) return [];
 
       try {

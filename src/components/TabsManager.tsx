@@ -2,9 +2,9 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Box, Tab, styled, tabsClasses } from "@mui/material";
 import { Tab as TabType } from "@src/config/userSettingsDefaults";
 import React from "react";
-import { useUserSettingsContext } from "./Providers/UserSettingsContext";
 import { CalendarMonth, Checklist } from "@mui/icons-material";
 import { useScriptType } from "./Providers/ScriptTypeProvider";
+import { useUserSettings } from "@src/api/user.api";
 
 export function TabsManager({
   tabs,
@@ -13,7 +13,7 @@ export function TabsManager({
   hideTabs?: boolean;
   tabs: Record<TabType, React.ReactNode>;
 }) {
-  const { userSettings, updateUserSettings } = useUserSettingsContext();
+  const { userSettings, updateUserSettings } = useUserSettings();
   const scriptType = useScriptType();
 
   const handleChange = (event: React.SyntheticEvent, newValue: TabType) => {

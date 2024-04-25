@@ -1,13 +1,15 @@
 import { requiredScopes } from "@src/config/googleScopes";
 import {
+  TasksSettings,
   UserSettings,
+  tasksSettingsDefaults,
   userSettingsDefaults,
 } from "@src/config/userSettingsDefaults";
 import { setupToken } from "@src/oauth/setupToken";
 
 export type UserServiceMethodName = keyof typeof userService;
 export const userService = {
-  async getUserSettings(): Promise<UserSettings | undefined> {
+  async getUserSettings(): Promise<UserSettings> {
     // for now, just store settings in local storage until we have user endpoints
     const settings = await chrome.storage.local.get("userSettings");
     if (!settings.userSettings)
@@ -20,6 +22,7 @@ export const userService = {
       userSettings: { ...userSettingsDefaults, ...settings },
     });
   },
+
   async getAuthToken(options?: { interactive?: boolean }) {
     try {
       const tokenRes = await chrome.identity.getAuthToken({

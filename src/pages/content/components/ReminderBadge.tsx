@@ -1,7 +1,7 @@
 import { BadgeProps, Badge } from "@mui/material";
 import { useTasks, useUpdateTask, TaskList } from "@src/api/task.api";
+import { useUserSettings } from "@src/api/user.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
-import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { SavedTask } from "@src/components/Task/Task";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -11,7 +11,7 @@ export function ReminderBadge(props: BadgeProps) {
   const queryClient = useQueryClient();
   const { selectedTaskListId } = useTasksGlobalState();
   const { data: tasks } = useTasks({ listId: selectedTaskListId });
-  const { userSettings } = useUserSettingsContext();
+  const { userSettings } = useUserSettings();
   const mutateTask = useUpdateTask(selectedTaskListId!);
 
   useEffect(() => {

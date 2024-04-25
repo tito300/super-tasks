@@ -1,12 +1,10 @@
 import { useTasks } from "@src/api/task.api";
+import { useTasksSettings } from "@src/api/task.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
-import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { useMemo } from "react";
 
 export function useFilteredTasks() {
-  const {
-    userSettings,
-  } = useUserSettingsContext();
+  const { tasksSettings } = useTasksSettings();
   const { selectedTaskListId } = useTasksGlobalState();
   const { data: tasks, ...rest } = useTasks({ listId: selectedTaskListId });
 
@@ -15,7 +13,7 @@ export function useFilteredTasks() {
       if (task.status === "completed") return false;
       if (!task.title) return false;
 
-      if (userSettings.tasks.tasksFilters.today) {
+      if (tasksSettings.tasksFilters.today) {
         if (!task.due) return true;
         if (task.due) {
           const dueDate = new Date(task.due);
@@ -29,7 +27,7 @@ export function useFilteredTasks() {
           }
         }
       }
-      if (userSettings.tasks.tasksFilters.pastDue) {
+      if (tasksSettings.tasksFilters.pastDue) {
         if (task.due) {
           const dueDate = new Date(task.due);
           const today = new Date();
@@ -42,7 +40,7 @@ export function useFilteredTasks() {
           }
         }
       }
-      if (userSettings.tasks.tasksFilters.upcoming) {
+      if (tasksSettings.tasksFilters.upcoming) {
         if (task.due) {
           const dueDate = new Date(task.due);
           const today = new Date();
@@ -53,7 +51,7 @@ export function useFilteredTasks() {
       }
       return false;
     });
-  }, [tasks, userSettings.tasks.tasksFilters]);
+  }, [tasks, tasksSettings.tasksFilters]);
 
   const completedTasks = useMemo(() => {
     if (!tasks) return [];

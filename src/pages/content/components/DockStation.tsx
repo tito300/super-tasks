@@ -1,6 +1,5 @@
 import { DockStationContainer } from "./DockStationContainer";
 import { OauthRequired } from "@src/components/Oauth/OauthGate";
-import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { Box } from "@mui/material";
 import { TasksApp } from "./TasksApp";
 import { CalendarApp } from "./CalendarApp";

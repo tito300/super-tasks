@@ -12,12 +12,12 @@ import {
   useTheme,
 } from "@mui/material";
 import { Close, MenuOpen } from "@mui/icons-material";
-import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 import { ReminderBadge } from "./ReminderBadge";
 import { focusAddTaskInput } from "./DockStationAccordion";
 import { CalendarIcon } from "@mui/x-date-pickers";
+import { useUserSettings } from "@src/api/user.api";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -26,7 +26,7 @@ import { CalendarIcon } from "@mui/x-date-pickers";
 // }));
 
 export function DockStationContainer({ children }: PropsWithChildren) {
-  const { userSettings, updateUserSettings } = useUserSettingsContext();
+  const { userSettings, updateUserSettings } = useUserSettings();
   const [localExpanded, setLocalExpanded] = useState(false);
 
   const [removed, setRemoved] = useState(false);
@@ -40,24 +40,23 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     y: window.innerHeight - 32,
   };
 
-  const open = userSettings.syncExpanded
+  const open = userSettings.syncButtonExpanded
     ? userSettings.buttonExpanded
     : localExpanded;
 
-    const handleButtonClick = (app: "calendar" | "tasks") => {
-      if (userSettings.syncExpanded) {
-        updateUserSettings({
-          currentTab: app,
-          buttonExpanded: true,
-          accordionExpanded: true,
-        });
-      } else {
-        updateUserSettings({ currentTab: app });
-        setLocalExpanded(true);
-      }
-      focusAddTaskInput();
+  const handleButtonClick = (app: "calendar" | "tasks") => {
+    if (userSettings.syncButtonExpanded) {
+      updateUserSettings({
+        currentTab: app,
+        buttonExpanded: true,
+        accordionExpanded: true,
+      });
+    } else {
+      updateUserSettings({ currentTab: app });
+      setLocalExpanded(true);
     }
-
+    focusAddTaskInput();
+  };
 
   return (
     <DraggablePopper
@@ -69,7 +68,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
         <>
           <DockStationControls
             onMinimize={() => {
-              if (userSettings.syncExpanded) {
+              if (userSettings.syncButtonExpanded) {
                 updateUserSettings({ buttonExpanded: false });
               } else {
                 setLocalExpanded(false);
@@ -84,14 +83,14 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       {!open && (
         <ButtonsContainer>
           <ExtensionCalendarButton
-            onClick={() => handleButtonClick('calendar')}
+            onClick={() => handleButtonClick("calendar")}
             id={`${constants.EXTENSION_NAME}-calendar-btn`}
           >
             <CalendarIcon />
           </ExtensionCalendarButton>
           <ExtensionIconButton
             id={`${constants.EXTENSION_NAME}-tasks-button`}
-            onClick={() => handleButtonClick('tasks')}
+            onClick={() => handleButtonClick("tasks")}
           >
             <ReminderBadge>
               <BadgeStyled
@@ -158,7 +157,7 @@ const ExtensionIconButton = styled(IconButton)(({ theme }) => {
 
 const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
   return {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     boxShadow: theme.shadows[3],
     padding: 14,
@@ -181,7 +180,6 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
 });
 
 const ButtonsContainer = styled(Stack)(({ theme }) => {
-
   return {
     height: 51,
     width: 51,
@@ -189,7 +187,7 @@ const ButtonsContainer = styled(Stack)(({ theme }) => {
       height: 200,
     },
     [`:hover& #${constants.EXTENSION_NAME}-calendar-btn`]: {
-      transform: "translateY(-108%)"
+      transform: "translateY(-108%)",
     },
   };
 });

@@ -4,8 +4,8 @@ import MuiAccordion, {
   AccordionSlots,
 } from "@mui/material/Accordion";
 import { useTaskLists, useTasks } from "@src/api/task.api";
+import { useUserSettings } from "@src/api/user.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
-import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,31 +18,40 @@ const Accordion = styled(MuiAccordion)(() => ({
 }));
 
 export function DockStationAccordion({ children, ...props }: AccordionProps) {
-  const { userSettings, updateUserSettings, isNewTab } =
-    useUserSettingsContext();
+  const { userSettings, updateUserSettings } = useUserSettings();
+  const [localExpanded, setLocalExpanded] = useState(
+    userSettings.syncAccordionExpanded
+  );
   const { selectedTaskListId } = useTasksGlobalState();
   const queryClient = useQueryClient();
   const messageEngine = getMessageEngine("Content");
 
-  const handleExpansion = useCallback(() => {
-    const newValue = !userSettings.accordionExpanded;
-    if (newValue) {
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", selectedTaskListId],
+  const handleExpansion = useCallback(
+    (e: React.SyntheticEvent<Element, Event>, expanded: boolean) => {
+      const newValue = expanded;
+      setLocalExpanded(newValue);
+      if (newValue) {
+        messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
+      } else {
+        messageEngine.sendMessage("StopFetchTasksTimer", null, "Background");
+        queryClient.invalidateQueries({
+          queryKey: ["tasks", selectedTaskListId],
+        });
+      }
+      focusAddTaskInput();
+
+      if (!userSettings.syncAccordionExpanded) return;
+
+      updateUserSettings({
+        accordionExpanded: newValue,
       });
-      messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
-    } else {
-      messageEngine.sendMessage("StopFetchTasksTimer", null, "Background");
-    }
+    },
+    [selectedTaskListId, userSettings.accordionExpanded, queryClient]
+  );
 
-    updateUserSettings({
-      accordionExpanded: newValue,
-    });
-
-    focusAddTaskInput();
-  }, [selectedTaskListId, userSettings, queryClient]);
-
-  const expanded = userSettings.accordionExpanded;
+  const expanded = userSettings.syncAccordionExpanded
+    ? userSettings.accordionExpanded
+    : localExpanded;
 
   return (
     <Accordion expanded={expanded} onChange={handleExpansion} {...props}>

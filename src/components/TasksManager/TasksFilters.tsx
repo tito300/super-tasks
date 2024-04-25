@@ -1,19 +1,15 @@
 import { ChipProps, Chip, Stack } from "@mui/material";
-import { useUserSettingsContext } from "../Providers/UserSettingsContext";
+import { useTasksSettings } from "@src/api/task.api";
 
 export function TasksFilters() {
-  const { userSettings, updateUserSettings } = useUserSettingsContext();
-  const {
-    tasks: { tasksFilters },
-  } = userSettings;
+  const { tasksSettings, updateTasksSettings } = useTasksSettings();
+  const { tasksFilters } = tasksSettings;
 
   function handleFilterClick(filter: keyof typeof tasksFilters) {
-    updateUserSettings({
-      tasks: {
-        tasksFilters: {
-          ...tasksFilters,
-          [filter]: !tasksFilters[filter],
-        },
+    updateTasksSettings({
+      tasksFilters: {
+        ...tasksFilters,
+        [filter]: !tasksFilters[filter],
       },
     });
   }

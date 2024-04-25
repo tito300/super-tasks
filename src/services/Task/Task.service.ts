@@ -5,6 +5,10 @@ import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProv
 import { TaskList } from "@src/api/task.api";
 import { deepmerge } from "@mui/utils";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
+import {
+  TasksSettings,
+  tasksSettingsDefaults,
+} from "@src/config/userSettingsDefaults";
 
 export type ServiceMethodName = keyof typeof TaskServices;
 const messageEngine = getMessageEngine("Background");
@@ -95,21 +99,22 @@ export const TaskServices = {
     repeating?: boolean
   ) => {
     const alarmName = `TaskReminder-${taskListId}-${taskId}-${timeInMinutes}`;
-    chrome.alarms.create(
-      alarmName,
-      {
-        delayInMinutes: timeInMinutes,
-      }
-    );
+    chrome.alarms.create(alarmName, {
+      delayInMinutes: timeInMinutes,
+    });
 
     chrome.alarms.onAlarm.addListener((alarm) => {
       if (alarm.name === alarmName) {
         const taskId = alarm.name.split("-")[2];
 
-        TaskServices.updateLocalTaskState({ id: taskId, alertOn: true, alert: 0 })
+        TaskServices.updateLocalTaskState({
+          id: taskId,
+          alertOn: true,
+          alert: 0,
+        });
         messageEngine.broadcastMessage("UpdateTasks", null);
 
-        console.log('Task reminder triggered')
+        console.log("Task reminder triggered");
       }
     });
   },
@@ -153,11 +158,23 @@ export const TaskServices = {
       chrome.storage.local.set({ tasksState: updatedTasksState });
     });
   },
+  async getTasksSettings() {
+    const settings = await chrome.storage.local.get("tasksSettings");
+    if (!settings.tasksSettings)
+      TaskServices.updateTasksSettings(tasksSettingsDefaults);
+    return { ...tasksSettingsDefaults, ...settings.userSettings };
+  },
+  async updateTasksSettings(settings: TasksSettings) {
+    // for now, just store settings in local storage until we have user endpoints
+    return chrome.storage.local.set({
+      tasksSettings: { ...tasksSettingsDefaults, ...settings },
+    });
+  },
 };
 
 function filterEnhancedProperties(
   task: SavedTask | TaskEnhanced | TaskType
-): Record<Exclude<keyof TaskEnhanced, 'id'>, any> {
+): Record<Exclude<keyof TaskEnhanced, "id">, any> {
   const { alert, alertOn, alertSeen, listId, id } = task;
   return { alert, alertOn, alertSeen, listId };
 }

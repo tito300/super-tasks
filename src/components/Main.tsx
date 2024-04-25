@@ -6,13 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MessageEngineProvider } from "./Providers/MessageEngineProvider";
 import { theme as v1Theme } from "../theme/v1.theme";
 import { deepmerge } from "@mui/utils";
-import { UserSettingsProvider } from "./Providers/UserSettingsContext";
 import { TasksGlobalStateProvider } from "./Providers/TasksGlobalStateProvider";
-import { OauthRequired } from "./Oauth/OauthGate";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import React from "react";
-import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { ScriptTypeProvider } from "./Providers/ScriptTypeProvider";
 
 const queryClient = new QueryClient();
@@ -42,11 +38,7 @@ export const Main = ({
           <MessageEngineProvider scriptType={scriptType}>
             <ServicesProvider scriptType={scriptType}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <UserSettingsProvider>
-                  <TasksGlobalStateProvider>
-                    {children}
-                  </TasksGlobalStateProvider>
-                </UserSettingsProvider>
+                <TasksGlobalStateProvider>{children}</TasksGlobalStateProvider>
               </LocalizationProvider>
             </ServicesProvider>
           </MessageEngineProvider>

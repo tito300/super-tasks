@@ -1,14 +1,11 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Stack, Typography, IconButton } from "@mui/material";
-import { title } from "process";
-import { ReminderBadge } from "./ReminderBadge";
-import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { useState } from "react";
-import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
+import { useTasksSettings } from "@src/api/task.api";
 
 export function CalendarAccordionSummary() {
   const [hovered, setHovered] = useState(false);
-  const { userSettings, updateUserSettings } = useUserSettingsContext();
+  const { tasksSettings, updateTasksSettings } = useTasksSettings();
 
   const title = "1:1 John Doe";
 
@@ -26,7 +23,7 @@ export function CalendarAccordionSummary() {
         whiteSpace="nowrap"
         textOverflow="ellipsis"
         overflow="hidden"
-        sx={{ filter: userSettings.tasks.blurText ? "blur(7px)" : "none" }}
+        sx={{ filter: tasksSettings.blurText ? "blur(7px)" : "none" }}
       >
         {title}
       </Typography>
@@ -35,17 +32,17 @@ export function CalendarAccordionSummary() {
           onClick={(e) => e.stopPropagation()}
           sx={{ opacity: hovered ? 1 : 0 }}
         >
-          {userSettings.tasks.blurText ? (
+          {tasksSettings.blurText ? (
             <Visibility
               color="action"
               fontSize="small"
-              onClick={() => updateUserSettings({ tasks: { blurText: false } })}
+              onClick={() => updateTasksSettings({ blurText: false })}
             />
           ) : (
             <VisibilityOff
               color="action"
               fontSize="small"
-              onClick={() => updateUserSettings({ tasks: { blurText: true } })}
+              onClick={() => updateTasksSettings({ blurText: true })}
             />
           )}
         </IconButton>

@@ -2,7 +2,6 @@ import { IconButton, Menu, MenuItem, TextField } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { SavedTask, TaskForm, TaskType } from "../Task";
 import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
-import { useUserSettingsContext } from "@src/components/Providers/UserSettingsContext";
 import { constants } from "@src/config/constants";
 import { isTaskPastDue } from "@src/utils/isTaskPastDue";
 import {
@@ -15,6 +14,7 @@ import React from "react";
 import { useServices } from "@src/components/Providers/ServicesProvider";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useTasks, useUpdateTask } from "@src/api/task.api";
+import { useTasksSettings } from "@src/api/task.api";
 
 export const TaskTitleField = forwardRef<
   HTMLDivElement,
@@ -29,7 +29,7 @@ export const TaskTitleField = forwardRef<
 >(({ onFocus, focused, onblur, strikeThrough, taskDue, taskId }) => {
   const { control } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
-  const { userSettings } = useUserSettingsContext();
+  const { tasksSettings } = useTasksSettings();
   const [hovered, setHovered] = React.useState(false);
   const { selectedTaskListId } = useTasksGlobalState();
   const { data: tasks } = useTasks({ listId: selectedTaskListId });
@@ -69,8 +69,7 @@ export const TaskTitleField = forwardRef<
               pt: 0.25,
               ml: 1,
 
-              filter:
-                userSettings.tasks.blurText && !focused ? "blur(7px)" : "none",
+              filter: tasksSettings.blurText && !focused ? "blur(7px)" : "none",
               textDecoration: strikeThrough ? "line-through" : "auto",
             }}
             inputProps={{

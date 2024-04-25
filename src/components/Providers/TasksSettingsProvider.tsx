@@ -1,4 +1,4 @@
-import { useTasksSettings } from "@src/api/user.api";
+import { useTasksSettings } from "@src/api/task.api";
 import { TasksSettings } from "@src/config/userSettingsDefaults";
 import { PropsWithChildren, createContext } from "react";
 

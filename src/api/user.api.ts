@@ -1,22 +1,43 @@
 import { useServices } from "@src/components/Providers/ServicesProvider";
 import {
+  TasksSettings,
   UserSettings,
+  tasksSettingsDefaults,
   userSettingsDefaults,
 } from "@src/config/userSettingsDefaults";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useCallback, useEffect } from "react";
+import { deepmerge } from "@mui/utils";
 
 export function useUserSettings() {
+  const [userSettings, setUserSettings] =
+    React.useState<UserSettings>(userSettingsDefaults);
   const { user: userService } = useServices();
 
-  return useQuery({
-    queryKey: ["userSettings"],
-    queryFn: async () => {
-      const userSettings = await userService.getUserSettings();
+  useEffect(() => {
+    userService.getUserSettings().then(setUserSettings);
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === "local" && changes.userSettings) {
+        setUserSettings(changes.userSettings.newValue);
+      }
+    });
+  }, []);
 
-      return userSettings;
+  const updateUserSettings = useCallback(
+    (newSettings: Partial<UserSettings>) => {
+      setUserSettings((prevSettings) => {
+        const settings = deepmerge(prevSettings, newSettings);
+        userService.updateUserSettings(settings);
+        return settings;
+      });
     },
-    initialData: userSettingsDefaults,
-  });
+    [userService]
+  );
+
+  return {
+    userSettings,
+    updateUserSettings,
+  };
 }
 
 export function useUpdateUserSettings() {
