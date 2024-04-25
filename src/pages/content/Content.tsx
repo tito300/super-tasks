@@ -5,7 +5,6 @@ import { constants } from "@src/config/constants";
 import { useTaskReminders } from "@src/hooks/useTaskReminders";
 
 export function Content() {
-  const messageEngine = useMessageEngine();
   useTaskReminders();
 
   useEffect(() => {
@@ -15,9 +14,6 @@ export function Content() {
         rootEl.style.opacity = "1";
       });
     }
-    messageEngine.onMessage("DockTask", async (message) => {
-      alert("DockTask");
-    });
   }, []);
 
   return <DockStation />;

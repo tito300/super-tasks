@@ -36,6 +36,7 @@ export function CompletedCheckbox({
           }}
           checked={field.value === "completed"}
           size="small"
+          sx={{ padding: 6 }}
           icon={<CircleOutlined fontSize="small" />}
           checkedIcon={<CheckCircle fontSize="small" />}
           {...rest}
@@ -43,4 +44,9 @@ export function CompletedCheckbox({
       )}
     ></Controller>
   );
+}
+
+// convert 24 hour time to 12 hour time with AM/PM
+function convertHours(hours: number) {
+  return hours > 12 ? `${hours - 12} PM` : `${hours} AM`;
 }

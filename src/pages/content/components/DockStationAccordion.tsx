@@ -45,11 +45,7 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
   const expanded = userSettings.accordionExpanded;
 
   return (
-    <Accordion
-      expanded={expanded}
-      onChange={handleExpansion}
-      {...props}
-    >
+    <Accordion expanded={expanded} onChange={handleExpansion} {...props}>
       {children}
     </Accordion>
   );

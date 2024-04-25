@@ -10,6 +10,6 @@ export const DockStationAccordionDetails = styled(AccordionDetails)(
     maxHeight: "50vh",
     overflowY: "auto",
     overflowX: "clip",
-    padding: theme.spacing(0, 1, 2),
+    padding: 0,
   })
 );

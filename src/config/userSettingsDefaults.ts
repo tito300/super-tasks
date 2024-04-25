@@ -1,5 +1,7 @@
+export type Tab = "tasks" | "calendar";
+
 export const userSettingsDefaults = {
-  currentTab: "tasks" as "tasks" | "calendar",
+  currentTab: "tasks" as Tab,
   darkMode: false,
   buttonExpanded: false,
   accordionExpanded: false,
@@ -21,7 +23,9 @@ export const userSettingsDefaults = {
       pastDue: true,
       upcoming: false,
     },
-  }
+  },
 };
 
 export type UserSettings = typeof userSettingsDefaults;
+export type TasksSettings = UserSettings["tasks"];
+export type CalendarSettings = UserSettings["calendar"];

@@ -52,7 +52,12 @@ export function TaskListManager() {
   };
   return (
     <>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        pl={1}
+      >
         {!active && (
           <Button
             size="small"

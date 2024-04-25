@@ -1,4 +1,4 @@
-import { Theme, ThemeProvider } from "@mui/material";
+import { Box, Tab, Theme, ThemeProvider } from "@mui/material";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { ServicesProvider } from "./Providers/ServicesProvider";
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
@@ -10,7 +10,10 @@ import { UserSettingsProvider } from "./Providers/UserSettingsContext";
 import { TasksGlobalStateProvider } from "./Providers/TasksGlobalStateProvider";
 import { OauthRequired } from "./Oauth/OauthGate";
 import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import React from "react";
+import { TabContext, TabList, TabPanel } from "@mui/lab";
+import { ScriptTypeProvider } from "./Providers/ScriptTypeProvider";
 
 const queryClient = new QueryClient();
 
@@ -33,18 +36,22 @@ export const Main = ({
   useEffect(() => {}, []);
 
   return (
-    <ThemeProvider theme={enhancedTheme ?? {}}>
-      <QueryClientProvider client={queryClient}>
-        <MessageEngineProvider scriptType={scriptType}>
-          <ServicesProvider scriptType={scriptType}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <UserSettingsProvider>
-              <TasksGlobalStateProvider>{children}</TasksGlobalStateProvider>
-            </UserSettingsProvider>
-          </LocalizationProvider>
-          </ServicesProvider>
-        </MessageEngineProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <ScriptTypeProvider scriptType={scriptType}>
+      <ThemeProvider theme={enhancedTheme ?? {}}>
+        <QueryClientProvider client={queryClient}>
+          <MessageEngineProvider scriptType={scriptType}>
+            <ServicesProvider scriptType={scriptType}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <UserSettingsProvider>
+                  <TasksGlobalStateProvider>
+                    {children}
+                  </TasksGlobalStateProvider>
+                </UserSettingsProvider>
+              </LocalizationProvider>
+            </ServicesProvider>
+          </MessageEngineProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ScriptTypeProvider>
   );
 };

@@ -27,7 +27,9 @@ const userSettingsContext = createContext<UserSettingsContext>(null!);
 export function UserSettingsProvider({
   children,
   userSettings: inUserSettings,
-}: PropsWithChildren & { userSettings?: DeepPartial<UserSettings> }) {
+}: PropsWithChildren & {
+  userSettings?: DeepPartial<Omit<UserSettings, "tasks" | "calendar">>;
+}) {
   // const [userSettings, setUserSettings] = useState<UserSettings>(() =>
   //   deepmerge(userSettingsDefaults, inUserSettings ?? {})
   // );

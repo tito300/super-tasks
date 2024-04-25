@@ -1,7 +1,5 @@
+import { CalendarTable } from "./Calendar/CalendarTable";
+
 export function CalendarManager() {
-    return (
-      <div>
-        Calendar Manager
-      </div>
-    );
+  return <CalendarTable />;
 }

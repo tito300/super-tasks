@@ -4,12 +4,5 @@ import { DockStationAccordionDetails } from "./DockStationAccordionDetails";
 import { DockStationAccordionSummary } from "./DockStationAccordionSummary";
 
 export function TasksApp() {
-    return (
-      <DockStationAccordion>
-        <DockStationAccordionSummary />
-        <DockStationAccordionDetails>
-          <TaskListManager />
-        </DockStationAccordionDetails>
-      </DockStationAccordion>
-    );
-  }
+  return <TaskListManager />;
+}

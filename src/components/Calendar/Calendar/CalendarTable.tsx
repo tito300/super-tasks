@@ -1,0 +1,113 @@
+import { styled } from "@mui/material";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
+
+export function CalendarTable() {
+  const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
+  return (
+    <Table ref={(el) => setTableEl(el)} id="calendar">
+      <DayColumn sx={{ width: 52 }}></DayColumn>
+      <DayColumn className="column">
+        <Meeting className="meeting">
+          <span>First Meeting</span>
+        </Meeting>
+        <CurrentTime tableEl={tableEl} />
+      </DayColumn>
+      {Array.from(Array(24)).map((line, index) => {
+        const top = (index + 1) * 60;
+        return (
+          <HorizontalLine style={{ top: `${top}px` }} data-hour={index + 1}>
+            <CellHour className="cell-time">{convertHours(index + 1)}</CellHour>
+          </HorizontalLine>
+        );
+      })}
+    </Table>
+  );
+}
+
+function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
+  const [hours, setHours] = useState(() => new Date().getHours());
+  const [minutes, setMinutes] = useState(() => new Date().getMinutes());
+  const currentTimeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setInterval(() => {
+      const date = new Date();
+      setHours(date.getHours());
+      setMinutes(date.getMinutes());
+    }, 1000);
+  }, []);
+
+  const top = hours * 60 + minutes;
+
+  useEffect(() => {
+    if (!currentTimeRef.current) return;
+
+    currentTimeRef.current.scrollIntoView({
+      behavior: "instant",
+      block: "center",
+    });
+  }, [hours]);
+
+  return (
+    <CurrentTimeStyled
+      ref={currentTimeRef}
+      style={{ top: `${top}px` }}
+    ></CurrentTimeStyled>
+  );
+}
+
+const Table = styled("div")`
+  position: relative;
+  width: fit-content;
+  background-color: white;
+  display: flex;
+  margin: 0 auto;
+`;
+
+const DayColumn = styled("div")`
+  position: relative;
+  background-color: white;
+  width: 280px;
+  height: 1440px;
+  border-right: 1px solid rgb(218, 220, 224);
+`;
+
+const Meeting = styled("div")`
+  position: absolute;
+  width: 95%;
+  height: 60px;
+  top: 540px;
+  background-color: rgba(32, 32, 231, 0.847);
+  color: white;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+
+const HorizontalLine = styled("div")`
+  position: absolute;
+  border-bottom: 1px solid rgb(218, 220, 224);
+  width: 100%;
+`;
+
+const CellHour = styled("div")`
+  position: absolute;
+  display: block;
+  top: -6px;
+  background-color: white;
+  width: fit-content;
+  padding: 0 6px;
+  font-size: 12px;
+  color: rgb(163, 163, 163);
+`;
+
+const CurrentTimeStyled = styled("div")`
+  border-bottom: 2px solid red;
+  position: absolute;
+  width: 100%;
+`;
+
+function convertHours(hours: number) {
+  return hours > 12 ? `${hours - 12} PM` : `${hours} AM`;
+}

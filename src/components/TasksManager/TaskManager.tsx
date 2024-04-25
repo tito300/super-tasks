@@ -42,6 +42,8 @@ export function TaskManager({ listId }: { listId: string }) {
 
   const moveMutation = useMoveTask(listId);
 
+  console.log("rendered 1");
+
   useEffect(() => {
     let eventListener = (e: MouseEvent) => {
       e.stopPropagation();
@@ -73,9 +75,14 @@ export function TaskManager({ listId }: { listId: string }) {
   const { filteredTasks, completedTasks } = useFilteredTasks();
 
   return (
-    <Stack sx={{ width: 350 }} ref={rootRef}>
-      <LinearProgress sx={{ visibility: !isFetching ? 'hidden' : 'visible', color: grey[500] }} />
-      <Box sx={{ height: 8, width: '100%' }} />
+    <Stack sx={{ width: 350, pl: 1, mb: 2 }} ref={rootRef}>
+      <LinearProgress
+        sx={{
+          visibility: !isFetching ? "hidden" : "visible",
+          color: grey[500],
+        }}
+      />
+      <Box sx={{ height: 8, width: "100%" }} />
       <TasksFilters />
       <DndContext
         sensors={sensors}
