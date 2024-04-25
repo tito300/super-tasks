@@ -20,7 +20,7 @@ const Accordion = styled(MuiAccordion)(() => ({
 export function DockStationAccordion({ children, ...props }: AccordionProps) {
   const { userSettings, updateUserSettings } = useUserSettings();
   const [localExpanded, setLocalExpanded] = useState(
-    userSettings.syncAccordionExpanded
+    userSettings.accordionExpanded
   );
   const { selectedTaskListId } = useTasksGlobalState();
   const queryClient = useQueryClient();
@@ -31,12 +31,12 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
       const newValue = expanded;
       setLocalExpanded(newValue);
       if (newValue) {
-        messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
-      } else {
-        messageEngine.sendMessage("StopFetchTasksTimer", null, "Background");
         queryClient.invalidateQueries({
           queryKey: ["tasks", selectedTaskListId],
         });
+        messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
+      } else {
+        messageEngine.sendMessage("StopFetchTasksTimer", null, "Background");
       }
       focusAddTaskInput();
 

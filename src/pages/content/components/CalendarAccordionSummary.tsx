@@ -7,7 +7,7 @@ export function CalendarAccordionSummary() {
   const [hovered, setHovered] = useState(false);
   const { tasksSettings, updateTasksSettings } = useTasksSettings();
 
-  const title = "1:1 John Doe";
+  const title = "(30 min) All hands meeting";
 
   return (
     <Stack

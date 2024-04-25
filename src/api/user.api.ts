@@ -1,4 +1,4 @@
-import { useServices } from "@src/components/Providers/ServicesProvider";
+import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import {
   TasksSettings,
   UserSettings,
@@ -12,7 +12,7 @@ import { deepmerge } from "@mui/utils";
 export function useUserSettings() {
   const [userSettings, setUserSettings] =
     React.useState<UserSettings>(userSettingsDefaults);
-  const { user: userService } = useServices();
+  const { user: userService } = useServicesContext();
 
   useEffect(() => {
     userService.getUserSettings().then(setUserSettings);
@@ -41,7 +41,7 @@ export function useUserSettings() {
 }
 
 export function useUpdateUserSettings() {
-  const { user: userService } = useServices();
+  const { user: userService } = useServicesContext();
   const queryClient = useQueryClient();
 
   return useMutation({

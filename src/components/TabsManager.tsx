@@ -43,7 +43,7 @@ export function TabsManager({
               }}
             >
               <TabList
-                sx={{ minHeight: 32 }}
+                sx={{ minHeight: 32, px: 1 }}
                 onChange={handleChange}
                 aria-label="lab API tabs example"
               >

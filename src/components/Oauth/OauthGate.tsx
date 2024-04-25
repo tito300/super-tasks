@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useServices } from "../Providers/ServicesProvider";
+import { useServicesContext } from "../Providers/ServicesProvider";
 import { OauthScreen } from "./OauthScreen";
 import { useMessageEngine } from "../Providers/MessageEngineProvider";
 
@@ -17,7 +17,7 @@ export function OauthRequired({
   const tokenSetRef = useRef(false);
   const [token, setToken] = useState<string | undefined | null>(undefined);
   const [requiredScopesGranted, setRequiredScopesGranted] = useState(false);
-  const { user: userServices } = useServices();
+  const { user: userServices } = useServicesContext();
   const messageEngine = useMessageEngine();
 
   useLayoutEffect(() => {

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SavedTask, TaskEnhanced } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
-import { useServices } from "@src/components/Providers/ServicesProvider";
+import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
@@ -22,7 +22,7 @@ export function useTasksSettings() {
   const [tasksSettings, setTasksSettings] = React.useState<TasksSettings>(
     tasksSettingsDefaults
   );
-  const { task: taskService } = useServices();
+  const { task: taskService } = useServicesContext();
 
   useEffect(() => {
     taskService.getTasksSettings().then(setTasksSettings);
@@ -86,7 +86,7 @@ export const useTasks = ({
   listId: string | null | undefined;
   enabled?: boolean;
 }) => {
-  const { task } = useServices();
+  const { task } = useServicesContext();
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", listId],
@@ -109,12 +109,12 @@ export const useTasks = ({
       }
     },
     enabled: !!listId,
-    staleTime: 1000 * 30, // 2 seconds
+    staleTime: 1000 * 60, // 60 seconds
   });
 };
 
 export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
-  const { task } = useServices();
+  const { task } = useServicesContext();
   return useQuery<TaskList[]>({
     queryKey: ["tasks"],
     placeholderData: [] as TaskList[],
@@ -128,7 +128,7 @@ export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
 
 export const useMoveTask = (listId: string) => {
   const queryClient = useQueryClient();
-  const { task: taskService } = useServices();
+  const { task: taskService } = useServicesContext();
   return useMutation({
     mutationFn: ({
       taskId,
@@ -176,7 +176,7 @@ export const useMoveTask = (listId: string) => {
 
 export const useDeleteTask = (listId: string) => {
   const queryClient = useQueryClient();
-  const { task: taskService } = useServices();
+  const { task: taskService } = useServicesContext();
   return useMutation({
     mutationFn: (id: string) => {
       return taskService.deleteTask(listId, id);
@@ -214,7 +214,7 @@ export const useDeleteTask = (listId: string) => {
 
 export const useAddTask = (listId: string) => {
   const queryClient = useQueryClient();
-  const { task: taskService } = useServices();
+  const { task: taskService } = useServicesContext();
 
   return useMutation({
     mutationFn: ({
@@ -257,7 +257,7 @@ export const useAddTask = (listId: string) => {
 
 export const useUpdateTask = (listId: string) => {
   const queryClient = useQueryClient();
-  const { task: taskService } = useServices();
+  const { task: taskService } = useServicesContext();
 
   return useMutation({
     mutationFn: async (task: Partial<SavedTask> & { id: string }) => {

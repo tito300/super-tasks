@@ -9,7 +9,7 @@ export function ServicesProvider({ children, scriptType }: PropsWithChildren & {
     return <ServicesContext.Provider value={services}>{children}</ServicesContext.Provider>;
 }
 
-export function useServices() {
+export function useServicesContext() {
     const services = React.useContext(ServicesContext);
     if (!services) throw new Error("useServices must be used within a ServicesProvider"); 
 

@@ -10,11 +10,13 @@ import { setupToken } from "@src/oauth/setupToken";
 import { requiredScopes } from "@src/config/googleScopes";
 import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { TaskType } from "@src/components/Task/Task";
+import { calendarServices } from "./Calendar/Calendar.service";
 
 let initiated: boolean = false;
 const services = {
   task: TaskServices,
   user: userService,
+  calendar: calendarServices
 };
 
 const messageEngine = getMessageEngine("Background");

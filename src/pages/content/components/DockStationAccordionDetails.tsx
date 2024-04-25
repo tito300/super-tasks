@@ -7,7 +7,7 @@ import {
 
 export const DockStationAccordionDetails = styled(AccordionDetails)(
   ({ theme }) => ({
-    maxHeight: "50vh",
+    maxHeight: "60vh",
     overflowY: "auto",
     overflowX: "clip",
     padding: 0,

@@ -4,7 +4,7 @@ import { TaskReminderMessage } from "@src/messageEngine/types/taskMessages";
 import { useEffect, useState } from "react";
 import { useTasks } from "./api/useTasks";
 import { useQueryClient } from "@tanstack/react-query";
-import { useServices } from "@src/components/Providers/ServicesProvider";
+import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 
 let listening = false;
 
@@ -15,7 +15,7 @@ let listening = false;
 export function useTaskReminders() {
   const messageEngine = getMessageEngine("Content");
   const queryClient = useQueryClient();
-  const services = useServices();
+  const services = useServicesContext();
 
   useEffect(() => {
     if (listening) return;

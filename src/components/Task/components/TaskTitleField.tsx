@@ -11,7 +11,7 @@ import {
   Warning,
 } from "@mui/icons-material";
 import React from "react";
-import { useServices } from "@src/components/Providers/ServicesProvider";
+import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useTasks, useUpdateTask } from "@src/api/task.api";
 import { useTasksSettings } from "@src/api/task.api";

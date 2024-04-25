@@ -23,22 +23,22 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { AddTask } from "../AddTask/AddTask";
+import { AddTask as AddTaskButton } from "../AddTask/AddTask";
 import { TaskSkeleton } from "../Task/Task.skeleton";
 import { ArrowDropDown, ArrowRight } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { TasksFilters } from "./TasksFilters";
 import { grey } from "@mui/material/colors";
+import { useTasksGlobalState } from "../Providers/TasksGlobalStateProvider";
 
 export function TaskManager({ listId }: { listId: string }) {
-  const [tempTaskPending, setTempTaskPending] = useState(false);
-  const [completedOpen, setCompletedOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const { data, isLoading, isFetching, isError } = useTasks({ listId });
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 3 } })
   );
+  const { filteredTasks, completedTasks, isFetching, isLoading, isError, isPending } =
+    useFilteredTasks();
 
   const moveMutation = useMoveTask(listId);
 
@@ -61,18 +61,16 @@ export function TaskManager({ listId }: { listId: string }) {
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!data?.length) return;
+    if (!filteredTasks?.length) return;
     if (!over) return;
 
     if (active.id !== over?.id) {
       moveMutation.mutate({
         taskId: active.id as string,
-        previousTaskId: getPreviousId(data, over!, active),
+        previousTaskId: getPreviousId(filteredTasks, over!, active),
       });
     }
   }
-
-  const { filteredTasks, completedTasks } = useFilteredTasks();
 
   return (
     <Stack sx={{ width: 350, pl: 1, mb: 2 }} ref={rootRef}>
@@ -89,27 +87,12 @@ export function TaskManager({ listId }: { listId: string }) {
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        {!!listId && !tempTaskPending && (
-          <AddTask
-            id={`${constants.EXTENSION_NAME}-add-task`}
-            sx={{ mt: 1 }}
-            onClick={() => setTempTaskPending(true)}
-          />
-        )}
-        {tempTaskPending && (
-          <Task
-            temporary
-            autoFocus
-            listId={listId}
-            onSaved={() => setTempTaskPending(false)}
-            data={createEmptyTask()}
-          ></Task>
-        )}
+        <AddTask />
         <SortableContext
           items={filteredTasks!}
           strategy={verticalListSortingStrategy}
         >
-          {isFetching && !data?.length && (
+          {isPending && (
             <>
               <TaskSkeleton />
               <TaskSkeleton />
@@ -132,27 +115,62 @@ export function TaskManager({ listId }: { listId: string }) {
         {isError && <Alert severity="error">Error Fetching Tasks</Alert>}
       </DndContext>
       {!!completedTasks.length && (
-        <Stack>
-          <Stack
-            direction="row"
-            alignItems="center"
-            sx={{ cursor: "pointer", px: 1, mt: 2 }}
-            onClick={() => setCompletedOpen(!completedOpen)}
-          >
-            {!completedOpen && <ArrowRight fontSize="small" />}
-            {completedOpen && <ArrowDropDown fontSize="small" />}
-            <Typography sx={{ ml: 1 }}>Completed</Typography>
-          </Stack>
-          <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
-            {completedTasks.map((task) => (
-              <Task listId={listId} key={task.id + "completed"} data={task} />
-            ))}
-          </Collapse>
-        </Stack>
+        <CompletedTasks tasks={completedTasks}></CompletedTasks>
       )}
     </Stack>
   );
 }
+
+function AddTask() {
+  const [tempTaskPending, setTempTaskPending] = useState(false);
+  const { selectedTaskListId } = useTasksGlobalState();
+
+  return (
+    <>
+      {!!selectedTaskListId && !tempTaskPending && (
+        <AddTaskButton
+          id={`${constants.EXTENSION_NAME}-add-task`}
+          sx={{ mt: 1 }}
+          onClick={() => setTempTaskPending(true)}
+        />
+      )}
+      {tempTaskPending && (
+        <Task
+          temporary
+          autoFocus
+          listId={selectedTaskListId!}
+          onSaved={() => setTempTaskPending(false)}
+          data={createEmptyTask()}
+        ></Task>
+      )}
+    </>
+  );
+}
+
+function CompletedTasks({ tasks }: { tasks: SavedTask[] }) {
+  const [completedOpen, setCompletedOpen] = useState(false);
+  const { selectedTaskListId } = useTasksGlobalState();
+
+  return (
+    <Stack>
+      <Stack
+        direction="row"
+        alignItems="center"
+        sx={{ cursor: "pointer", px: 1, mt: 2 }}
+        onClick={() => setCompletedOpen(!completedOpen)}
+      >
+        {!completedOpen && <ArrowRight fontSize="small" />}
+        {completedOpen && <ArrowDropDown fontSize="small" />}
+        <Typography sx={{ ml: 1 }}>Completed</Typography>
+      </Stack>
+      <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
+        {tasks.map((task) => (
+          <Task listId={selectedTaskListId!} key={task.id + "completed"} data={task} />
+        ))}
+      </Collapse>
+    </Stack>
+  )
+        }
 
 function getPreviousId(tasks: SavedTask[], over: Over, active: Active) {
   const activeIndex = tasks.findIndex((task) => task.id === active.id);

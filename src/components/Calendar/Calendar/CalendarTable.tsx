@@ -1,15 +1,22 @@
-import { styled } from "@mui/material";
+import { duration, styled } from "@mui/material";
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { Meeting } from "./Meeting";
+import { CalendarEvent, SavedCalendarEvent } from "@src/calendar.types";
 
-export function CalendarTable() {
+export function CalendarTable({
+  calendarEvents,
+}: {
+  calendarEvents: SavedCalendarEvent[];
+}) {
   const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
+
   return (
     <Table ref={(el) => setTableEl(el)} id="calendar">
       <DayColumn sx={{ width: 52 }}></DayColumn>
       <DayColumn className="column">
-        <Meeting className="meeting">
-          <span>First Meeting</span>
-        </Meeting>
+        {calendarEvents.map((event) => (
+          <Meeting event={event}></Meeting>
+        ))}
         <CurrentTime tableEl={tableEl} />
       </DayColumn>
       {Array.from(Array(24)).map((line, index) => {
@@ -72,19 +79,6 @@ const DayColumn = styled("div")`
   border-right: 1px solid rgb(218, 220, 224);
 `;
 
-const Meeting = styled("div")`
-  position: absolute;
-  width: 95%;
-  height: 60px;
-  top: 540px;
-  background-color: rgba(32, 32, 231, 0.847);
-  color: white;
-  padding: 8px;
-  box-sizing: border-box;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-
 const HorizontalLine = styled("div")`
   position: absolute;
   border-bottom: 1px solid rgb(218, 220, 224);
@@ -106,6 +100,16 @@ const CurrentTimeStyled = styled("div")`
   border-bottom: 2px solid red;
   position: absolute;
   width: 100%;
+  ::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: -5px;
+    width: 12px;
+    height: 12px;
+    background-color: red;
+    border-radius: 50%;
+  }
 `;
 
 function convertHours(hours: number) {
