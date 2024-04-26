@@ -90,7 +90,7 @@ export const useTasks = ({
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", listId],
-    placeholderData: [] as SavedTask[],
+    initialData: [] as SavedTask[],
     queryFn: async () => {
       console.log("useTasks queryFn called: ", listId);
       if (!listId) return [];
@@ -109,7 +109,9 @@ export const useTasks = ({
       }
     },
     enabled: !!listId,
-    staleTime: 1000 * 60, // 60 seconds
+    // stale time prevents refetching for things like when user focuses on page
+    // If you need to force a refetch, use queryClient.invalidateQueries
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
@@ -117,7 +119,7 @@ export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
   const { task } = useServicesContext();
   return useQuery<TaskList[]>({
     queryKey: ["tasks"],
-    placeholderData: [] as TaskList[],
+    initialData: [] as TaskList[],
     queryFn: async () => {
       return task.getTaskLists();
     },

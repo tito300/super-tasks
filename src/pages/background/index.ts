@@ -9,8 +9,6 @@ const htmlFile = "oauth.html";
 const messageEngine = getMessageEngine("Background");
 const services = initializeServices("Background");
 
-
-
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
     // todo
@@ -27,19 +25,15 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
 // #region Task Timer
 const handleFetchTasksAlarm = async () => {
-  const userSettings = await services.user.getUserSettings();
-
-  if (userSettings?.buttonExpanded && userSettings?.accordionExpanded) {
-    const { selectedTaskListId } = await services.task.getTasksState();
-    if (selectedTaskListId) {
-      try {
-        await services.task.getTasks(selectedTaskListId);
-        messageEngine.broadcastMessage("UpdateTasks", null, "Background", {
-          activeTabOnly: true,
-        });
-      } catch (error) {
-        console.error("Error fetching tasks", error);
-      }
+  const { selectedTaskListId } = await services.task.getTasksState();
+  if (selectedTaskListId) {
+    try {
+      await services.task.getTasks(selectedTaskListId);
+      messageEngine.broadcastMessage("UpdateTasks", null, "Background", {
+        activeTabOnly: true,
+      });
+    } catch (error) {
+      console.error("Error fetching tasks", error);
     }
   }
 };

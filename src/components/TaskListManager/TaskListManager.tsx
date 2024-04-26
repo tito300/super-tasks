@@ -24,6 +24,8 @@ import {
 } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
 import { TasksSettings } from "../TasksSettings/TasksSettings";
+import { useUserSettings } from "@src/api/user.api";
+import { useRootElement } from "@src/hooks/useRootElement";
 
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);
@@ -53,6 +55,7 @@ export function TaskListManager() {
   return (
     <>
       <Stack
+        id="task-list-manager"
         direction="row"
         justifyContent="space-between"
         alignItems="center"

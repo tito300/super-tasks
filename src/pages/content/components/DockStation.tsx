@@ -8,6 +8,10 @@ import { TabsManager } from "@src/components/TabsManager";
 import { DockStationAccordion } from "./DockStationAccordion";
 import { DockStationAccordionDetails } from "./DockStationAccordionDetails";
 import { DockStationAccordionSummary } from "./DockStationAccordionSummary";
+import { useRootElement } from "@src/hooks/useRootElement";
+import { useUserSettings } from "@src/api/user.api";
+import { useEffect } from "react";
+import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 
 export function DockStation() {
   return (
@@ -15,13 +19,35 @@ export function DockStation() {
       <OauthRequired style={{ width: 385 }}>
         <DockStationAccordion>
           <DockStationAccordionSummary />
-          <DockStationAccordionDetails>
+          <DockStationAccordionDetails id="accordion-details">
             <TabsManager
               tabs={{ tasks: <TasksApp />, calendar: <CalendarApp /> }}
             />
           </DockStationAccordionDetails>
         </DockStationAccordion>
       </OauthRequired>
+      <ScrollTopOnLoad />
     </DockStationContainer>
   );
+}
+
+function ScrollTopOnLoad() {
+  const root = useRootElement();
+  const scriptType = useScriptType();
+  const { userSettings } = useUserSettings();
+
+  useEffect(() => {
+    if (userSettings.currentTab === "calendar") return;
+
+    if (
+      scriptType === "Content"
+      ) {
+      if (!root?.querySelector("#accordion-details")) return;
+
+      root.querySelector("#accordion-details")!.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [userSettings.currentTab]);
+  return null;
 }

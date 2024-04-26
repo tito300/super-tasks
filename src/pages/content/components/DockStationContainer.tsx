@@ -20,6 +20,9 @@ import { CalendarIcon } from "@mui/x-date-pickers";
 import { useUserSettings } from "@src/api/user.api";
 import { calendarTheme, tasksTheme } from "@src/theme/google.theme";
 import { cyan } from "@mui/material/colors";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -30,6 +33,9 @@ import { cyan } from "@mui/material/colors";
 export function DockStationContainer({ children }: PropsWithChildren) {
   const { userSettings, updateUserSettings } = useUserSettings();
   const [localExpanded, setLocalExpanded] = useState(false);
+  const queryClient = useQueryClient();
+  const { selectedTaskListId } = useTasksGlobalState();
+  const messageEngine = useMessageEngine();
 
   const [removed, setRemoved] = useState(false);
 
@@ -57,6 +63,12 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       updateUserSettings({ currentTab: app });
       setLocalExpanded(true);
     }
+
+    queryClient.invalidateQueries({
+      queryKey: ["tasks", selectedTaskListId],
+    });
+    messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
+
     focusAddTaskInput();
   };
 

@@ -37,7 +37,7 @@ export function TaskManager({ listId }: { listId: string }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 3 } })
   );
-  const { filteredTasks, completedTasks, isFetching, isLoading, isError, isPending } =
+  const { filteredTasks, completedTasks, isFetching, isLoading, isError } =
     useFilteredTasks();
 
   const moveMutation = useMoveTask(listId);
@@ -92,7 +92,7 @@ export function TaskManager({ listId }: { listId: string }) {
           items={filteredTasks!}
           strategy={verticalListSortingStrategy}
         >
-          {isPending && (
+          {isFetching && !filteredTasks.length && (
             <>
               <TaskSkeleton />
               <TaskSkeleton />

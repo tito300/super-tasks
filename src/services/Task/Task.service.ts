@@ -31,8 +31,7 @@ export const TaskServices = {
   },
   getTasks: async (listId: string) => {
     const tasks = await fetcher
-      .get(`${urls.BASE_URL}/tasks/${listId}/tasks`)
-      .then((res) => res.json())
+      .getWithCache(`${urls.BASE_URL}/tasks/${listId}/tasks`, { cacheKey: `tasks-${listId}` })
       .then((res) => {
         return (res?.items || []) as SavedTask[];
       });
@@ -43,8 +42,7 @@ export const TaskServices = {
   },
   getTaskLists: async () => {
     return fetcher
-      .get(`${urls.BASE_URL}/tasks`)
-      .then((res) => res.json())
+      .getWithCache(`${urls.BASE_URL}/tasks`, { cacheKey: "taskLists" })
       .then((res) => {
         return (res?.items || []) as TaskList[];
       });

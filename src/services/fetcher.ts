@@ -45,3 +45,46 @@ fetcher.delete = (url: string, options: RequestInit = {}) => {
     ...options,
   });
 };
+
+fetcher.getWithCache = async (
+  url: string,
+  {
+    cacheKey,
+    maxCacheAge,
+    ...options
+  }: RequestInit & { cacheKey?: string; maxCacheAge?: number }
+) => {
+  cacheKey = cacheKey || url;
+
+  /**
+   * At this low level service we don't want to have a long cache time
+   * The point is to prevent multiple requests to the same endpoint in a short period of time
+   * To optimize more, use cache at a higher level service (react query for instance)
+   */
+  maxCacheAge = maxCacheAge ?? 1000 * 30;
+  
+  const cachedData = await getCachedData(cacheKey, maxCacheAge);
+  if (cachedData) {
+    console.log("Returning cached data for ", cacheKey);
+    return cachedData;
+  }
+
+  console.log("Cache missed for ", cacheKey)
+  const response = await fetcher.get(url, options);
+  const data = await response.json();
+  setCachData(cacheKey, data);
+  return data;
+};
+
+async function getCachedData(name: string, maxAge: number) {
+  const data = await chrome.storage.local.get(`${name}Cache`);
+  const cache = data[`${name}Cache`];
+  if (cache && Date.now() - cache.setAt < maxAge) {
+    return cache.data;
+  }
+  return null;
+}
+
+async function setCachData(name: string, data: any) {
+  chrome.storage.local.set({ [`${name}Cache`]: { data, setAt: Date.now() } });
+}
