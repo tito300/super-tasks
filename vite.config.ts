@@ -70,6 +70,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         popup: "src/pages/popup/index.html",
+        reminder: "src/pages/reminder/index.html",
       },
     },
   },

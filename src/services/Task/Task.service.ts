@@ -112,6 +112,18 @@ export const TaskServices = {
           alertOn: true,
           alert: 0,
         });
+
+        getReminderTopLeftPosition().then(({ top, left }) => {
+          chrome.windows.create({
+            url: "src/pages/reminder/index.html",
+            type: "popup",
+            width: 450,
+            height: 124,
+            focused: true,
+            top: top || 100,
+            left: left || 24,
+          });
+        });
         messageEngine.broadcastMessage("UpdateTasks", null);
 
         console.log("Task reminder triggered");
@@ -177,4 +189,19 @@ function filterEnhancedProperties(
 ): Record<Exclude<keyof TaskEnhanced, "id">, any> {
   const { alert, alertOn, alertSeen, listId, id } = task;
   return { alert, alertOn, alertSeen, listId };
+}
+
+async function getReminderTopLeftPosition() {
+  const displays = await chrome.system.display.getInfo();
+  const primaryDisplay =
+    displays.find((display) => display.isPrimary) || displays[0];
+  const screenWidth = primaryDisplay.workArea.width;
+  const screenHeight = primaryDisplay.workArea.height;
+  const width = 450;
+  const height = 124;
+
+  const left = screenWidth - width - 16 + primaryDisplay.workArea.left;
+  const top = screenHeight - height - 16 + primaryDisplay.workArea.top;
+
+  return { top, left };
 }

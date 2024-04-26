@@ -17,6 +17,14 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
+// chrome.notifications.create("notificationId", {
+//   type: "basic",
+//   iconUrl: "icon.png",
+//   title: "Task Timer",
+//   eventTime: Date.now() + 1000 * 20,
+//   message: "Task Timer is running",
+// });
+
 // #region Task Timer
 const handleFetchTasksAlarm = async () => {
   const userSettings = await services.user.getUserSettings();

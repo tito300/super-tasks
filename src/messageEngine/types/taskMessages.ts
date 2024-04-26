@@ -25,7 +25,7 @@ export type TaskMessage<T extends TaskAction = TaskAction> =
     ? TaskReminderMessage
     : never;
 
-export type ScriptType = "Popup" | "Content" | "Background";
+export type ScriptType = "Popup" | "Content" | "Background" | "Reminder";
 
 export type DockTaskMessage = {
   action: "DockTask";

@@ -25,7 +25,7 @@
   "icons": {
     "128": "icon-128.png"
   },
-  "permissions": ["activeTab", "tabs", "storage", "identity", "alarms"],
+  "permissions": ["activeTab", "tabs", "storage", "identity", "alarms", "notifications", "system.display"],
   "chrome_url_overrides": { "newtab": "src/pages/newtab/index.html" },
   "content_scripts": [
     {

@@ -13,8 +13,8 @@ import {
 } from "./types/taskMessages";
 
 export class MessageEngine {
-  scriptType: "Content" | "Background" | "Popup" | undefined;
-  constructor(scriptType: "Content" | "Background" | "Popup") {
+  scriptType: ScriptType | undefined;
+  constructor(scriptType: ScriptType) {
     this.scriptType = scriptType;
     this[`init${scriptType}`]();
   }
@@ -30,6 +30,7 @@ export class MessageEngine {
     });
   }
   initPopup() {}
+  initReminder() {}
 
   sendMessage<T extends TaskAction>(
     action: T,
@@ -52,7 +53,7 @@ export class MessageEngine {
     sourceScript?: ScriptType,
     options?: { activeTabOnly?: boolean; highlightedOnly?: boolean }
   ) {
-    if (this.scriptType === "Popup" || this.scriptType === "Content") {
+    if (this.scriptType !== "Background") {
       this.sendMessage("BroadcastMessage", { action, payload });
     } else {
       chrome.tabs.query({}, (tabs) => {
