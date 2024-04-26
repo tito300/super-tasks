@@ -48,7 +48,7 @@ function TaskFilterChip({
         boxShadow: selected ? 1 : 0,
       }}
       label="Today"
-      color={selected ? "info" : "default"}
+      color={selected ? "primary" : "default"}
       {...rest}
     />
   );

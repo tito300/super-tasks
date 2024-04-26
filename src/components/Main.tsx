@@ -1,15 +1,16 @@
-import { Box, Tab, Theme, ThemeProvider } from "@mui/material";
-import { PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { Theme, ThemeProvider } from "@mui/material";
+import { PropsWithChildren, useMemo } from "react";
 import { ServicesProvider } from "./Providers/ServicesProvider";
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MessageEngineProvider } from "./Providers/MessageEngineProvider";
-import { theme as v1Theme } from "../theme/v1.theme";
-import { deepmerge } from "@mui/utils";
+import { calendarTheme, tasksTheme } from "../theme/google.theme";
 import { TasksGlobalStateProvider } from "./Providers/TasksGlobalStateProvider";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ScriptTypeProvider } from "./Providers/ScriptTypeProvider";
+import { useUserSettings } from "@src/api/user.api";
+import { deepmerge } from "@mui/utils";
 
 const queryClient = new QueryClient();
 
@@ -22,28 +23,40 @@ export const Main = ({
   theme,
 }: PropsWithChildren & {
   scriptType: ScriptType;
-  theme?: Theme;
+  theme?: unknown;
   remount?: () => void;
 }) => {
-  const enhancedTheme = useMemo(() => {
-    return deepmerge(theme ?? {}, v1Theme);
-  }, [theme]);
-
-  useEffect(() => {}, []);
-
   return (
     <ScriptTypeProvider scriptType={scriptType}>
-      <ThemeProvider theme={enhancedTheme ?? {}}>
-        <QueryClientProvider client={queryClient}>
-          <MessageEngineProvider scriptType={scriptType}>
-            <ServicesProvider scriptType={scriptType}>
+      <QueryClientProvider client={queryClient}>
+        <MessageEngineProvider scriptType={scriptType}>
+          <ServicesProvider scriptType={scriptType}>
+            <CustomThemeProvider theme={theme}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <TasksGlobalStateProvider>{children}</TasksGlobalStateProvider>
               </LocalizationProvider>
-            </ServicesProvider>
-          </MessageEngineProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
+            </CustomThemeProvider>
+          </ServicesProvider>
+        </MessageEngineProvider>
+      </QueryClientProvider>
     </ScriptTypeProvider>
   );
 };
+
+const themeMap = {
+  tasks: tasksTheme,
+  calendar: calendarTheme,
+};
+
+function CustomThemeProvider({
+  children,
+  theme: inTheme,
+}: PropsWithChildren & { theme?: unknown }) {
+  const { userSettings } = useUserSettings();
+
+  const theme = useMemo(() => {
+    return deepmerge(themeMap[userSettings.currentTab], inTheme);
+  }, [userSettings.currentTab]);
+
+  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+}

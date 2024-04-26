@@ -9,7 +9,7 @@ import { CalendarAccordionSummary } from "./CalendarAccordionSummary";
 import { TabsManager } from "@src/components/TabsManager";
 
 export const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
-  backgroundColor: theme.palette.background.gTasks,
+  backgroundColor: theme.palette.background.accent,
   width: "100%",
   [`&.${accordionSummaryClasses.expanded}`]: {
     minHeight: 45,

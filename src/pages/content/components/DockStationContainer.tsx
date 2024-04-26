@@ -18,6 +18,8 @@ import { ReminderBadge } from "./ReminderBadge";
 import { focusAddTaskInput } from "./DockStationAccordion";
 import { CalendarIcon } from "@mui/x-date-pickers";
 import { useUserSettings } from "@src/api/user.api";
+import { calendarTheme, tasksTheme } from "@src/theme/google.theme";
+import { cyan } from "@mui/material/colors";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -88,7 +90,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
           >
             <CalendarIcon />
           </ExtensionCalendarButton>
-          <ExtensionIconButton
+          <ExtensionTaskButton
             id={`${constants.EXTENSION_NAME}-tasks-button`}
             onClick={() => handleButtonClick("tasks")}
           >
@@ -116,7 +118,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
                 <MenuOpen fontSize="large" />
               </BadgeStyled>
             </ReminderBadge>
-          </ExtensionIconButton>
+          </ExtensionTaskButton>
         </ButtonsContainer>
       )}
     </DraggablePopper>
@@ -135,19 +137,19 @@ const BadgeStyled = styled(Badge)(() => {
   };
 });
 
-const ExtensionIconButton = styled(IconButton)(({ theme }) => {
+const ExtensionTaskButton = styled(IconButton)(({ theme }) => {
   return {
     position: "absolute",
     bottom: 0,
     boxShadow: theme.shadows[3],
-    backgroundColor: theme.palette.background.gTasks,
+    backgroundColor: cyan[400],
     fontSize: 0,
     cursor: "grab",
     [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
       display: "none",
     },
     [":hover"]: {
-      backgroundColor: theme.palette.background.gTasks,
+      backgroundColor: cyan[500],
       [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
         display: "block",
       },
@@ -162,7 +164,7 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
     boxShadow: theme.shadows[3],
     padding: 14,
     marginBottom: 6,
-    backgroundColor: theme.palette.background.gCalendar,
+    backgroundColor: calendarTheme.palette.background.accent,
     color: "white",
     transform: "translateY(7%)",
     fontSize: 0,
@@ -171,7 +173,7 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
       display: "none",
     },
     [":hover"]: {
-      backgroundColor: theme.palette.background.gCalendar,
+      backgroundColor: calendarTheme.palette.background.accent,
       [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
         display: "block",
       },

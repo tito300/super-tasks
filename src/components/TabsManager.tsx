@@ -35,7 +35,7 @@ export function TabsManager({
               sx={{
                 borderBottom: 1,
                 borderColor: "divider",
-                position: "absolute",
+                position: scriptType === "Popup" ? "fixed" : "absolute",
                 top: scriptType === "Popup" ? 0 : 45,
                 zIndex: 10,
                 backgroundColor: "white",

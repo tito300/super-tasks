@@ -1,12 +1,10 @@
-import { TypeBackground, TypeBackgroundOptions } from "@mui/material";
+import { PaletteColor, Palette } from "@mui/material";
 
 declare module "@mui/material" {
   interface TypeBackground {
-    gTasks: string;
-    gCalendar: string;
+    accent: string;
   }
   interface TypeBackgroundOptions {
-    gTasks?: string;
-    gCalendar?: string;
+    accent?: string;
   }
 }

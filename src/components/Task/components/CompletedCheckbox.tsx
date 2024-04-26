@@ -6,6 +6,7 @@ import { useUpdateTask } from "../../../api/task.api";
 
 export function CompletedCheckbox({
   listId,
+  sx,
   ...rest
 }: { listId: string } & CheckboxProps) {
   const { control, getValues } = useFormContext<TaskForm>();
@@ -36,7 +37,7 @@ export function CompletedCheckbox({
           }}
           checked={field.value === "completed"}
           size="small"
-          sx={{ padding: 6 }}
+          sx={{ padding: 0.75, ...sx }}
           icon={<CircleOutlined fontSize="small" />}
           checkedIcon={<CheckCircle fontSize="small" />}
           {...rest}

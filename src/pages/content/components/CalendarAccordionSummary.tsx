@@ -23,7 +23,10 @@ export function CalendarAccordionSummary() {
         whiteSpace="nowrap"
         textOverflow="ellipsis"
         overflow="hidden"
-        sx={{ filter: tasksSettings.blurText ? "blur(7px)" : "none" }}
+        sx={{
+          filter: tasksSettings.blurText ? "blur(7px)" : "none",
+          color: (theme) => theme.palette.primary.contrastText,
+        }}
       >
         {title}
       </Typography>

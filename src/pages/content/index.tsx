@@ -47,7 +47,7 @@ function hook() {
 
   const root = createRoot(shadowRoot);
 
-  const theme = createTheme({
+  const theme = {
     components: {
       MuiPopover: {
         defaultProps: {
@@ -65,7 +65,7 @@ function hook() {
         },
       },
     },
-  });
+  };
 
   root.render(
     <CacheProvider value={stylesCache}>
