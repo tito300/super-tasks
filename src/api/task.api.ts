@@ -7,77 +7,20 @@ import { useMessageEngine } from "@src/components/Providers/MessageEngineProvide
 import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useUserSettings } from "./user.api";
 import {
+  CalendarSettings,
   TasksSettings,
+  UserSettings,
   tasksSettingsDefaults,
 } from "@src/config/userSettingsDefaults";
 import React from "react";
 import { deepmerge } from "@mui/utils";
+import { useGlobalState } from "@src/components/Providers/globalStateProvider";
+import { storageService } from "@src/storage/storage.service";
 
 export type TaskList = {
   id: string;
   title: string;
 };
-
-export function useTasksSettings() {
-  const [tasksSettings, setTasksSettings] = React.useState<TasksSettings>(
-    tasksSettingsDefaults
-  );
-  const { task: taskService } = useServicesContext();
-
-  useEffect(() => {
-    taskService.getTasksSettings().then(setTasksSettings);
-    chrome.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName === "local" && changes.tasksSettings) {
-        setTasksSettings(changes.tasksSettings.newValue);
-      }
-    });
-  }, []);
-
-  const updateTasksSettings = useCallback(
-    (newSettings: Partial<TasksSettings>) => {
-      setTasksSettings((prevSettings) => {
-        const settings = deepmerge(prevSettings, newSettings);
-        taskService.updateTasksSettings(settings);
-        return settings;
-      });
-    },
-    [taskService]
-  );
-
-  return {
-    tasksSettings,
-    updateTasksSettings,
-  };
-}
-
-export function useTasksState() {
-  const [tasksState, setTasksState] = useState<TasksGlobalState>({});
-
-  useEffect(() => {
-    chrome.storage.local.get("tasksState").then((data) => {
-      setTasksState({ ...data?.tasksState });
-    });
-
-    chrome.storage.local.onChanged.addListener((changes) => {
-      if (changes.tasksState) {
-        setTasksState(changes.tasksState.newValue);
-      }
-    });
-  }, []);
-
-  const updateTasksState = useCallback(
-    (newState: Partial<TasksGlobalState>) => {
-      setTasksState((oldState) => {
-        const mergedState = { ...oldState, ...newState };
-        chrome.storage.local.set({ tasksState: mergedState });
-        return mergedState;
-      });
-    },
-    []
-  );
-
-  return { tasksState, updateTasksState };
-}
 
 export const useTasks = ({
   enabled,
@@ -87,10 +30,11 @@ export const useTasks = ({
   enabled?: boolean;
 }) => {
   const { task } = useServicesContext();
+  const { open } = useGlobalState();
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", listId],
-    initialData: [] as SavedTask[],
+    placeholderData: [] as SavedTask[],
     queryFn: async () => {
       console.log("useTasks queryFn called: ", listId);
       if (!listId) return [];
@@ -108,7 +52,7 @@ export const useTasks = ({
         return [];
       }
     },
-    enabled: !!listId,
+    enabled: enabled ?? (open && !!listId),
     // stale time prevents refetching for things like when user focuses on page
     // If you need to force a refetch, use queryClient.invalidateQueries
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -118,8 +62,8 @@ export const useTasks = ({
 export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
   const { task } = useServicesContext();
   return useQuery<TaskList[]>({
-    queryKey: ["tasks"],
-    initialData: [] as TaskList[],
+    queryKey: ["taskLists"],
+    placeholderData: [] as TaskList[],
     queryFn: async () => {
       return task.getTaskLists();
     },
@@ -149,7 +93,7 @@ export const useMoveTask = (listId: string) => {
       // Snapshot the previous value
       const previousTasks = queryClient.getQueryData(["tasks", listId]);
 
-      // Optimistically update to the new value
+      // Optimistically update to the new valuetaskList
       queryClient.setQueryData(["tasks", listId], (old: SavedTask[]) => {
         const oldUncomplete = old.filter((task) => task.status !== "completed");
         const oldIndex = old?.findIndex((task) => taskId === task.id);
@@ -273,6 +217,7 @@ export const useUpdateTask = (listId: string) => {
 
       if (task.alert && !task.alertOn) {
         taskService.setReminder(task.id, listId, task.alert);
+        return task;
       }
       return taskService.updateTask(listId, {
         ...savedTask,
@@ -308,3 +253,76 @@ export const useUpdateTask = (listId: string) => {
     },
   });
 };
+
+export function useTasksSettings() {
+  const [tasksSettings, setTasksSettings] = React.useState<TasksSettings>(
+    tasksSettingsDefaults
+  );
+  const { task: taskService } = useServicesContext();
+
+  useEffect(() => {
+    taskService.getTasksSettings().then(setTasksSettings);
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === "local" && changes.tasksSettings) {
+        setTasksSettings(changes.tasksSettings.newValue);
+      }
+    });
+  }, []);
+
+  const updateTasksSettings = useCallback(
+    (newSettings: Partial<TasksSettings>) => {
+      setTasksSettings((prevSettings) => {
+        const settings = deepmerge(prevSettings, newSettings);
+        taskService.updateTasksSettings(settings);
+        return settings;
+      });
+    },
+    [taskService]
+  );
+
+  return {
+    tasksSettings,
+    updateTasksSettings,
+  };
+}
+
+export function useTasksState() {
+  const [tasksState, setTasksState] = useState<TasksGlobalState>({});
+
+  useEffect(() => {
+    storageService.get("tasksState").then((data) => {
+      setTasksState({ ...data });
+    });
+
+    storageService.onChange((changes) => {
+      if (changes.tasksState) {
+        setTasksState(changes.tasksState.newValue ?? {});
+      }
+    });
+  }, []);
+
+  const updateTasksState = useCallback(
+    (newState: Partial<TasksGlobalState>) => {
+      setTasksState((oldState) => {
+        const mergedState = { ...oldState, ...newState };
+        storageService.set({ tasksState: newState });
+        return mergedState;
+      });
+    },
+    []
+  );
+
+  return { tasksState, updateTasksState };
+}
+
+// export function useLocalTasks(listId: string) {
+//   const [tasks, setTasks] = useState<TaskEnhanced[]>([]);
+
+//   useEffect(() => {
+//     storageService.get("tasksState").then((data) => {
+//       setTasks(data.tasks);
+//     });
+//   }, []);
+
+//   return tasks;
+// }

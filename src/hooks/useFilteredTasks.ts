@@ -1,12 +1,21 @@
 import { useTasks } from "@src/api/task.api";
 import { useTasksSettings } from "@src/api/task.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
-import { useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 
 export function useFilteredTasks() {
   const { tasksSettings } = useTasksSettings();
   const { selectedTaskListId } = useTasksGlobalState();
   const { data: tasks, ...rest } = useTasks({ listId: selectedTaskListId });
+
+  // useEffect(() => {
+  //   if (selectedTaskListId) {
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["tasks", selectedTaskListId],
+  //     });
+  //   }
+  // }, [selectedTaskListId]);
 
   const filteredTasks = useMemo(() => {
     return tasks?.filter((task) => {

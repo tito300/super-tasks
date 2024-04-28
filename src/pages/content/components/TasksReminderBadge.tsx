@@ -6,11 +6,14 @@ import { SavedTask } from "@src/components/Task/Task";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
-export function ReminderBadge(props: BadgeProps) {
+export function TasksReminderBadge(props: BadgeProps) {
   const [tasksWithAlertNotSeen, setTasksWithAlert] = useState<SavedTask[]>([]);
   const queryClient = useQueryClient();
   const { selectedTaskListId } = useTasksGlobalState();
-  const { data: tasks } = useTasks({ listId: selectedTaskListId });
+  const { data: tasks } = useTasks({
+    listId: selectedTaskListId,
+    enabled: true,
+  });
   const { userSettings } = useUserSettings();
   const mutateTask = useUpdateTask(selectedTaskListId!);
 

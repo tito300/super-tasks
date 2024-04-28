@@ -7,10 +7,19 @@ import axios from "axios";
 import { useEffect } from "react";
 import { CalendarApp } from "../content/components/CalendarApp";
 import { TasksApp } from "../content/components/TasksApp";
+import { useGlobalState } from "@src/components/Providers/globalStateProvider";
 
 axios.defaults.baseURL = urls.BASE_URL;
 
 export default function Popup({}): JSX.Element {
+  const { open, toggleOpen } = useGlobalState();
+
+  useEffect(() => {
+    if (!open) {
+      toggleOpen();
+    }
+  }, [open]);
+
   return (
     <Box sx={{ px: 1, py: 1, minHeight: 400 }}>
       <TabsManager
