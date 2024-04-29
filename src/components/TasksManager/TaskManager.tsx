@@ -42,8 +42,6 @@ export function TaskManager({ listId }: { listId: string }) {
 
   const moveMutation = useMoveTask(listId);
 
-  console.log("rendered 1");
-
   useEffect(() => {
     let eventListener = (e: MouseEvent) => {
       e.stopPropagation();

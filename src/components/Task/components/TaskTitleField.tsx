@@ -1,4 +1,4 @@
-import { IconButton, Menu, MenuItem, TextField } from "@mui/material";
+import { Box, IconButton, Menu, MenuItem, TextField } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { SavedTask, TaskForm, TaskType } from "../Task";
 import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
@@ -86,10 +86,15 @@ export const TaskTitleField = forwardRef<
               //     <Warning color="warning" fontSize="small" sx={{ mr: 0.5 }} />
               //   ) : undefined,
               endAdornment: taskId && (
-                <AddReminder
-                  visible={!!(hovered || task?.alertOn || task?.alert)}
-                  task={task!}
-                />
+                // 2 boxes needed to prevent shifting in UI without having to change the icon size
+                <Box sx={{ position: "relative", width: 30 }}>
+                  <Box sx={{ position: "absolute", top: 0, left: 0 }}>
+                    <AddReminder
+                      visible={!!(hovered || task?.alertOn || task?.alert)}
+                      task={task!}
+                    />
+                  </Box>
+                </Box>
               ),
               sx: { paddingBottom: 0, alignItems: "flex-start" },
             }}

@@ -11,11 +11,11 @@ import {
   TasksSettings,
   UserSettings,
   tasksSettingsDefaults,
-} from "@src/config/userSettingsDefaults";
+} from "@src/config/settingsDefaults";
 import React from "react";
 import { deepmerge } from "@mui/utils";
 import { useGlobalState } from "@src/components/Providers/globalStateProvider";
-import { storageService } from "@src/storage/storage.service";
+import { StorageData, storageService } from "@src/storage/storage.service";
 
 export type TaskList = {
   id: string;
@@ -29,25 +29,23 @@ export const useTasks = ({
   listId: string | null | undefined;
   enabled?: boolean;
 }) => {
-  const { task } = useServicesContext();
+  const { task: taskService } = useServicesContext();
   const { open } = useGlobalState();
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", listId],
     placeholderData: [] as SavedTask[],
     queryFn: async () => {
-      console.log("useTasks queryFn called: ", listId);
       if (!listId) return [];
 
       try {
-        const data = await task.getTasks(listId);
+        const data = await taskService.getTasks(listId);
         const sortedData = data.sort((a, b) =>
           a.position.localeCompare(b.position)
         );
 
         return sortedData;
       } catch (err) {
-        console.log("error fetching tasks");
         console.error(err);
         return [];
       }
@@ -204,6 +202,7 @@ export const useAddTask = (listId: string) => {
 export const useUpdateTask = (listId: string) => {
   const queryClient = useQueryClient();
   const { task: taskService } = useServicesContext();
+  const { userSettings } = useUserSettings();
 
   return useMutation({
     mutationFn: async (task: Partial<SavedTask> & { id: string }) => {
@@ -216,7 +215,7 @@ export const useUpdateTask = (listId: string) => {
         ?.find((cTask) => cTask.id === task.id);
 
       if (task.alert && !task.alertOn) {
-        taskService.setReminder(task.id, listId, task.alert);
+        taskService.setReminder(task.id, listId, task.alert, userSettings);
         return task;
       }
       return taskService.updateTask(listId, {
@@ -233,13 +232,15 @@ export const useUpdateTask = (listId: string) => {
       const previousTasks = queryClient.getQueryData(["tasks", listId]);
 
       queryClient.setQueryData(["tasks", listId], (old: SavedTask[]) => {
-        return old.map((currentTask) => {
-          if (task.id === currentTask.id) {
-            return { ...currentTask, ...task };
-          }
+        return (
+          old?.map((currentTask) => {
+            if (task.id === currentTask.id) {
+              return { ...currentTask, ...task };
+            }
 
-          return currentTask;
-        });
+            return currentTask;
+          }) || []
+        );
       });
 
       // Return a context object with the snapshotted value
@@ -262,10 +263,12 @@ export function useTasksSettings() {
 
   useEffect(() => {
     taskService.getTasksSettings().then(setTasksSettings);
-    chrome.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName === "local" && changes.tasksSettings) {
-        setTasksSettings(changes.tasksSettings.newValue);
-      }
+    storageService.onChange("tasksSettings", (changes) => {
+      setTasksSettings(
+        changes?.tasksSettings?.newValue ?? {
+          ...tasksSettingsDefaults,
+        }
+      );
     });
   }, []);
 
@@ -294,8 +297,8 @@ export function useTasksState() {
       setTasksState({ ...data });
     });
 
-    storageService.onChange((changes) => {
-      if (changes.tasksState) {
+    storageService.onChange("tasksState", (changes) => {
+      if (changes?.tasksState) {
         setTasksState(changes.tasksState.newValue ?? {});
       }
     });
@@ -315,14 +318,37 @@ export function useTasksState() {
   return { tasksState, updateTasksState };
 }
 
-// export function useLocalTasks(listId: string) {
-//   const [tasks, setTasks] = useState<TaskEnhanced[]>([]);
+export function useEnhancedTasks() {
+  const [enhancedTasks, setEnhancedTasks] = useState<TaskEnhanced[]>([]);
 
-//   useEffect(() => {
-//     storageService.get("tasksState").then((data) => {
-//       setTasks(data.tasks);
-//     });
-//   }, []);
+  useEffect(() => {
+    function enhancedTasksMapToArray(
+      enhancedTasks: Record<string, TaskEnhanced>
+    ): TaskEnhanced[] {
+      return Object.keys(enhancedTasks).map((key) => enhancedTasks[key]);
+    }
+    storageService.get("tasksEnhanced").then((data) => {
+      setEnhancedTasks(enhancedTasksMapToArray(data ?? {}));
+    });
 
-//   return tasks;
-// }
+    storageService.onChange("tasksEnhanced", (changes) => {
+      if (changes?.tasksEnhanced) {
+        setEnhancedTasks(
+          enhancedTasksMapToArray(changes.tasksEnhanced.newValue ?? {})
+        );
+      }
+    });
+  }, []);
+
+  const updateEnhancedTasks = useCallback((newTasks: TaskEnhanced[]) => {
+    setEnhancedTasks(newTasks);
+    storageService.set({
+      tasksEnhanced: newTasks.reduce((acc, task) => {
+        acc[task.id] = task;
+        return acc;
+      }, {} as StorageData["tasksEnhanced"]),
+    });
+  }, []);
+
+  return [enhancedTasks, updateEnhancedTasks] as const;
+}

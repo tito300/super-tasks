@@ -7,8 +7,9 @@ import { deepmerge } from "@mui/utils";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import {
   TasksSettings,
+  UserSettings,
   tasksSettingsDefaults,
-} from "@src/config/userSettingsDefaults";
+} from "@src/config/settingsDefaults";
 import { storageService } from "@src/storage/storage.service";
 
 export type ServiceMethodName = keyof typeof TaskServices;
@@ -97,7 +98,7 @@ export const TaskServices = {
     taskId: string,
     taskListId: string,
     timeInMinutes: number,
-    repeating?: boolean
+    userSettings: UserSettings
   ) => {
     const alarmName = `TaskReminder-${taskListId}-${taskId}-${timeInMinutes}`;
     chrome.alarms.create(alarmName, {
@@ -112,22 +113,23 @@ export const TaskServices = {
           id: taskId,
           alertOn: true,
           alert: 0,
+          listId: taskListId,
         });
 
-        getReminderTopLeftPosition().then(({ top, left }) => {
-          chrome.windows.create({
-            url: "src/pages/reminder/index.html",
-            type: "popup",
-            width: 450,
-            height: 124,
-            focused: true,
-            top: top || 100,
-            left: left || 24,
+        if (userSettings.windowNotifications) {
+          getReminderTopLeftPosition().then(({ top, left }) => {
+            chrome.windows.create({
+              url: "src/pages/reminder/index.html",
+              type: "popup",
+              width: 450,
+              height: 124,
+              focused: true,
+              top: top || 100,
+              left: left || 24,
+            });
           });
-        });
+        }
         messageEngine.broadcastMessage("UpdateTasks", null);
-
-        console.log("Task reminder triggered");
       }
     });
   },
@@ -144,24 +146,25 @@ export const TaskServices = {
     // });
   },
   mergeWithLocalState: async (tasks: SavedTask[]) => {
-    const localTasksState = await TaskServices.getTasksState();
-    const localTasks = localTasksState.tasks || {};
+    const storage = await storageService.get("tasksEnhanced");
+
+    if (!storage) return tasks;
 
     const mergedTasks = tasks.map((task) => {
-      const enhancedProperties: TaskEnhanced = filterEnhancedProperties(
-        (localTasks[task.id] || {}) as TaskEnhanced
+      const enhancedProperties = filterEnhancedProperties(
+        (storage[task.id] || {}) as TaskEnhanced
       );
       return deepmerge(task, enhancedProperties);
     });
 
     return mergedTasks;
   },
-  updateLocalTaskState: async (task: Partial<TaskType> & { id: string }) => {
+  updateLocalTaskState: async (
+    task: Partial<TaskType> & { id: string; listId: string }
+  ) => {
     storageService.set({
-      tasksState: {
-        tasks: {
-          [task.id!]: filterEnhancedProperties(task),
-        },
+      tasksEnhanced: {
+        [task.id!]: filterEnhancedProperties(task),
       },
     });
   },
@@ -170,7 +173,7 @@ export const TaskServices = {
     if (!settings) TaskServices.updateTasksSettings(tasksSettingsDefaults);
     return { ...tasksSettingsDefaults, ...settings };
   },
-  async updateTasksSettings(settings: TasksSettings) {
+  async updateTasksSettings(settings: Partial<TasksSettings>) {
     // for now, just store settings in local storage until we have user endpoints
     return storageService.set({
       tasksSettings: { ...tasksSettingsDefaults, ...settings },

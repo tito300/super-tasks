@@ -3,7 +3,7 @@ import { OauthRequired } from "@src/components/Oauth/OauthGate";
 import { Box } from "@mui/material";
 import { TasksApp } from "./TasksApp";
 import { CalendarApp } from "./CalendarApp";
-import { Tab } from "@src/config/userSettingsDefaults";
+import { Tab } from "@src/config/settingsDefaults";
 import { TabsManager } from "@src/components/TabsManager";
 import { DockStationAccordion } from "./DockStationAccordion";
 import { DockStationAccordionDetails } from "./DockStationAccordionDetails";

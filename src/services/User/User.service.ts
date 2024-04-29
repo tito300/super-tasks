@@ -4,7 +4,7 @@ import {
   UserSettings,
   tasksSettingsDefaults,
   userSettingsDefaults,
-} from "@src/config/userSettingsDefaults";
+} from "@src/config/settingsDefaults";
 import { setupToken } from "@src/oauth/setupToken";
 import { storageService } from "@src/storage/storage.service";
 

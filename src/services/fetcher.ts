@@ -57,7 +57,11 @@ fetcher.getWithCache = async (
     cacheKey,
     maxCacheAge,
     ...options
-  }: RequestInit & { cacheKey?: string; maxCacheAge?: number }
+  }: RequestInit & {
+    cacheKey: string;
+    maxCacheAge?: number;
+    skipCache?: boolean;
+  }
 ) => {
   cacheKey = cacheKey || url;
 
@@ -66,7 +70,7 @@ fetcher.getWithCache = async (
    * The point is to prevent multiple requests to the same endpoint in a short period of time
    * To optimize more, use cache at a higher level service (react query for instance)
    */
-  maxCacheAge = maxCacheAge ?? 1000 * 30;
+  maxCacheAge = maxCacheAge ?? 0;
 
   const cachedData = await getCachedData(cacheKey, maxCacheAge);
   if (cachedData) {
@@ -88,9 +92,9 @@ fetcher.getWithCache = async (
 };
 
 async function getCachedData(name: string, maxAge: number) {
-  const data = await chrome.storage.local.get(`${name}Cache`);
-  const cache = data[`${name}Cache`];
-  if (cache && Date.now() - cache.setAt < maxAge) {
+  const data = await storageService.get(`fetcherCache`);
+  const cache = data.fetcherCache?.[name];
+  if (cache && Date.now() - cache.updatedAt < maxAge) {
     return cache.data;
   }
   return null;
@@ -98,6 +102,6 @@ async function getCachedData(name: string, maxAge: number) {
 
 async function setCacheData(name: string, data: any) {
   storageService.set({
-    cache: { [`${name}Cache`]: { data, updatedAt: Date.now() } },
+    fetcherCache: { [name]: { data, updatedAt: Date.now() } },
   });
 }

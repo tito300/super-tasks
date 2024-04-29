@@ -54,7 +54,13 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
     : localExpanded;
 
   return (
-    <Accordion expanded={expanded} onChange={handleExpansion} {...props}>
+    <Accordion
+      disableGutters
+      slotProps={{ transition: { timeout: { appear: 1, enter: 1, exit: 1 } } }}
+      expanded={expanded}
+      onChange={handleExpansion}
+      {...props}
+    >
       {children}
     </Accordion>
   );

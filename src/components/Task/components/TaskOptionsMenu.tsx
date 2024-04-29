@@ -17,6 +17,7 @@ export function TaskOptionsMenu({ listId }: { listId: string }) {
   const deleteMutation = useDeleteTask(listId);
   const { getValues } = useFormContext<TaskForm>();
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
@@ -36,6 +37,7 @@ export function TaskOptionsMenu({ listId }: { listId: string }) {
         aria-expanded={open ? "true" : undefined}
         aria-haspopup="true"
         onClick={handleClick}
+        onFocus={e => e.stopPropagation()}
         sx={{ p: 0.5 }}
       >
         <MoreVertIcon />

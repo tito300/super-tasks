@@ -9,13 +9,6 @@ export function DescriptionTextField({ onblur }: { onblur: () => void }) {
   const { control, getFieldState } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
 
-  function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      onblur();
-      textFieldRef.current?.blur();
-    }
-  }
-
   return (
     <Controller
       control={control}
@@ -32,10 +25,9 @@ export function DescriptionTextField({ onblur }: { onblur: () => void }) {
           draggable={focused ? false : true}
           onDragStart={(e) => (focused ? e.preventDefault() : undefined)}
           multiline
-          onKeyDown={handleKeyDown}
           variant="standard"
           size="small"
-          sx={{ ml: 1 }}
+          sx={{ ml: 1, pt: 0.5 }}
           InputProps={{
             sx: {
               overflow: "auto",

@@ -1,5 +1,5 @@
 import { useTasksSettings } from "@src/api/task.api";
-import { TasksSettings } from "@src/config/userSettingsDefaults";
+import { TasksSettings } from "@src/config/settingsDefaults";
 import { PropsWithChildren, createContext } from "react";
 
 const TasksSettingsContext = createContext<TasksSettings>(null!);

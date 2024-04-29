@@ -9,6 +9,7 @@ export const userSettingsDefaults = {
   syncAccordionExpanded: false,
   blurText: false,
   syncBlurText: true,
+  windowNotifications: true,
 };
 
 export const tasksSettingsDefaults = {

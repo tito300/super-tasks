@@ -6,7 +6,7 @@ import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import {
   CalendarSettings,
   calendarSettingsDefaults,
-} from "@src/config/userSettingsDefaults";
+} from "@src/config/settingsDefaults";
 import {
   CalendarEvent,
   ListCalendar,

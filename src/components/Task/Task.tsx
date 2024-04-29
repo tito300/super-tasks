@@ -19,7 +19,12 @@ import { TaskTitleField } from "./components/TaskTitleField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
-import { useAddTask, useTasks, useUpdateTask } from "../../api/task.api";
+import {
+  useAddTask,
+  useEnhancedTasks,
+  useTasks,
+  useUpdateTask,
+} from "../../api/task.api";
 import { TaskSkeleton } from "./Task.skeleton";
 
 import dayjs from "dayjs";
@@ -29,11 +34,11 @@ import { DescriptionTextField } from "./components/DescriptionTextField";
 export type TaskType = SavedTask | NewTask;
 
 export type TaskEnhanced = {
-  id?: string;
+  id: string;
   alertOn?: boolean | null;
   alert?: number | null; // in minutes
   alertSeen?: boolean | null;
-  listId?: string;
+  listId: string;
   // add updated date
 };
 
@@ -75,10 +80,10 @@ export function Task({
   onSaved?: () => void;
 }) {
   const [focused, setFocused] = useState(autoFocus);
-  const activeRef = useRef(false);
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: data.id || data.title || data.notes || "temp" });
   const { data: tasks } = useTasks({ enabled: false, listId });
+  const [_, updateEnhancedTasks] = useEnhancedTasks();
 
   const addMutation = useAddTask(listId);
   const updateMutation = useUpdateTask(listId);
@@ -99,14 +104,19 @@ export function Task({
       addMutation
         .mutateAsync({
           task: form,
-          previousTaskId: tasks?.length ? tasks[tasks?.length - 1].id : undefined,
+          previousTaskId: tasks?.length
+            ? tasks[tasks?.length - 1].id
+            : undefined,
         })
         .then(() => onSaved?.());
     } else {
       // todo: figure out why formState.isDirty is not working
+      if (!form.title) return;
+
       if (
         !formFields.getFieldState("title").isDirty &&
-        !formFields.getFieldState("due").isDirty
+        !formFields.getFieldState("due").isDirty &&
+        !formFields.getFieldState("notes").isDirty
       )
         return;
 
@@ -117,18 +127,29 @@ export function Task({
   };
 
   const handleClickAway = () => {
-    if (activeRef.current) {
+    if (focused) {
       setFocused(false);
 
       if (formFields.formState.isDirty || temporary) {
         onSubmit(formFields.getValues());
       }
-
-      activeRef.current = false;
     }
   };
 
-  const expanded = focused || !!formFields.getValues("notes");
+  const handleFocus = () => {
+    setFocused(true);
+    if (data.alertOn && !data.alertSeen) {
+      updateEnhancedTasks([
+        {
+          id: data.id,
+          alertSeen: true,
+          listId: data.listId,
+        },
+      ]);
+    }
+  };
+
+  const expanded = focused;
   if (loading) return <TaskSkeleton />;
 
   return (
@@ -150,7 +171,7 @@ export function Task({
           sx={{
             backgroundColor: data.alertOn ? "rgb(255, 234, 194)" : undefined,
           }}
-          onFocus={() => (activeRef.current = true)}
+          onFocus={handleFocus}
         >
           <Stack direction="row" alignItems="start" width="100%">
             {/* <IconButton
@@ -181,17 +202,17 @@ export function Task({
                 onblur={() => formFields.handleSubmit(onSubmit)()}
                 onFocus={() => setFocused(true)}
               />
-              <Stack direction="row" alignItems="center" gap={0.5} mb={0.25}>
-                {!expanded && data.due && (
-                  <TaskDate onSubmit={() =>
-                    setTimeout(
-                      () => formFields.handleSubmit(onSubmit)(),
-                      30
-                    )} />
-                )}
-              </Stack>
+              {!expanded && data.due && (
+                <Stack direction="row" alignItems="center" gap={0.5} mb={0.25}>
+                  <TaskDate
+                    onSubmit={() =>
+                      setTimeout(() => formFields.handleSubmit(onSubmit)(), 30)
+                    }
+                  />
+                </Stack>
+              )}
               <Collapse in={expanded}>
-                <Stack alignItems="flex-start">
+                <Stack alignItems="normal">
                   <DescriptionTextField
                     onblur={() =>
                       formFields.formState.isDirty &&
@@ -238,6 +259,7 @@ export const createEmptyTask = (task?: Partial<SavedTask>): SavedTask => {
     notes: "",
     position: "",
     status: "needsAction",
+    listId: "",
     ...task,
   };
 };
@@ -260,6 +282,7 @@ function SaveButton({
 
   return (
     <Button
+      size="small"
       disabled={pendingSave || !formState.isDirty}
       onClick={() => onSubmit(formFields.getValues())}
     >
