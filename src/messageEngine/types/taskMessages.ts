@@ -1,5 +1,5 @@
 import { SavedTask } from "@src/components/Task/Task";
-import { UserSettings } from "@src/config/userSettingsDefaults";
+import { UserSettings } from "@src/config/settingsDefaults";
 import { ServiceName } from "@src/services";
 import { ServiceMethodName } from "@src/services/Task/Task.service";
 import { UserServiceMethodName } from "@src/services/User/User.service";

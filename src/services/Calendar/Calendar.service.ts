@@ -6,7 +6,7 @@ import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import {
   CalendarSettings,
   calendarSettingsDefaults,
-} from "@src/config/userSettingsDefaults";
+} from "@src/config/settingsDefaults";
 import {
   CalendarEvent,
   ListCalendar,
@@ -15,6 +15,7 @@ import {
 } from "@src/calendar.types";
 import { DeepPartial } from "react-hook-form";
 import { createMockCalendarEvent } from "./calendar.mock";
+import { storageService } from "@src/storage/storage.service";
 
 export type ServiceMethodName = keyof typeof calendarServices;
 const messageEngine = getMessageEngine("Background");
@@ -47,8 +48,18 @@ export const calendarServices = {
     // });
     // return CalendarEventServices.mergeWithLocalState(calendarEvents);
     const calendarEvents = [
-      createMockCalendarEvent({ summary: "1:1 John Doe", id: '13', start: { dateTime: '2022-01-01T 14:00:00' }, end: { dateTime: '2022-01-01T15:00:00' }}),
-      createMockCalendarEvent({ summary: "All Hands meeting", id: '14', start: { dateTime: '2022-01-01T11:00:00' }, end: { dateTime: '2022-01-01T11:30:00' }}),
+      createMockCalendarEvent({
+        summary: "1:1 John Doe",
+        id: "13",
+        start: { dateTime: "2022-01-01T 14:00:00" },
+        end: { dateTime: "2022-01-01T15:00:00" },
+      }),
+      createMockCalendarEvent({
+        summary: "All Hands meeting",
+        id: "14",
+        start: { dateTime: "2022-01-01T11:00:00" },
+        end: { dateTime: "2022-01-01T11:30:00" },
+      }),
     ] as SavedCalendarEvent[];
 
     return calendarEvents;
@@ -142,14 +153,14 @@ export const calendarServices = {
   //   });
   // },
   async getCalendarSettings() {
-    const settings = await chrome.storage.local.get("calendarSettings");
-    if (!settings.calendarSettings)
+    const settings = await storageService.get("calendarSettings");
+    if (!settings)
       calendarServices.updateCalendarSettings(calendarSettingsDefaults);
-    return { ...calendarSettingsDefaults, ...settings.userSettings };
+    return { ...calendarSettingsDefaults, ...settings };
   },
   async updateCalendarSettings(settings: CalendarSettings) {
     // for now, just store settings in local storage until we have user endpoints
-    return chrome.storage.local.set({
+    return storageService.set({
       calendarSettings: { ...calendarSettingsDefaults, ...settings },
     });
   },

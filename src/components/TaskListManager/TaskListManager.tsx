@@ -26,11 +26,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { TasksSettings } from "../TasksSettings/TasksSettings";
 import { useUserSettings } from "@src/api/user.api";
 import { useRootElement } from "@src/hooks/useRootElement";
+import { useGlobalState } from "../Providers/globalStateProvider";
 
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
-  const { data } = useTaskLists();
+  const { open } = useGlobalState();
+  const { data } = useTaskLists({ enabled: open });
+
   const queryClient = useQueryClient();
   const { selectedTaskListId, updateSelectedTaskListId } =
     useTasksGlobalState();

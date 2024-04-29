@@ -11,6 +11,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ScriptTypeProvider } from "./Providers/ScriptTypeProvider";
 import { useUserSettings } from "@src/api/user.api";
 import { deepmerge } from "@mui/utils";
+import { GlobalStateProvider } from "./Providers/globalStateProvider";
 
 const queryClient = new QueryClient();
 
@@ -31,11 +32,15 @@ export const Main = ({
       <QueryClientProvider client={queryClient}>
         <MessageEngineProvider scriptType={scriptType}>
           <ServicesProvider scriptType={scriptType}>
-            <CustomThemeProvider theme={theme}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <TasksGlobalStateProvider>{children}</TasksGlobalStateProvider>
-              </LocalizationProvider>
-            </CustomThemeProvider>
+            <GlobalStateProvider>
+              <CustomThemeProvider theme={theme}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <TasksGlobalStateProvider>
+                    {children}
+                  </TasksGlobalStateProvider>
+                </LocalizationProvider>
+              </CustomThemeProvider>
+            </GlobalStateProvider>
           </ServicesProvider>
         </MessageEngineProvider>
       </QueryClientProvider>

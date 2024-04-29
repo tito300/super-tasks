@@ -1,4 +1,4 @@
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, useContext, useState } from "react";
 import { DockStationControls } from "./DockStationControls";
 import {
   Badge,
@@ -14,7 +14,7 @@ import {
 import { Close, MenuOpen } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
-import { ReminderBadge } from "./ReminderBadge";
+import { TasksReminderBadge } from "./TasksReminderBadge";
 import { focusAddTaskInput } from "./DockStationAccordion";
 import { CalendarIcon } from "@mui/x-date-pickers";
 import { useUserSettings } from "@src/api/user.api";
@@ -23,6 +23,7 @@ import { cyan } from "@mui/material/colors";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
+import { useGlobalState } from "@src/components/Providers/globalStateProvider";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -32,9 +33,8 @@ import { useMessageEngine } from "@src/components/Providers/MessageEngineProvide
 
 export function DockStationContainer({ children }: PropsWithChildren) {
   const { userSettings, updateUserSettings } = useUserSettings();
-  const [localExpanded, setLocalExpanded] = useState(false);
   const queryClient = useQueryClient();
-  const { selectedTaskListId } = useTasksGlobalState();
+  const { open: localOpen, toggleOpen } = useGlobalState();
   const messageEngine = useMessageEngine();
 
   const [removed, setRemoved] = useState(false);
@@ -48,9 +48,10 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     y: window.innerHeight - 32,
   };
 
+  // todo: move logic to global state
   const open = userSettings.syncButtonExpanded
     ? userSettings.buttonExpanded
-    : localExpanded;
+    : localOpen;
 
   const handleButtonClick = (app: "calendar" | "tasks") => {
     if (userSettings.syncButtonExpanded) {
@@ -59,14 +60,17 @@ export function DockStationContainer({ children }: PropsWithChildren) {
         buttonExpanded: true,
         accordionExpanded: true,
       });
+      toggleOpen();
     } else {
       updateUserSettings({ currentTab: app });
-      setLocalExpanded(true);
+      toggleOpen();
     }
 
-    queryClient.invalidateQueries({
-      queryKey: ["tasks", selectedTaskListId],
-    });
+    if (app === "tasks") {
+      queryClient.invalidateQueries({
+        queryKey: ["taskLists"],
+      });
+    }
     messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
 
     focusAddTaskInput();
@@ -84,9 +88,8 @@ export function DockStationContainer({ children }: PropsWithChildren) {
             onMinimize={() => {
               if (userSettings.syncButtonExpanded) {
                 updateUserSettings({ buttonExpanded: false });
-              } else {
-                setLocalExpanded(false);
               }
+              toggleOpen();
             }}
             onRemove={() => setRemoved(true)}
           />
@@ -106,7 +109,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
             id={`${constants.EXTENSION_NAME}-tasks-button`}
             onClick={() => handleButtonClick("tasks")}
           >
-            <ReminderBadge>
+            <TasksReminderBadge>
               <BadgeStyled
                 slotProps={{
                   badge: {
@@ -129,7 +132,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
               >
                 <MenuOpen fontSize="large" />
               </BadgeStyled>
-            </ReminderBadge>
+            </TasksReminderBadge>
           </ExtensionTaskButton>
         </ButtonsContainer>
       )}

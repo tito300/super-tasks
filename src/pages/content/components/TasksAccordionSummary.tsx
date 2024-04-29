@@ -1,6 +1,6 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Stack, Typography, IconButton } from "@mui/material";
-import { ReminderBadge } from "./ReminderBadge";
+import { TasksReminderBadge } from "./TasksReminderBadge";
 import { useState } from "react";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { useTasksSettings } from "@src/api/task.api";
@@ -59,7 +59,7 @@ export function TasksAccordionSummary() {
             />
           )}
         </IconButton>
-        <ReminderBadge sx={{ mx: 1 }} />
+        <TasksReminderBadge sx={{ mx: 1 }} />
       </Stack>
     </Stack>
   );

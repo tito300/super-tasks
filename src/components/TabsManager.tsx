@@ -1,7 +1,7 @@
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-import { Box, Tab, styled, tabsClasses } from "@mui/material";
-import { Tab as TabType } from "@src/config/userSettingsDefaults";
-import React from "react";
+import { Box, IconButton, Tab, styled, tabsClasses } from "@mui/material";
+import { Tab as TabType } from "@src/config/settingsDefaults";
+import React, { useEffect } from "react";
 import { CalendarMonth, Checklist } from "@mui/icons-material";
 import { useScriptType } from "./Providers/ScriptTypeProvider";
 import { useUserSettings } from "@src/api/user.api";
@@ -33,6 +33,8 @@ export function TabsManager({
             />
             <Box
               sx={{
+                display: 'flex',
+                alignItems: 'center',
                 borderBottom: 1,
                 borderColor: "divider",
                 position: scriptType === "Popup" ? "fixed" : "absolute",
@@ -42,26 +44,42 @@ export function TabsManager({
                 width: "100%",
               }}
             >
-              <TabList
+              {/* <TabList
                 sx={{ minHeight: 32, px: 1 }}
                 onChange={handleChange}
                 aria-label="lab API tabs example"
-              >
-                <TabItem value="tasks" icon={<Checklist fontSize="small" />} />
-                <TabItem
-                  value="calendar"
-                  icon={<CalendarMonth fontSize="small" />}
-                />
-              </TabList>
+              > */}
+              <IconButton
+              size="small"
+              color={userSettings.currentTab === "tasks" ? "primary" : "default"}
+                onClick={(e) => handleChange(e, "tasks")}
+                children={<Checklist fontSize="small" />}
+              />
+              <Box sx={{ width: '1px', height: 16, backgroundColor: theme => theme.palette.divider }} />
+              <IconButton
+              size="small"
+              color={userSettings.currentTab === "calendar" ? "primary" : "default"}
+                onClick={(e) => handleChange(e, "calendar")}
+                children={<CalendarMonth fontSize="small" />}
+              />
+              {/* </TabList> */}
             </Box>
           </>
         )}
-        <TabPanel sx={{ p: 0 }} value="tasks">
+        <Box
+          sx={{
+            display: userSettings.currentTab === "tasks" ? "block" : "none",
+          }}
+        >
           {tabs["tasks"]}
-        </TabPanel>
-        <TabPanel sx={{ p: 0 }} value="calendar">
+        </Box>
+        <Box
+          sx={{
+            display: userSettings.currentTab === "calendar" ? "block" : "none",
+          }}
+        >
           {tabs["calendar"]}
-        </TabPanel>
+        </Box>
       </TabContext>
     </Box>
   );

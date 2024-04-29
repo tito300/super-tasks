@@ -4,21 +4,21 @@ import {
   UserSettings,
   tasksSettingsDefaults,
   userSettingsDefaults,
-} from "@src/config/userSettingsDefaults";
+} from "@src/config/settingsDefaults";
 import { setupToken } from "@src/oauth/setupToken";
+import { storageService } from "@src/storage/storage.service";
 
 export type UserServiceMethodName = keyof typeof userService;
 export const userService = {
   async getUserSettings(): Promise<UserSettings> {
     // for now, just store settings in local storage until we have user endpoints
-    const settings = await chrome.storage.local.get("userSettings");
-    if (!settings.userSettings)
-      userService.updateUserSettings(userSettingsDefaults);
-    return { ...userSettingsDefaults, ...settings.userSettings };
+    const settings = await storageService.get("userSettings");
+    if (!settings) userService.updateUserSettings(userSettingsDefaults);
+    return { ...userSettingsDefaults, ...settings };
   },
   async updateUserSettings(settings: UserSettings) {
     // for now, just store settings in local storage until we have user endpoints
-    return chrome.storage.local.set({
+    return storageService.set({
       userSettings: { ...userSettingsDefaults, ...settings },
     });
   },

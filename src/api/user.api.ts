@@ -4,7 +4,7 @@ import {
   UserSettings,
   tasksSettingsDefaults,
   userSettingsDefaults,
-} from "@src/config/userSettingsDefaults";
+} from "@src/config/settingsDefaults";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useCallback, useEffect } from "react";
 import { deepmerge } from "@mui/utils";

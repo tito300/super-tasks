@@ -8,6 +8,7 @@ import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 
 let listening = false;
 
+// todo: remove file
 /**
  * If taskId is passed this hook only trigger callback when the task is due
  * If no taskId is passed this hook will trigger callback on any task
@@ -20,10 +21,8 @@ export function useTaskReminders() {
   useEffect(() => {
     if (listening) return;
 
-    console.log("useTaskReminders not listening yet");
     const listener = async (message: TaskReminderMessage) => {
       const taskListId = message.payload.taskListId;
-      console.log("TaskReminderMessage: ", message.payload.taskId, taskListId);
       listening = true;
       const tasks = queryClient.getQueryData<TaskType[]>(["tasks", taskListId]);
       if (!tasks) return; // todo: make robust
