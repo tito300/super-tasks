@@ -1,4 +1,4 @@
-import { SavedCalendarEvent } from "@src/calendar.types";
+import { ListCalendar, SavedCalendarEvent } from "@src/calendar.types";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useQuery } from "@tanstack/react-query";
 
@@ -29,6 +29,23 @@ export const useCalendarEvents = ({
         }
       },
       enabled: !!calendarId,
-      staleTime: 1000 * 60, // 60 seconds
     });
   };
+
+  export function useCalendarLists() {
+    const { calendar: calendarService } = useServicesContext();
+  
+    return useQuery<ListCalendar[]>({
+      queryKey: ["calendarLists"],
+      queryFn: async () => {
+        try {
+          const data = await calendarService.getCalendars();
+          return data;
+        } catch (err) {
+          console.log("error fetching calendar lists");
+          console.error(err);
+          return [];
+        }
+      },
+    });
+  }

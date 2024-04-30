@@ -77,6 +77,7 @@ const DayColumn = styled("div")`
   width: 280px;
   height: 1440px;
   border-right: 1px solid rgb(218, 220, 224);
+  z-index: 10;
 `;
 
 const HorizontalLine = styled("div")`

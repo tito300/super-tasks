@@ -6,7 +6,9 @@
     "client_id": "875323625973-pcdig9fjrq4l9ert26f74anqa4gfb84d.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/tasks"
+      "https://www.googleapis.com/auth/tasks",
+      "https://www.googleapis.com/auth/calendar",
+      "https://www.googleapis.com/auth/calendar.events"
     ]
   },
   "options_ui": {

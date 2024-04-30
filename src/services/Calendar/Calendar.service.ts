@@ -37,30 +37,30 @@ export const calendarServices = {
   //   });
   // },
   getCalendarEvents: async (listId: string) => {
-    // const calendarEvents = await fetcher
-    //   .get(`${urls.BASE_URL}/calendars/${listId}/events`)
-    //   .then((res) => res.json())
-    //   .then((res) => {
-    //     return (res?.items || []) as SavedCalendarEvent[];
-    //   });
+    const calendarEvents = await fetcher
+      .get(`${urls.BASE_URL}/calendars/${listId}/events`)
+      .then((res) => res.json())
+      .then((res) => {
+        return (res?.data?.items || []) as SavedCalendarEvent[];
+      });
     // calendarEvents.forEach((calendarEvent) => {
     //   calendarEvent.listId = listId;
     // });
     // return CalendarEventServices.mergeWithLocalState(calendarEvents);
-    const calendarEvents = [
-      createMockCalendarEvent({
-        summary: "1:1 John Doe",
-        id: "13",
-        start: { dateTime: "2022-01-01T 14:00:00" },
-        end: { dateTime: "2022-01-01T15:00:00" },
-      }),
-      createMockCalendarEvent({
-        summary: "All Hands meeting",
-        id: "14",
-        start: { dateTime: "2022-01-01T11:00:00" },
-        end: { dateTime: "2022-01-01T11:30:00" },
-      }),
-    ] as SavedCalendarEvent[];
+    // const calendarEvents = [
+    //   createMockCalendarEvent({
+    //     summary: "1:1 John Doe",
+    //     id: "13",
+    //     start: { dateTime: "2022-01-01T 14:00:00" },
+    //     end: { dateTime: "2022-01-01T15:00:00" },
+    //   }),
+    //   createMockCalendarEvent({
+    //     summary: "All Hands meeting",
+    //     id: "14",
+    //     start: { dateTime: "2022-01-01T11:00:00" },
+    //     end: { dateTime: "2022-01-01T11:30:00" },
+    //   }),
+    // ] as SavedCalendarEvent[];
 
     return calendarEvents;
   },
@@ -69,7 +69,8 @@ export const calendarServices = {
       .get(`${urls.BASE_URL}/calendars`)
       .then((res) => res.json())
       .then((res) => {
-        return (res?.items || []) as ListCalendar[];
+        console.log('calendar', res);
+        return (res || []) as ListCalendar[];
       });
   },
   addCalendarEvent: async (

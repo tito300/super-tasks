@@ -1,12 +1,18 @@
 import { useCalendarEvents } from "@src/api/calendar.api";
 import { CalendarTable } from "./Calendar/CalendarTable";
 
-export function CalendarManager() {
+export function CalendarManager({
+  calendarId,
+  isLoading: isCalendarsLoading,
+}: {
+  calendarId?: string | null;
+  isLoading: boolean;
+}) {
   const { data: calendarEvents, isLoading } = useCalendarEvents({
-    calendarId: "1",
+    calendarId,
   });
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isCalendarsLoading || isLoading) return <div>Loading...</div>;
 
   return <CalendarTable calendarEvents={calendarEvents!} />;
 }

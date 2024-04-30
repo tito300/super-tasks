@@ -1,5 +1,5 @@
-import { CalendarManager } from "@src/components/Calendar/CalendarManager";
+import { CalendarListManager } from "@src/components/Calendar/CalendarListManager";
 
 export function CalendarApp() {
-  return <CalendarManager />;
+  return <CalendarListManager />;
 }
