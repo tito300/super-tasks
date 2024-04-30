@@ -54,17 +54,12 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     : localOpen;
 
   const handleButtonClick = (app: "calendar" | "tasks") => {
-    if (userSettings.syncButtonExpanded) {
-      updateUserSettings({
-        currentTab: app,
-        buttonExpanded: true,
-        accordionExpanded: true,
-      });
-      toggleOpen();
-    } else {
-      updateUserSettings({ currentTab: app });
-      toggleOpen();
-    }
+    updateUserSettings({
+      currentTab: app,
+      buttonExpanded: true,
+      accordionExpanded: true,
+    });
+    toggleOpen();
 
     if (app === "tasks") {
       queryClient.invalidateQueries({

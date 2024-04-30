@@ -40,8 +40,6 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
       }
       focusAddTaskInput();
 
-      if (!userSettings.syncAccordionExpanded) return;
-
       updateUserSettings({
         accordionExpanded: newValue,
       });

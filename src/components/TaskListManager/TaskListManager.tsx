@@ -75,7 +75,7 @@ export function TaskListManager() {
           </Button>
         )}
         {active && (
-          <FormControl variant="standard" sx={{ m: 1, pl: 1, minWidth: 120 }}>
+          <FormControl variant="standard" sx={{ pl: 1, minWidth: 120 }}>
             <Select
               id="demo-simple-select-standard"
               disableUnderline
