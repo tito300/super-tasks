@@ -11,6 +11,7 @@ import { TabsManager } from "@src/components/TabsManager";
 export const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
   backgroundColor: theme.palette.background.accent,
   width: "100%",
+  borderRadius: "14px 16px 0 14px",
   [`&.${accordionSummaryClasses.expanded}`]: {
     minHeight: 45,
   },

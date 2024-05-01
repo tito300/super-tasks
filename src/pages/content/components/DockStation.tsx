@@ -26,7 +26,7 @@ export function DockStation() {
           </DockStationAccordionDetails>
         </DockStationAccordion>
       </OauthRequired>
-      <ScrollTopOnLoad />
+      {/* <ScrollTopOnLoad /> */}
     </DockStationContainer>
   );
 }
@@ -39,9 +39,7 @@ function ScrollTopOnLoad() {
   useEffect(() => {
     if (userSettings.currentTab === "calendar") return;
 
-    if (
-      scriptType === "Content"
-      ) {
+    if (scriptType === "Content") {
       if (!root?.querySelector("#accordion-details")) return;
 
       root.querySelector("#accordion-details")!.scrollTo(0, 0);

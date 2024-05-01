@@ -19,7 +19,7 @@ export function CalendarAccordionSummary() {
     isLoading,
     isFetching,
   } = useCalendarEvents({
-    calendarId: "tarek.demachkie@gmail.com",
+    calendarId: "tarek.demachkie@workwave.com",
   });
 
   useEffect(() => {
@@ -27,12 +27,13 @@ export function CalendarAccordionSummary() {
     if (!calendarEvents?.length) return;
 
     // sort event by date
-    const sortedEvents = calendarEvents!.toSorted((a, b) => {
-      return dayjs(a.start.dateTime).diff(dayjs(b.start.dateTime));
-    })
-    .filter((event) => {
-      return dayjs().isBefore(dayjs(event.start.dateTime));
-    })
+    const sortedEvents = calendarEvents!
+      .toSorted((a, b) => {
+        return dayjs(a.start.dateTime).diff(dayjs(b.start.dateTime));
+      })
+      .filter((event) => {
+        return dayjs().isBefore(dayjs(event.start.dateTime));
+      });
 
     const nextEvent = sortedEvents[0];
     setNextEvent(nextEvent);
@@ -57,13 +58,12 @@ export function CalendarAccordionSummary() {
     <>
       <Typography
         component={"span"}
-        fontWeight={800}
         sx={{
           color: (theme) => theme.palette.warning.main,
           backgroundColor: (theme) => theme.palette.background.paper,
           borderRadius: 8,
           mr: 0.5,
-          p: (theme) => theme.spacing(0, 0.5),
+          p: (theme) => theme.spacing(0.25, 0.75),
         }}
       >
         {timeToNextEvent?.format("HH:mm") || ""}

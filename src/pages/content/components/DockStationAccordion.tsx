@@ -12,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
 const Accordion = styled(MuiAccordion)(() => ({
+  borderRadius: "14px 16px 0 14px !important",
   [`& .${collapseClasses.hidden}`]: {
     display: "none",
   },

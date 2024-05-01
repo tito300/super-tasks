@@ -20,8 +20,8 @@ const MeetingStyled = styled(Stack)(({ theme }) => ({
 export function Meeting({ event }: { event: CalendarEvent }) {
   const startHour = dayjs(event.start.dateTime).hour();
   const startMinute = dayjs(event.start.dateTime).minute();
-    const { userSettings } = useUserSettings();
-//   const { tasksSettings } = useTasksSettings();
+  const { userSettings } = useUserSettings();
+  //   const { tasksSettings } = useTasksSettings();
 
   const { top, height } = useMemo(() => {
     const top = startHour * 60 + startMinute;
@@ -35,20 +35,22 @@ export function Meeting({ event }: { event: CalendarEvent }) {
   }, [event.end.dateTime, startHour, startMinute]);
 
   return (
-    <MeetingStyled sx={{ top: top, height, maxHeight: height }}>
+    <MeetingStyled sx={{ top: top, height: height - 2, maxHeight: height - 2 }}>
       <Typography
         variant="body2"
         sx={{ filter: userSettings.blurText ? "blur(5px)" : "none" }}
       >
         {event.summary}
       </Typography>
-      <Typography
-        fontSize={14}
-        sx={{ filter: userSettings.blurText ? "blur(5px)" : "none" }}
-      >
-        {dayjs(event.start.dateTime).format("HH:mma")} -{" "}
-        {dayjs(event.end.dateTime).format("HH:mma")}
-      </Typography>
+      {height >= 40 && (
+        <Typography
+          fontSize={14}
+          sx={{ filter: userSettings.blurText ? "blur(5px)" : "none" }}
+        >
+          {dayjs(event.start.dateTime).format("HH:mma")} -{" "}
+          {dayjs(event.end.dateTime).format("HH:mma")}
+        </Typography>
+      )}
     </MeetingStyled>
   );
 }
