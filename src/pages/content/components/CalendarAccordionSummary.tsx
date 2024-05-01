@@ -1,58 +1,28 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Stack, Typography, IconButton } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserSettings } from "@src/api/user.api";
 import { useCalendarEvents } from "@src/api/calendar.api";
 import dayjs from "dayjs";
 import duration, { Duration } from "dayjs/plugin/duration";
 import { CalendarEvent } from "@src/calendar.types";
+import {
+  filterFutureEvents,
+  sortCalendarEvents,
+} from "@src/utils/calendarUtils";
 
 dayjs.extend(duration);
 
 export function CalendarAccordionSummary() {
   const [hovered, setHovered] = useState(false);
-  const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
-  const [timeToNextEvent, setTimeToNextEvent] = useState<Duration | null>(null);
   const { userSettings, updateUserSettings } = useUserSettings();
   const {
-    data: calendarEvents,
     isLoading,
-    isFetching,
   } = useCalendarEvents({
-    calendarId: "tarek.demachkie@workwave.com",
+    calendarId: "tarek.demachkie@gmail.com",
   });
 
-  useEffect(() => {
-    if (isLoading) return;
-    if (!calendarEvents?.length) return;
-
-    // sort event by date
-    const sortedEvents = calendarEvents!
-      .toSorted((a, b) => {
-        return dayjs(a.start.dateTime).diff(dayjs(b.start.dateTime));
-      })
-      .filter((event) => {
-        return dayjs().isBefore(dayjs(event.start.dateTime));
-      });
-
-    const nextEvent = sortedEvents[0];
-    setNextEvent(nextEvent);
-
-    function getTimeToNextEvent() {
-      const nextEventStartDatetime = dayjs(nextEvent.start.dateTime);
-      const timeToNextEvent = dayjs.duration(
-        nextEventStartDatetime.diff(dayjs())
-      );
-      setTimeToNextEvent(timeToNextEvent);
-    }
-
-    getTimeToNextEvent();
-    const timeout = setInterval(getTimeToNextEvent, 1000 * 60);
-
-    return () => {
-      clearInterval(timeout);
-    };
-  }, [calendarEvents, isLoading, isFetching]);
+  const { nextEvent, timeToNextEvent } = useNextEventTimer();
 
   const title = nextEvent ? (
     <>
@@ -122,4 +92,46 @@ export function CalendarAccordionSummary() {
       </Stack>
     </Stack>
   );
+}
+
+export function useNextEventTimer() {
+  const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
+  const [timeToNextEvent, setTimeToNextEvent] = useState<Duration | null>(null);
+  const {
+    data: calendarEvents,
+  } = useCalendarEvents({
+    calendarId: "tarek.demachkie@gmail.com",
+  });
+
+  useEffect(() => {
+    if (!calendarEvents?.length) return;
+
+    // sort event by date
+    const filteredEvents = filterFutureEvents(
+      sortCalendarEvents(calendarEvents)
+    );
+
+    const nextEvent = filteredEvents[0];
+    setNextEvent(nextEvent);
+
+    function getTimeToNextEvent() {
+      const nextEventStartDatetime = dayjs(nextEvent.start.dateTime);
+      const timeToNextEvent = dayjs.duration(
+        nextEventStartDatetime.diff(dayjs())
+      );
+      setTimeToNextEvent(timeToNextEvent);
+    }
+
+    getTimeToNextEvent();
+    const timeout = setInterval(getTimeToNextEvent, 1000 * 60);
+
+    return () => {
+      clearInterval(timeout);
+    };
+  }, [calendarEvents]);
+
+  return {
+    nextEvent,
+    timeToNextEvent,
+  };
 }

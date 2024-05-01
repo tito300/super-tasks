@@ -24,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { useGlobalState } from "@src/components/Providers/globalStateProvider";
+import { CalendarIconBadge } from "./CalendarIconBadge";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -94,12 +95,14 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     >
       {!open && (
         <ButtonsContainer>
-          <ExtensionCalendarButton
-            onClick={() => handleButtonClick("calendar")}
-            id={`${constants.EXTENSION_NAME}-calendar-btn`}
-          >
-            <CalendarIcon />
-          </ExtensionCalendarButton>
+            <ExtensionCalendarButton
+              onClick={() => handleButtonClick("calendar")}
+              id={`${constants.EXTENSION_NAME}-calendar-btn`}
+              >
+              <CalendarIconBadge>
+              <CalendarIcon />
+          </CalendarIconBadge>
+            </ExtensionCalendarButton>
           <ExtensionTaskButton
             id={`${constants.EXTENSION_NAME}-tasks-button`}
             onClick={() => handleButtonClick("tasks")}
@@ -176,7 +179,7 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
     marginBottom: 6,
     backgroundColor: calendarTheme.palette.background.accent,
     color: "white",
-    transform: "translateY(7%)",
+    transform: "translateY(6%)",
     fontSize: 0,
     cursor: "grab",
     [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
