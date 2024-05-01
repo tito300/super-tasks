@@ -9,12 +9,14 @@ import { useNextEventTimer } from "./CalendarAccordionSummary";
 export function CalendarIconBadge(props: BadgeProps) {
   const { nextEvent, timeToNextEvent } = useNextEventTimer();
 
+  const minutesToNextEvent = timeToNextEvent?.asMinutes();
+
   const showBadge =
-    !!nextEvent && !!timeToNextEvent && timeToNextEvent?.asMinutes() <= 15;
+    !!nextEvent && !!minutesToNextEvent && minutesToNextEvent <= 10;
 
   return (
     <StyledBadge
-      badgeContent={showBadge ? timeToNextEvent.format("mm") : null}
+      badgeContent={showBadge ? timeToNextEvent?.format("mm") : null}
       color="primary"
       {...props}
     />
@@ -24,7 +26,7 @@ export function CalendarIconBadge(props: BadgeProps) {
 const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
   "& .MuiBadge-badge": {
     right: 32,
-    top: -14,
+    top: -12,
     padding: "0 4px",
     border: `2px solid ${theme.palette.background.paper}`,
   },
