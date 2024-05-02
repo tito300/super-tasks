@@ -8,6 +8,7 @@ import duration, { Duration } from "dayjs/plugin/duration";
 import { CalendarEvent } from "@src/calendar.types";
 import {
   filterFutureEvents,
+  getEventStartTime,
   sortCalendarEvents,
 } from "@src/utils/calendarUtils";
 
@@ -16,10 +17,8 @@ dayjs.extend(duration);
 export function CalendarAccordionSummary() {
   const [hovered, setHovered] = useState(false);
   const { userSettings, updateUserSettings } = useUserSettings();
-  const {
-    isLoading,
-  } = useCalendarEvents({
-    calendarId: "tarek.demachkie@gmail.com",
+  const { isLoading } = useCalendarEvents({
+    calendarId: "tarek.demachkie@workwave.com",
   });
 
   const { nextEvent, timeToNextEvent } = useNextEventTimer();
@@ -97,10 +96,8 @@ export function CalendarAccordionSummary() {
 export function useNextEventTimer() {
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const [timeToNextEvent, setTimeToNextEvent] = useState<Duration | null>(null);
-  const {
-    data: calendarEvents,
-  } = useCalendarEvents({
-    calendarId: "tarek.demachkie@gmail.com",
+  const { data: calendarEvents } = useCalendarEvents({
+    calendarId: "tarek.demachkie@workwave.com",
   });
 
   useEffect(() => {
@@ -115,7 +112,9 @@ export function useNextEventTimer() {
     setNextEvent(nextEvent);
 
     function getTimeToNextEvent() {
-      const nextEventStartDatetime = dayjs(nextEvent.start.dateTime);
+      if (!nextEvent) return;
+
+      const nextEventStartDatetime = dayjs(getEventStartTime(nextEvent));
       const timeToNextEvent = dayjs.duration(
         nextEventStartDatetime.diff(dayjs())
       );

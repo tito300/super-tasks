@@ -21,10 +21,10 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
 
   const modifiedEvents = calendarEvents.reduce((acc, event) => {
     if (event.status === "confirmed" && event.recurringEventId) {
-      acc[event.recurringEventId] = event.start.dateTime;
+      acc[event.recurringEventId] = event;
     }
     return acc;
-  }, {} as Record<string, string>);
+  }, {} as Record<string, SavedCalendarEvent>);
 
   calendarEvents.forEach((event) => {
     if (event.eventType !== "default") return;
@@ -35,7 +35,11 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
         dayjs(cancelledEvents[event.id]).isToday()
       )
         return;
-      if (modifiedEvents[event.id] && dayjs(modifiedEvents[event.id]).isToday())
+      if (
+        modifiedEvents[event.id] &&
+        modifiedEvents[event.id].start?.dateTime &&
+        dayjs(modifiedEvents[event.id].originalStartTime.dateTime).isToday()
+      )
         return;
 
       const todaysOccurrence = getTodaysOccurrences(event);
@@ -45,7 +49,7 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
           start: { ...event.start, dateTime: occurrence.toISOString() },
         });
       });
-    } else if (dayjs(event.start.dateTime || event.start.date).isToday()) {
+    } else if (dayjs(getEventStartTime(event)).isToday()) {
       flatEvents.push(event);
     }
   });
@@ -55,8 +59,8 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
 
 export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
   const sortedEvents = flattenTodaysEvents(calendarEvents).sort((a, b) => {
-    const aStart = a.start.dateTime || a.start.date;
-    const bStart = b.start.dateTime || b.start.date;
+    const aStart = getEventStartTime(a);
+    const bStart = getEventStartTime(b);
 
     return dayjs(aStart).diff(dayjs(bStart));
   });
@@ -66,7 +70,7 @@ export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
 
 export function filterFutureEvents(calendarEvents: SavedCalendarEvent[]) {
   return calendarEvents.filter((event) => {
-    const start = event.start.dateTime || event.start.date;
+    const start = getEventStartTime(event);
     return dayjs(start).isAfter(dayjs());
   });
 }
@@ -87,7 +91,7 @@ export function isRecurringToday(event: CalendarEvent) {
 export function getRRule(event: CalendarEvent) {
   if (!event.recurrence?.length) return null;
 
-  const startDate = dayjs(event.start.dateTime || event.start.date);
+  const startDate = dayjs(getEventStartTime(event));
 
   // Set up the rule
   return rrulestr(event.recurrence[0], {
@@ -106,4 +110,36 @@ export function getTodaysOccurrences(event: CalendarEvent) {
   const endOfDay = now.endOf("day").toDate();
 
   return rule.between(startOfDay, endOfDay);
+}
+
+export function getEventStartTime(event: CalendarEvent) {
+  return (
+    event.start?.dateTime ||
+    event.start?.date ||
+    event.originalStartTime?.dateTime ||
+    event.originalStartTime?.date
+  );
+}
+
+export function getEventEndTime(event: CalendarEvent) {
+  return event.end?.dateTime || event.end?.date;
+}
+
+// takes a modified event with sequence number and checks if the original event today's recurrence
+// matches the modified event's recurrence number
+function isMatchingTodaysOccurrence(
+  event: SavedCalendarEvent,
+  modifiedEvent: SavedCalendarEvent
+) {
+  const rule = getRRule(event);
+
+  if (!rule) return false;
+
+  const occurrences = rule.between(
+    dayjs().subtract(5, "years").toDate(),
+    dayjs().endOf("day").toDate()
+  );
+  const todaysRecurrenceCount = occurrences.length;
+
+  return todaysRecurrenceCount === modifiedEvent.sequence;
 }
