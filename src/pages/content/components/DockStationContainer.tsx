@@ -11,7 +11,7 @@ import {
   styled,
   useTheme,
 } from "@mui/material";
-import { Close, MenuOpen } from "@mui/icons-material";
+import { Close, MenuOpen, Minimize, Remove } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 import { TasksReminderBadge } from "./TasksReminderBadge";
@@ -73,36 +73,53 @@ export function DockStationContainer({ children }: PropsWithChildren) {
   };
 
   return (
-    <DraggablePopper
+    <DraggablePopperStyled
       id={`${constants.EXTENSION_NAME}-expand-wrapper`}
       defaultPosition={defaultPositions}
       // sx={{ width: open ? 0 : 51, height: 51 }}
-      popperProps={{ open, placement: "right-end", keepMounted: true }}
+      popperProps={{
+        open,
+        placement: "right-end",
+        keepMounted: true,
+      }}
       popperChildren={
         <>
-          <DockStationControls
-            onMinimize={() => {
-              if (userSettings.syncButtonExpanded) {
-                updateUserSettings({ buttonExpanded: false });
-              }
-              toggleOpen();
+          <BadgeStyled
+            slotProps={{
+              badge: {
+                id: `${constants.EXTENSION_NAME}-remove-button`,
+              },
             }}
-            onRemove={() => setRemoved(true)}
-          />
-          <Box sx={{ display: open ? "block" : "none" }}>{children}</Box>
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            color="default"
+            badgeContent={
+              <IconButton
+                sx={{ padding: 0 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateUserSettings({ buttonExpanded: false });
+                  toggleOpen();
+                }}
+              >
+                <Remove sx={{ fontSize: 14, color: "white" }} />
+              </IconButton>
+            }
+          >
+            <Box sx={{ display: open ? "block" : "none" }}>{children}</Box>
+          </BadgeStyled>
         </>
       }
     >
       {!open && (
         <ButtonsContainer>
-            <ExtensionCalendarButton
-              onClick={() => handleButtonClick("calendar")}
-              id={`${constants.EXTENSION_NAME}-calendar-btn`}
-              >
-              <CalendarIconBadge>
+          <ExtensionCalendarButton
+            onClick={() => handleButtonClick("calendar")}
+            id={`${constants.EXTENSION_NAME}-calendar-btn`}
+          >
+            <CalendarIconBadge>
               <CalendarIcon />
-          </CalendarIconBadge>
-            </ExtensionCalendarButton>
+            </CalendarIconBadge>
+          </ExtensionCalendarButton>
           <ExtensionTaskButton
             id={`${constants.EXTENSION_NAME}-tasks-button`}
             onClick={() => handleButtonClick("tasks")}
@@ -134,7 +151,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
           </ExtensionTaskButton>
         </ButtonsContainer>
       )}
-    </DraggablePopper>
+    </DraggablePopperStyled>
   );
 }
 
@@ -150,6 +167,17 @@ const BadgeStyled = styled(Badge)(() => {
   };
 });
 
+const DraggablePopperStyled = styled(DraggablePopper)(({ theme }) => ({
+  [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
+    display: "none",
+  },
+  [":hover"]: {
+    [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
+      display: "block",
+    },
+  },
+}));
+
 const ExtensionTaskButton = styled(IconButton)(({ theme }) => {
   return {
     position: "absolute",
@@ -158,14 +186,8 @@ const ExtensionTaskButton = styled(IconButton)(({ theme }) => {
     backgroundColor: cyan[400],
     fontSize: 0,
     cursor: "grab",
-    [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
-      display: "none",
-    },
     [":hover"]: {
       backgroundColor: cyan[500],
-      [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
-        display: "block",
-      },
     },
   };
 });
@@ -182,14 +204,8 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
     transform: "translateY(6%)",
     fontSize: 0,
     cursor: "grab",
-    [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
-      display: "none",
-    },
     [":hover"]: {
       backgroundColor: calendarTheme.palette.background.accent,
-      [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
-        display: "block",
-      },
     },
   };
 });

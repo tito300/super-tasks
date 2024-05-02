@@ -14,15 +14,18 @@ import { CalendarMonth, Checklist } from "@mui/icons-material";
 import { useScriptType } from "./Providers/ScriptTypeProvider";
 import { useUserSettings } from "@src/api/user.api";
 import { useRootElement } from "@src/hooks/useRootElement";
+import deepmerge from "@mui/utils/deepmerge";
 
 export function TabsManager({
   tabs,
   tabIconButtonProps,
+  tabIconButtonPropsSelected,
   renderTabsElement,
   hideTabs,
 }: {
   hideTabs?: boolean;
   tabIconButtonProps?: IconButtonProps;
+  tabIconButtonPropsSelected?: IconButtonProps;
   renderTabsElement?: (tabsEl: ReactNode) => React.ReactNode;
   tabs: Record<TabType, React.ReactNode>;
 }) {
@@ -46,29 +49,10 @@ export function TabsManager({
   }, [userSettings.currentTab, rootElement]);
 
   const tabsEl: ReactNode = (
-    <>
-      <IconButton
-        size="small"
-        color={userSettings.currentTab === "tasks" ? "primary" : "default"}
-        onClick={(e) => handleChange(e, "tasks")}
-        children={<Checklist fontSize="small" />}
-        {...tabIconButtonProps}
-      />
-      <Box
-        sx={{
-          width: "1px",
-          height: 16,
-          backgroundColor: (theme) => theme.palette.divider,
-        }}
-      />
-      <IconButton
-        size="small"
-        color={userSettings.currentTab === "calendar" ? "primary" : "default"}
-        onClick={(e) => handleChange(e, "calendar")}
-        children={<CalendarMonth fontSize="small" />}
-        {...tabIconButtonProps}
-      />
-    </>
+    <SummaryTabs
+      handleChange={handleChange}
+      currentTab={userSettings.currentTab}
+    />
   );
   const renderTabs = renderTabsElement ? (
     renderTabsElement(tabsEl)
@@ -107,8 +91,92 @@ export function TabsManager({
   );
 }
 
-const TabItem = styled(Tab)(({ theme }) => ({
-  padding: 1,
-  minHeight: 32,
-  minWidth: 45,
-}));
+function SummaryTabs({
+  handleChange,
+  currentTab,
+}: {
+  handleChange: (e: any, tab: TabType) => void;
+  currentTab: TabType;
+}) {
+  const { userSettings } = useUserSettings();
+
+  return (
+    <Box
+      id="summary-tabs-container"
+      sx={{
+        position: "absolute",
+        display: "flex",
+        alignItems: "center",
+        bottom: userSettings.accordionExpanded ? "calc(100% - 10px)" : "calc(100% - 24px)",
+        right: 5,
+        zIndex: -1,
+        paddingBottom: 8,
+        borderTopLeftRadius: 4,
+        borderTopRightRadius: 4,
+        padding: "0px 4px 6px",
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <IconButton
+        size="small"
+        onClick={(e) => handleChange(e, "tasks")}
+        children={<Checklist fontSize="small" color={"inherit"} />}
+        sx={{
+          backgroundColor: (theme) => theme.palette.primary.light,
+          borderTopRightRadius: "4px",
+          borderTopLeftRadius: "4px",
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
+          padding: "3px 14px",
+          ":hover": {
+            backgroundColor: (theme) => theme.palette.primary.main,
+          },
+          ...(currentTab === "tasks"
+            ? {
+                backgroundColor: (theme) => theme.palette.primary.main,
+                borderRight: (theme) =>
+                  `1px solid ${theme.palette.primary.contrastText}`,
+                padding: "5px 14px",
+                zIndex: 1,
+              }
+            : {
+                marginRight: "-4px",
+                ":hover": {
+                  backgroundColor: (theme) => theme.palette.primary.dark,
+                },
+              }),
+        }}
+      />
+      <IconButton
+        size="small"
+        onClick={(e) => handleChange(e, "calendar")}
+        children={<CalendarMonth fontSize="small" color={"inherit"} />}
+        sx={{
+          backgroundColor: (theme) => theme.palette.primary.light,
+          borderTopRightRadius: "4px",
+          borderTopLeftRadius: "4px",
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
+          padding: "3px 14px",
+          ":hover": {
+            backgroundColor: (theme) => theme.palette.primary.main,
+          },
+          ...(currentTab === "calendar"
+            ? {
+                backgroundColor: (theme) => theme.palette.primary.main,
+                borderLeft: (theme) =>
+                  `1px solid ${theme.palette.primary.contrastText}`,
+                padding: "5px 14px",
+              }
+            : {
+                marginLeft: "-4px",
+                zIndex: -1,
+                ":hover": {
+                  backgroundColor: (theme) => theme.palette.primary.dark,
+                },
+              }),
+        }}
+      />
+    </Box>
+  );
+}

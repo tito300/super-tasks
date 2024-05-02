@@ -18,7 +18,7 @@ export function CalendarAccordionSummary() {
   const [hovered, setHovered] = useState(false);
   const { userSettings, updateUserSettings } = useUserSettings();
   const { isLoading } = useCalendarEvents({
-    calendarId: "tarek.demachkie@workwave.com",
+    calendarId: "tarek.demachkie@gmail.com",
   });
 
   const { nextEvent, timeToNextEvent } = useNextEventTimer();
@@ -97,7 +97,7 @@ export function useNextEventTimer() {
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const [timeToNextEvent, setTimeToNextEvent] = useState<Duration | null>(null);
   const { data: calendarEvents } = useCalendarEvents({
-    calendarId: "tarek.demachkie@workwave.com",
+    calendarId: "tarek.demachkie@gmail.com",
   });
 
   useEffect(() => {

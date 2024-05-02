@@ -24,6 +24,10 @@ export const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
       margin: 0,
     },
   },
+  ":hover #summary-tabs-container": {
+    bottom: "calc(100% - 10px)",
+    transition: "bottom 0.1s",
+  }
 }));
 
 export function DockStationAccordionSummary() {
@@ -32,30 +36,7 @@ export function DockStationAccordionSummary() {
   return (
     <AccordionSummary expandIcon={<ArrowDropDown />}>
       <TabsManager
-        hideTabs={scriptSource === "Popup"}
-        tabIconButtonProps={{
-          color: "primary",
-          onClick: (e) => e.stopPropagation(),
-        }}
-        renderTabsElement={(tabsEl) => (
-          <Box
-            sx={{
-              position: "absolute",
-              display: "flex",
-              alignItems: "center",
-              bottom: "calc(100% - 10px)",
-              right: 38,
-              zIndex: -1,
-              paddingBottom: 8,
-              backgroundColor: (theme) => theme.palette.primary.main,
-              borderTopLeftRadius: 4,
-              borderTopRightRadius: 4,
-              padding: "0px 4px 6px",
-            }}
-          >
-            {tabsEl}
-          </Box>
-        )}
+        hideTabs={scriptSource === "Popup"}    
         tabs={{
           tasks: <TasksAccordionSummary />,
           calendar: <CalendarAccordionSummary />,

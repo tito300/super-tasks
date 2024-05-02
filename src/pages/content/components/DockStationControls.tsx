@@ -3,17 +3,15 @@ import { IconButton, styled } from "@mui/material";
 
 const Container = styled("div")(({ theme }) => ({
   position: "absolute",
-  bottom: "100%",
-  right: 0,
+  bottom: 0,
+  left: "100%",
   display: "flex",
   boxShadow: theme.shadows[0],
-  padding: theme.spacing(0, 0.5),
-  borderTopLeftRadius: theme.shape.borderRadius,
-  borderTopRightRadius: theme.shape.borderRadius,
-  borderTop: `1px solid ${theme.palette.divider}`,
-  borderRight: `1px solid ${theme.palette.divider}`,
-  borderLeft: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.background.paper,
+  padding: 0,
+  // borderTop: `1px solid ${theme.palette.grey[600]}`,
+  // borderRight: `1px solid ${theme.palette.grey[600]}`,
+  // borderBottom: `1px solid ${theme.palette.grey[600]}`,
+  // backgroundColor: theme.palette.background.paper,
 }));
 
 export function DockStationControls({
@@ -28,8 +26,18 @@ export function DockStationControls({
       {/* <IconButton onClick={onMinimize} size="small" sx={{ fontSize: 15 }}>
         <Remove fontSize="inherit" />
       </IconButton> */}
-      <IconButton onClick={onMinimize} size="small" sx={{ fontSize: 15 }}>
-        <Close fontSize="inherit" />
+      <IconButton
+        onClick={onMinimize}
+        size="small"
+        color="primary"
+        sx={{
+          border: (theme) => `1px solid ${theme.palette.grey[400]}`,
+          backgroundColor: (theme) => theme.palette.grey[100],
+          fontSize: 15,
+          p: 0,
+        }}
+      >
+        <Close fontSize="inherit" color="inherit" />
       </IconButton>
     </Container>
   );
