@@ -107,7 +107,9 @@ function SummaryTabs({
         position: "absolute",
         display: "flex",
         alignItems: "center",
-        bottom: userSettings.accordionExpanded ? "calc(100% - 10px)" : "calc(100% - 24px)",
+        bottom: userSettings.accordionExpanded
+          ? "calc(100% - 10px)"
+          : "calc(100% - 38px)",
         right: 5,
         zIndex: -1,
         paddingBottom: 8,
