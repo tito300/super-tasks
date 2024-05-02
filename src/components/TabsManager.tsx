@@ -1,7 +1,15 @@
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-import { Box, IconButton, Tab, styled, tabsClasses } from "@mui/material";
+import {
+  Box,
+  BoxProps,
+  IconButton,
+  IconButtonProps,
+  Tab,
+  styled,
+  tabsClasses,
+} from "@mui/material";
 import { Tab as TabType } from "@src/config/settingsDefaults";
-import React, { useEffect } from "react";
+import React, { ReactElement, ReactNode, useEffect } from "react";
 import { CalendarMonth, Checklist } from "@mui/icons-material";
 import { useScriptType } from "./Providers/ScriptTypeProvider";
 import { useUserSettings } from "@src/api/user.api";
@@ -9,9 +17,13 @@ import { useRootElement } from "@src/hooks/useRootElement";
 
 export function TabsManager({
   tabs,
+  tabIconButtonProps,
+  renderTabsElement,
   hideTabs,
 }: {
   hideTabs?: boolean;
+  tabIconButtonProps?: IconButtonProps;
+  renderTabsElement?: (tabsEl: ReactNode) => React.ReactNode;
   tabs: Record<TabType, React.ReactNode>;
 }) {
   const { userSettings, updateUserSettings } = useUserSettings();
@@ -33,62 +45,49 @@ export function TabsManager({
     }
   }, [userSettings.currentTab, rootElement]);
 
+  const tabsEl: ReactNode = (
+    <>
+      <IconButton
+        size="small"
+        color={userSettings.currentTab === "tasks" ? "primary" : "default"}
+        onClick={(e) => handleChange(e, "tasks")}
+        children={<Checklist fontSize="small" />}
+        {...tabIconButtonProps}
+      />
+      <Box
+        sx={{
+          width: "1px",
+          height: 16,
+          backgroundColor: (theme) => theme.palette.divider,
+        }}
+      />
+      <IconButton
+        size="small"
+        color={userSettings.currentTab === "calendar" ? "primary" : "default"}
+        onClick={(e) => handleChange(e, "calendar")}
+        children={<CalendarMonth fontSize="small" />}
+        {...tabIconButtonProps}
+      />
+    </>
+  );
+  const renderTabs = renderTabsElement ? (
+    renderTabsElement(tabsEl)
+  ) : (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      {tabsEl}
+    </Box>
+  );
+
   return (
     <Box sx={{ width: "100%", typography: "body1" }}>
       <TabContext value={userSettings.currentTab}>
-        {!hideTabs && (
-          <>
-            <Box
-              sx={{
-                height: scriptType === "Popup" ? 28 : 32,
-                width: "100%",
-              }}
-            />
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                borderBottom: 1,
-                borderColor: "divider",
-                position: scriptType === "Popup" ? "fixed" : "absolute",
-                top: scriptType === "Popup" ? 0 : 45,
-                zIndex: 50,
-                backgroundColor: "white",
-                width: "100%",
-              }}
-            >
-              {/* <TabList
-                sx={{ minHeight: 32, px: 1 }}
-                onChange={handleChange}
-                aria-label="lab API tabs example"
-              > */}
-              <IconButton
-                size="small"
-                color={
-                  userSettings.currentTab === "tasks" ? "primary" : "default"
-                }
-                onClick={(e) => handleChange(e, "tasks")}
-                children={<Checklist fontSize="small" />}
-              />
-              <Box
-                sx={{
-                  width: "1px",
-                  height: 16,
-                  backgroundColor: (theme) => theme.palette.divider,
-                }}
-              />
-              <IconButton
-                size="small"
-                color={
-                  userSettings.currentTab === "calendar" ? "primary" : "default"
-                }
-                onClick={(e) => handleChange(e, "calendar")}
-                children={<CalendarMonth fontSize="small" />}
-              />
-              {/* </TabList> */}
-            </Box>
-          </>
-        )}
+        {!hideTabs && renderTabs}
         <Box
           sx={{
             display: userSettings.currentTab === "tasks" ? "block" : "none",

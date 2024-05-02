@@ -1,5 +1,6 @@
 import { ArrowDropDown } from "@mui/icons-material";
 import {
+  Box,
   AccordionSummary as MuiAccordionSummary,
   accordionSummaryClasses,
   styled,
@@ -7,6 +8,7 @@ import {
 import { TasksAccordionSummary } from "./TasksAccordionSummary";
 import { CalendarAccordionSummary } from "./CalendarAccordionSummary";
 import { TabsManager } from "@src/components/TabsManager";
+import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 
 export const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
   backgroundColor: theme.palette.background.accent,
@@ -25,10 +27,35 @@ export const AccordionSummary = styled(MuiAccordionSummary)(({ theme }) => ({
 }));
 
 export function DockStationAccordionSummary() {
+  const scriptSource = useScriptType();
+
   return (
     <AccordionSummary expandIcon={<ArrowDropDown />}>
       <TabsManager
-        hideTabs
+        hideTabs={scriptSource === "Popup"}
+        tabIconButtonProps={{
+          color: "primary",
+          onClick: (e) => e.stopPropagation(),
+        }}
+        renderTabsElement={(tabsEl) => (
+          <Box
+            sx={{
+              position: "absolute",
+              display: "flex",
+              alignItems: "center",
+              bottom: "calc(100% - 10px)",
+              right: 38,
+              zIndex: -1,
+              paddingBottom: 8,
+              backgroundColor: (theme) => theme.palette.primary.main,
+              borderTopLeftRadius: 4,
+              borderTopRightRadius: 4,
+              padding: "0px 4px 6px",
+            }}
+          >
+            {tabsEl}
+          </Box>
+        )}
         tabs={{
           tasks: <TasksAccordionSummary />,
           calendar: <CalendarAccordionSummary />,

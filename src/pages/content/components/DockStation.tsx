@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 
 export function DockStation() {
+  const scriptSource = useScriptType();
   return (
     <DockStationContainer>
       <OauthRequired style={{ width: 385 }}>
@@ -21,6 +22,7 @@ export function DockStation() {
           <DockStationAccordionSummary />
           <DockStationAccordionDetails id="accordion-details">
             <TabsManager
+              hideTabs
               tabs={{ tasks: <TasksApp />, calendar: <CalendarApp /> }}
             />
           </DockStationAccordionDetails>
