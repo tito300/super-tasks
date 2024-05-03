@@ -25,6 +25,8 @@ export const tasksSettingsDefaults = {
 export const calendarSettingsDefaults = {
   blurText: false,
   persistPosition: false,
+  // used to determine when to start showing the count down badge
+  badgeCountDownMinutes: 30,
   calendarFilters: {
     today: true,
     pastDue: true,

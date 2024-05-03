@@ -1,13 +1,15 @@
 import { BadgeProps, Badge, styled } from "@mui/material";
 import { useNextEventTimer } from "./CalendarAccordionSummary";
+import { useCalendarSettings } from "@src/api/calendar.api";
 
 export function CalendarIconBadge(props: BadgeProps) {
   const { nextEvent, timeToNextEvent } = useNextEventTimer();
+  const { calendarSettings } = useCalendarSettings();
 
   const minutesToNextEvent = timeToNextEvent?.asMinutes();
 
   const showBadge =
-    !!nextEvent && !!minutesToNextEvent && minutesToNextEvent <= 10;
+    !!nextEvent && !!minutesToNextEvent && minutesToNextEvent <= calendarSettings.badgeCountDownMinutes;
 
   return (
     <StyledBadge

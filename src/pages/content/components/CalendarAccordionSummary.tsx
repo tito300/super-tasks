@@ -1,8 +1,8 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Stack, Typography, IconButton } from "@mui/material";
+import { Stack, Typography, IconButton, Chip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useUserSettings } from "@src/api/user.api";
-import { useCalendarEvents } from "@src/api/calendar.api";
+import { useCalendarEvents, useCalendarSettings } from "@src/api/calendar.api";
 import dayjs from "dayjs";
 import duration, { Duration } from "dayjs/plugin/duration";
 import { CalendarEvent } from "@src/calendar.types";
@@ -17,28 +17,39 @@ dayjs.extend(duration);
 export function CalendarAccordionSummary() {
   const [hovered, setHovered] = useState(false);
   const { userSettings, updateUserSettings } = useUserSettings();
+  const { calendarSettings } = useCalendarSettings();
   const { isLoading } = useCalendarEvents({
     calendarId: "tarek.demachkie@gmail.com",
   });
 
   const { nextEvent, timeToNextEvent } = useNextEventTimer();
 
+  const hoursToNextEvent = timeToNextEvent?.asHours() || 0;
+  const minutesToNextEvent = timeToNextEvent?.asMinutes() || 0;
+  const warnBadge =
+    timeToNextEvent &&
+    hoursToNextEvent <= 1 &&
+    minutesToNextEvent <= calendarSettings.badgeCountDownMinutes;
+
   const title = nextEvent ? (
     <>
-      <Typography
-        component={"span"}
+      <Chip
+        // component={"span"}
         sx={{
-          color: (theme) => theme.palette.warning.main,
-          backgroundColor: (theme) => theme.palette.background.paper,
-          borderRadius: 8,
+          border: (theme) => `1px solid ${theme.palette.primary.contrastText}`,
           mr: 0.5,
-          p: (theme) => theme.spacing(0.25, 0.75),
+          ...(warnBadge && {
+            borderColor: (theme) => theme.palette.warning.dark,
+            backgroundColor: theme => theme.palette.primary.contrastText,
+            color: theme => theme.palette.warning.dark,
+          })
         }}
-      >
-        {timeToNextEvent?.format("HH:mm") || ""}
-      </Typography>{" "}
+        color={warnBadge ? "warning" : "primary"}
+        size="small"
+        label={timeToNextEvent?.format("HH:mm") || ""}
+      ></Chip>{" "}
       <span style={{ filter: userSettings.blurText ? "blur(7px)" : "none" }}>
-        {nextEvent.summary}
+        {nextEvent?.summary}
       </span>
     </>
   ) : isLoading ? (
