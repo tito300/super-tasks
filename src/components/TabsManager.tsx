@@ -4,6 +4,8 @@ import {
   BoxProps,
   IconButton,
   IconButtonProps,
+  Stack,
+  StackProps,
   Tab,
   styled,
   tabsClasses,
@@ -22,13 +24,14 @@ export function TabsManager({
   tabIconButtonPropsSelected,
   renderTabsElement,
   hideTabs,
+  ...rootProps
 }: {
   hideTabs?: boolean;
   tabIconButtonProps?: IconButtonProps;
   tabIconButtonPropsSelected?: IconButtonProps;
   renderTabsElement?: (tabsEl: ReactNode) => React.ReactNode;
   tabs: Record<TabType, React.ReactNode>;
-}) {
+} & StackProps) {
   const { userSettings, updateUserSettings } = useUserSettings();
   const scriptType = useScriptType();
   const rootElement = useRootElement();
@@ -69,25 +72,30 @@ export function TabsManager({
   );
 
   return (
-    <Box sx={{ width: "100%", typography: "body1" }}>
+    <Stack
+      {...rootProps}
+      sx={{ width: "100%", typography: "body1", ...rootProps?.sx }}
+    >
       <TabContext value={userSettings.currentTab}>
         {!hideTabs && renderTabs}
-        <Box
+        <Stack
+          flexGrow={1}
           sx={{
-            display: userSettings.currentTab === "tasks" ? "block" : "none",
+            display: userSettings.currentTab === "tasks" ? "flex" : "none",
           }}
         >
           {tabs["tasks"]}
-        </Box>
-        <Box
+        </Stack>
+        <Stack
+          flexGrow={1}
           sx={{
             display: userSettings.currentTab === "calendar" ? "block" : "none",
           }}
         >
           {tabs["calendar"]}
-        </Box>
+        </Stack>
       </TabContext>
-    </Box>
+    </Stack>
   );
 }
 

@@ -1,6 +1,6 @@
 import { DockStationContainer } from "./DockStationContainer";
 import { OauthRequired } from "@src/components/Oauth/OauthGate";
-import { Box } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { TasksApp } from "./TasksApp";
 import { CalendarApp } from "./CalendarApp";
 import { Tab } from "@src/config/settingsDefaults";
@@ -21,10 +21,15 @@ export function DockStation() {
         <DockStationAccordion>
           <DockStationAccordionSummary />
           <DockStationAccordionDetails id="accordion-details">
-            <TabsManager
-              hideTabs
-              tabs={{ tasks: <TasksApp />, calendar: <CalendarApp /> }}
-            />
+            <Stack
+              sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}
+            >
+              <TabsManager
+                hideTabs
+                flexGrow={1}
+                tabs={{ tasks: <TasksApp />, calendar: <CalendarApp /> }}
+              />
+            </Stack>
           </DockStationAccordionDetails>
         </DockStationAccordion>
       </OauthRequired>

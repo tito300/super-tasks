@@ -214,10 +214,16 @@ export const useUpdateTask = (listId: string) => {
         .getQueryData<SavedTask[]>(["tasks", listId])
         ?.find((cTask) => cTask.id === task.id);
 
-      if (task.alert && !task.alertOn) {
-        taskService.setReminder(task.id, listId, task.alert, userSettings);
-        return task;
-      }
+      // if (task.alert && !task.alertOn) {
+      //   taskService.setReminder(task.id, listId, task.alert, userSettings);
+      //   return task;
+      // }
+
+      // if (savedTask?.alert && !task.alert) {
+      //   taskService.removeReminder(task.id, listId);
+      //   return task;
+      // }
+
       return taskService.updateTask(listId, {
         ...savedTask,
         ...(task as SavedTask),

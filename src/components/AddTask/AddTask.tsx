@@ -11,7 +11,7 @@ export function AddTask({
 }: {
   id: string;
   onClick: () => void;
-  sx: SxProps;
+  sx?: SxProps;
   autoFocus?: boolean;
 }) {
   return (

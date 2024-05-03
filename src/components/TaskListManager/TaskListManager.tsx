@@ -67,6 +67,7 @@ export function TaskListManager() {
         {!active && (
           <Button
             size="small"
+            sx={{ color: (theme) => theme.palette.action.active }}
             startIcon={<List fontSize="medium" />}
             onClick={() => setActive(true)}
             endIcon={<KeyboardArrowDown fontSize="small" />}

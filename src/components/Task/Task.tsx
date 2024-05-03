@@ -15,7 +15,7 @@ import {
   useFormContext,
   useFormState,
 } from "react-hook-form";
-import { TaskTitleField } from "./components/TaskTitleField";
+import { AddReminder, TaskTitleField } from "./components/TaskTitleField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
@@ -171,7 +171,6 @@ export function Task({
           sx={{
             backgroundColor: data.alertOn ? "rgb(255, 234, 194)" : undefined,
           }}
-          onFocus={handleFocus}
         >
           <Stack direction="row" alignItems="start" width="100%">
             {/* <IconButton
@@ -244,6 +243,11 @@ export function Task({
               </Collapse>
             </Stack>
           </Stack>
+          <AddReminder
+            id="axess-add-reminder-button"
+            visible={!!(data?.alertOn || data?.alert)}
+            task={data!}
+          />
           {!temporary && <TaskOptionsMenu listId={listId} />}
         </StyledTask>
       </ClickAwayListener>

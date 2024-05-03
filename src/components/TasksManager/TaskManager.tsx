@@ -71,7 +71,7 @@ export function TaskManager({ listId }: { listId: string }) {
   }
 
   return (
-    <Stack sx={{ width: 350, pl: 1, mb: 2 }} ref={rootRef}>
+    <Stack flexGrow={1} sx={{ px: 1, mb: 1.5 }} ref={rootRef}>
       <LinearProgress
         sx={{
           visibility: !isFetching ? "hidden" : "visible",
@@ -80,41 +80,45 @@ export function TaskManager({ listId }: { listId: string }) {
       />
       <Box sx={{ height: 8, width: "100%" }} />
       <TasksFilters />
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <AddTask />
-        <SortableContext
-          items={filteredTasks!}
-          strategy={verticalListSortingStrategy}
-        >
-          {isFetching && !filteredTasks.length && (
-            <>
-              <TaskSkeleton />
-              <TaskSkeleton />
-              <TaskSkeleton />
-              <TaskSkeleton />
-            </>
-          )}
-
-          {!!filteredTasks?.length &&
-            filteredTasks.map((task) => (
-              <Task
-                loading={isLoading}
-                key={task.id || task.title}
-                listId={listId}
-                data={task}
-              />
-            ))}
-        </SortableContext>
-
-        {isError && <Alert severity="error">Error Fetching Tasks</Alert>}
-      </DndContext>
-      {!!completedTasks.length && (
-        <CompletedTasks tasks={completedTasks}></CompletedTasks>
+      <AddTask />
+      {isFetching && !filteredTasks.length && (
+        <>
+          <TaskSkeleton />
+          <TaskSkeleton />
+          <TaskSkeleton />
+          <TaskSkeleton />
+        </>
       )}
+
+      <Stack flexGrow={1}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={filteredTasks!}
+            strategy={verticalListSortingStrategy}
+          >
+            <Stack flexGrow={1}>
+              {!!filteredTasks?.length &&
+                filteredTasks.map((task) => (
+                  <Task
+                    loading={isLoading}
+                    key={task.id || task.title}
+                    listId={listId}
+                    data={task}
+                  />
+                ))}
+            </Stack>
+          </SortableContext>
+
+          {isError && <Alert severity="error">Error Fetching Tasks</Alert>}
+        </DndContext>
+        {!!completedTasks.length && (
+          <CompletedTasks tasks={completedTasks}></CompletedTasks>
+        )}
+      </Stack>
     </Stack>
   );
 }
@@ -128,7 +132,6 @@ function AddTask() {
       {!!selectedTaskListId && !tempTaskPending && (
         <AddTaskButton
           id={`${constants.EXTENSION_NAME}-add-task`}
-          sx={{ mt: 1 }}
           onClick={() => setTempTaskPending(true)}
         />
       )}
@@ -163,12 +166,16 @@ function CompletedTasks({ tasks }: { tasks: SavedTask[] }) {
       </Stack>
       <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
         {tasks.map((task) => (
-          <Task listId={selectedTaskListId!} key={task.id + "completed"} data={task} />
+          <Task
+            listId={selectedTaskListId!}
+            key={task.id + "completed"}
+            data={task}
+          />
         ))}
       </Collapse>
     </Stack>
-  )
-        }
+  );
+}
 
 function getPreviousId(tasks: SavedTask[], over: Over, active: Active) {
   const activeIndex = tasks.findIndex((task) => task.id === active.id);

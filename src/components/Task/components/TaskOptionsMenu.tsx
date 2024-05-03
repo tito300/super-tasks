@@ -32,15 +32,14 @@ export function TaskOptionsMenu({ listId }: { listId: string }) {
       <IconButton
         aria-label="more"
         id="long-button"
-        size="small"
         aria-controls={open ? "long-menu" : undefined}
         aria-expanded={open ? "true" : undefined}
         aria-haspopup="true"
         onClick={handleClick}
-        onFocus={e => e.stopPropagation()}
-        sx={{ p: 0.5 }}
+        onFocus={(e) => e.stopPropagation()}
+        sx={{ padding: 0.5 }}
       >
-        <MoreVertIcon />
+        <MoreVertIcon sx={{ fontSize: 20 }} />
       </IconButton>
       <Menu
         id="long-menu"

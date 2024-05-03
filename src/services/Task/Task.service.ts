@@ -97,10 +97,11 @@ export const TaskServices = {
   setReminder: async (
     taskId: string,
     taskListId: string,
-    timeInMinutes: number,
-    userSettings: UserSettings
+    timeInMinutes: number
   ) => {
-    const alarmName = `TaskReminder-${taskListId}-${taskId}-${timeInMinutes}`;
+    const alarmName = `TaskReminder-${taskListId}-${taskId}`;
+    const userSettings = await storageService.get("userSettings");
+
     chrome.alarms.create(alarmName, {
       delayInMinutes: timeInMinutes,
     });
@@ -136,13 +137,19 @@ export const TaskServices = {
   removeReminder: async (taskId: string, taskListId: string) => {
     chrome.alarms.clear(`TaskReminder-${taskListId}-${taskId}`);
 
-    storageService.set({
-      tasksState: {
-        tasks: {
-          [taskId]: { alertOn: false, alert: 0 },
-        },
-      },
+    TaskServices.updateLocalTaskState({
+      id: taskId,
+      alertOn: false,
+      alert: 0,
+      listId: taskListId,
     });
+    // storageService.set({
+    //   tasksState: {
+    //     tasks: {
+    //       [taskId]: { alertOn: false, alert: 0 },
+    //     },
+    //   },
+    // });
     // });
   },
   mergeWithLocalState: async (tasks: SavedTask[]) => {

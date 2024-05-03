@@ -2,6 +2,7 @@ import { styled } from "@mui/material";
 
 export const StyledTask = styled("div")(({ theme }) => ({
   display: "flex",
+  alignItems: "flex-start",
   justifyContent: "space-between",
   width: "100%",
   cursor: "pointer",
@@ -22,6 +23,10 @@ export const StyledTask = styled("div")(({ theme }) => ({
       visibility: "visible",
     },
     " .supertasks-drag-icon": {
+      visibility: "visible",
+    },
+
+    " #axess-add-reminder-button": {
       visibility: "visible",
     },
   },

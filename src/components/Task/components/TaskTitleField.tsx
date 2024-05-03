@@ -1,4 +1,11 @@
-import { Box, IconButton, Menu, MenuItem, TextField } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  IconButtonProps,
+  Menu,
+  MenuItem,
+  TextField,
+} from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { SavedTask, TaskForm, TaskType } from "../Task";
 import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
@@ -66,7 +73,7 @@ export const TaskTitleField = forwardRef<
             variant="standard"
             size="small"
             sx={{
-              pt: 0.25,
+              pt: 0.3,
               ml: 1,
 
               filter: tasksSettings.blurText && !focused ? "blur(7px)" : "none",
@@ -85,17 +92,17 @@ export const TaskTitleField = forwardRef<
               //   isTaskPastDue(taskDue) && !strikeThrough ? (
               //     <Warning color="warning" fontSize="small" sx={{ mr: 0.5 }} />
               //   ) : undefined,
-              endAdornment: taskId && (
-                // 2 boxes needed to prevent shifting in UI without having to change the icon size
-                <Box sx={{ position: "relative", width: 30 }}>
-                  <Box sx={{ position: "absolute", top: 0, left: 0 }}>
-                    <AddReminder
-                      visible={!!(hovered || task?.alertOn || task?.alert)}
-                      task={task!}
-                    />
-                  </Box>
-                </Box>
-              ),
+              // endAdornment: taskId && (
+              //   // 2 boxes needed to prevent shifting in UI without having to change the icon size
+              //   <Box sx={{ position: "relative", width: 30 }}>
+              //     <Box sx={{ position: "absolute", top: 0, left: 0 }}>
+              //       <AddReminder
+              //         visible={!!(hovered || task?.alertOn || task?.alert)}
+              //         task={task!}
+              //       />
+              //     </Box>
+              //   </Box>
+              // ),
               sx: { paddingBottom: 0, alignItems: "flex-start" },
             }}
           />
@@ -105,19 +112,21 @@ export const TaskTitleField = forwardRef<
   );
 });
 
-function AddReminder({
+export function AddReminder({
   task,
   visible,
+  ...props
 }: {
   task: SavedTask;
   visible?: boolean;
-}) {
+} & IconButtonProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLButtonElement>(
     null
   );
   const open = Boolean(anchorEl);
   const { selectedTaskListId } = useTasksGlobalState();
   const mutateTask = useUpdateTask(selectedTaskListId!);
+  const { task: taskService } = useServicesContext();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -134,25 +143,30 @@ function AddReminder({
   };
   const handleClose = (timeInMinutes?: number) => {
     if (timeInMinutes) {
-      mutateTask.mutate({
-        ...task,
-        alertOn: false,
-        alert: timeInMinutes,
-      });
+      // mutateTask.mutate({
+      //   ...task,
+      //   alertOn: false,
+      //   alert: timeInMinutes,
+      // });
+      taskService.setReminder(task.id, selectedTaskListId!, timeInMinutes);
+    } else if (timeInMinutes === 0) {
+      taskService.removeReminder(task.id, selectedTaskListId!);
     }
+
     setAnchorEl(null);
   };
 
   return (
     <>
       <IconButton
-        size="small"
         onClick={handleClick}
         sx={{
           maxLines: 0.5,
           padding: 0.5,
           visibility: visible ? "visible" : "hidden",
         }}
+        onFocus={(e) => e.stopPropagation()}
+        {...props}
       >
         {task.alertOn ? (
           <NotificationsOff sx={{ fontSize: 20 }} color="warning" />
@@ -171,7 +185,13 @@ function AddReminder({
           "aria-labelledby": "basic-button",
           sx: { maxHeight: "150px", overflow: "auto" },
         }}
+        onFocus={(e) => e.stopPropagation()}
       >
+        {!!task.alert && (
+          <MenuItem selected={false} onClick={() => handleClose(0)}>
+            Clear
+          </MenuItem>
+        )}
         <MenuItem
           selected={task.alert === 0.5}
           onClick={() => handleClose(0.5)}

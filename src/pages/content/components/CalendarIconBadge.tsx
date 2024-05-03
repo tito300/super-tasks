@@ -1,9 +1,4 @@
 import { BadgeProps, Badge, styled } from "@mui/material";
-import { useCalendarEvents } from "@src/api/calendar.api";
-import { useEnhancedTasks } from "@src/api/task.api";
-import { TaskEnhanced } from "@src/components/Task/Task";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
 import { useNextEventTimer } from "./CalendarAccordionSummary";
 
 export function CalendarIconBadge(props: BadgeProps) {
@@ -12,7 +7,7 @@ export function CalendarIconBadge(props: BadgeProps) {
   const minutesToNextEvent = timeToNextEvent?.asMinutes();
 
   const showBadge =
-    !!nextEvent && !!minutesToNextEvent && minutesToNextEvent <= 30;
+    !!nextEvent && !!minutesToNextEvent && minutesToNextEvent <= 10;
 
   return (
     <StyledBadge
