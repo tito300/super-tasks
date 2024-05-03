@@ -21,6 +21,10 @@ export function TasksReminderBadge(props: BadgeProps) {
     setTasksWithAlert(alertOnTasksNotSeen);
   }, [queryClient, enhancedTasks]);
 
+  if (!tasksWithAlertNotSeen.length) {
+    return props.children as JSX.Element;
+  }
+
   return (
     <Badge
       badgeContent={

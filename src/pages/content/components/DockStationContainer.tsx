@@ -157,7 +157,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
 
 const BadgeStyled = styled(Badge)(() => {
   return {
-    "& .MuiBadge-badge": {
+    [`& #${constants.EXTENSION_NAME}-remove-button`]: {
       right: -6,
       padding: "0 0",
       backgroundColor: "#797979",

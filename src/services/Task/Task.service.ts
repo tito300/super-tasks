@@ -106,7 +106,7 @@ export const TaskServices = {
       delayInMinutes: timeInMinutes,
     });
 
-    chrome.alarms.onAlarm.addListener((alarm) => {
+    chrome.alarms.onAlarm.addListener(function listener(alarm) {
       if (alarm.name === alarmName) {
         const taskId = alarm.name.split("-")[2];
 
@@ -131,6 +131,7 @@ export const TaskServices = {
           });
         }
         messageEngine.broadcastMessage("UpdateTasks", null);
+        chrome.alarms.onAlarm.removeListener(listener)
       }
     });
   },

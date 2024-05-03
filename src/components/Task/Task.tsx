@@ -15,7 +15,7 @@ import {
   useFormContext,
   useFormState,
 } from "react-hook-form";
-import { AddReminder, TaskTitleField } from "./components/TaskTitleField";
+import { TaskTitleField } from "./components/TaskTitleField";
 import { CompletedCheckbox } from "./components/CompletedCheckbox";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
@@ -30,6 +30,7 @@ import { TaskSkeleton } from "./Task.skeleton";
 import dayjs from "dayjs";
 import { TaskDate } from "./components/TaskDate";
 import { DescriptionTextField } from "./components/DescriptionTextField";
+import { TaskReminder } from "./components/TaskReminder";
 
 export type TaskType = SavedTask | NewTask;
 
@@ -170,22 +171,12 @@ export function Task({
           }}
           sx={{
             backgroundColor: data.alertOn ? "rgb(255, 234, 194)" : undefined,
+            ":hover": {
+              backgroundColor: data.alertOn ? "rgb(255, 227, 175)" : undefined,
+            },
           }}
         >
           <Stack direction="row" alignItems="start" width="100%">
-            {/* <IconButton
-              className="supertasks-drag-icon"
-              sx={{
-                paddingRight: 0,
-                paddingTop: (theme) => theme.spacing(1),
-                color: (theme) => theme.palette.action.disabled,
-              }}
-              size="small"
-              disableFocusRipple
-              disableRipple
-            >
-              <DragIndicator fontSize="small" />
-            </IconButton> */}
             {
               <CompletedCheckbox
                 sx={{ opacity: temporary ? "0" : "1" }}
@@ -199,7 +190,7 @@ export function Task({
                 taskDue={data.due}
                 taskId={data.id}
                 onblur={() => formFields.handleSubmit(onSubmit)()}
-                onFocus={() => setFocused(true)}
+                onFocus={handleFocus}
               />
               {!expanded && data.due && (
                 <Stack direction="row" alignItems="center" gap={0.5} mb={0.25}>
@@ -243,7 +234,7 @@ export function Task({
               </Collapse>
             </Stack>
           </Stack>
-          <AddReminder
+          <TaskReminder
             id="axess-add-reminder-button"
             visible={!!(data?.alertOn || data?.alert)}
             task={data!}
