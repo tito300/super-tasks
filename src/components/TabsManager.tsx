@@ -74,7 +74,17 @@ export function TabsManager({
   return (
     <Stack
       {...rootProps}
-      sx={{ width: "100%", typography: "body1", ...rootProps?.sx }}
+      sx={{
+        width: "100%",
+        typography: "body1",
+        ":hover": {
+          [`& #summary-tabs-container`]: {
+            bottom: "calc(100% - 10px)",
+            transition: "bottom 0.1s",
+          },
+        },
+        ...rootProps?.sx,
+      }}
     >
       <TabContext value={userSettings.currentTab}>
         {!hideTabs && renderTabs}
@@ -106,8 +116,6 @@ function SummaryTabs({
   handleChange: (e: any, tab: TabType) => void;
   currentTab: TabType;
 }) {
-  const { userSettings } = useUserSettings();
-
   return (
     <Box
       id="summary-tabs-container"
@@ -115,9 +123,7 @@ function SummaryTabs({
         position: "absolute",
         display: "flex",
         alignItems: "center",
-        bottom: userSettings.accordionExpanded
-          ? "calc(100% - 10px)"
-          : "calc(100% - 38px)",
+        bottom: "calc(100% - 38px)",
         right: 5,
         zIndex: -1,
         paddingBottom: 8,
