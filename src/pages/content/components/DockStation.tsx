@@ -18,20 +18,14 @@ export function DockStation() {
   return (
     <DockStationContainer>
       <OauthRequired style={{ width: 385 }}>
-        <DockStationAccordion>
-          <DockStationAccordionSummary />
-          <DockStationAccordionDetails id="accordion-details">
-            <Stack
-              sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}
-            >
-              <TabsManager
-                hideTabs
-                flexGrow={1}
-                tabs={{ tasks: <TasksApp />, calendar: <CalendarApp /> }}
-              />
-            </Stack>
-          </DockStationAccordionDetails>
-        </DockStationAccordion>
+        <TabsManager
+          hideTabs
+          flexGrow={1}
+          tabs={{ tasks: <TasksApp />, 
+          // calendar: <CalendarApp />
+          calendar: <></>
+         }}
+        />
       </OauthRequired>
       {/* <ScrollTopOnLoad /> */}
     </DockStationContainer>

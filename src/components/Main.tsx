@@ -37,13 +37,7 @@ export const Main = ({
             <GlobalStateProvider>
               <CustomThemeProvider theme={theme}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <TasksSettingsProvider>
-                    <TasksGlobalStateProvider>
-                      <TasksLocalStateProvider>
                         {children}
-                      </TasksLocalStateProvider>
-                    </TasksGlobalStateProvider>
-                  </TasksSettingsProvider>
                 </LocalizationProvider>
               </CustomThemeProvider>
             </GlobalStateProvider>

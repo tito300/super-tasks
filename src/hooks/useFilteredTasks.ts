@@ -1,9 +1,7 @@
-import { useEnhancedTasks, useTasks } from "@src/api/task.api";
-import { useTasksSettings } from "@src/api/task.api";
+import { useTasks } from "@src/api/task.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useTasksSettingsContext } from "@src/components/Providers/TasksSettingsProvider";
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 export function useFilteredTasks() {
   const { tasksSettings } = useTasksSettingsContext();

@@ -14,7 +14,7 @@ There are three levels of state:
     - light/dark mode
     - when calendar count down starts showing
 
-- Global state: state that applies across tabs and profiles. 
+- Global state: state that applies across tabs and profiles. Includes global app specific state and global state for all apps.
     - which task list is the last selected. We don't want this to reset per tab. user normally have a primary list and they expect it to be the default everywhere.
     - how many unread alerts there are
 

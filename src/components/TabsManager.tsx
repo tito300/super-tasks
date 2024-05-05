@@ -47,7 +47,7 @@ export function TabsManager({
   }, [userSettings.currentTab, rootElement]);
 
   const tabsEl: ReactNode = (
-    <SummaryTabs
+    <NavigationTabs
       handleChange={handleChange}
       currentTab={userSettings.currentTab}
     />
@@ -74,7 +74,7 @@ export function TabsManager({
         typography: "body1",
         ":hover": {
           [`& #summary-tabs-container`]: {
-            bottom: "calc(100% - 10px)",
+            bottom:  scriptType === 'Content' ? "calc(100% - 10px)" : "auto",
             transition: "bottom 0.1s",
           },
         },
@@ -104,13 +104,15 @@ export function TabsManager({
   );
 }
 
-function SummaryTabs({
+function NavigationTabs({
   handleChange,
   currentTab,
 }: {
   handleChange: (e: any, tab: TabType) => void;
   currentTab: TabType;
 }) {
+  const scriptType = useScriptType();
+
   return (
     <Box
       id="summary-tabs-container"
@@ -118,7 +120,8 @@ function SummaryTabs({
         position: "absolute",
         display: "flex",
         alignItems: "center",
-        bottom: "calc(100% - 38px)",
+        bottom: scriptType === 'Popup' ? "auto" : "calc(100% - 38px)",
+        top: scriptType === 'Popup' ? "0" : "auto",
         right: 5,
         zIndex: -1,
         paddingBottom: 8,
@@ -133,11 +136,13 @@ function SummaryTabs({
         onClick={(e) => handleChange(e, "tasks")}
         children={<Checklist fontSize="small" color={"inherit"} />}
         sx={{
+          // @ts-ignore
           backgroundColor: (theme) => theme.palette.primary.light,
           borderTopRightRadius: "4px",
           borderTopLeftRadius: "4px",
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
+          // @ts-ignore
           padding: "3px 14px",
           ":hover": {
             backgroundColor: (theme) => theme.palette.primary.main,
@@ -163,11 +168,13 @@ function SummaryTabs({
         onClick={(e) => handleChange(e, "calendar")}
         children={<CalendarMonth fontSize="small" color={"inherit"} />}
         sx={{
+          // @ts-ignore
           backgroundColor: (theme) => theme.palette.primary.light,
           borderTopRightRadius: "4px",
           borderTopLeftRadius: "4px",
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
+          // @ts-ignore
           padding: "3px 14px",
           ":hover": {
             backgroundColor: (theme) => theme.palette.primary.main,
