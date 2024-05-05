@@ -12,6 +12,8 @@ import { ScriptTypeProvider } from "./Providers/ScriptTypeProvider";
 import { useUserSettings } from "@src/api/user.api";
 import { deepmerge } from "@mui/utils";
 import { GlobalStateProvider } from "./Providers/globalStateProvider";
+import { TasksSettingsProvider } from "./Providers/TasksSettingsProvider";
+import { TasksLocalStateProvider } from "./Providers/TasksLocalStateProvider";
 
 const queryClient = new QueryClient();
 
@@ -35,9 +37,13 @@ export const Main = ({
             <GlobalStateProvider>
               <CustomThemeProvider theme={theme}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <TasksGlobalStateProvider>
-                    {children}
-                  </TasksGlobalStateProvider>
+                  <TasksSettingsProvider>
+                    <TasksGlobalStateProvider>
+                      <TasksLocalStateProvider>
+                        {children}
+                      </TasksLocalStateProvider>
+                    </TasksGlobalStateProvider>
+                  </TasksSettingsProvider>
                 </LocalizationProvider>
               </CustomThemeProvider>
             </GlobalStateProvider>

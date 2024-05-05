@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useMessageEngine } from "./MessageEngineProvider";
 import { TaskType } from "../Task/Task";
+import { storageService } from "@src/storage/storage.service";
 
 export type TasksGlobalState = {
   selectedTaskListId?: string | null;
@@ -31,34 +32,29 @@ export function TasksGlobalStateProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { tasksState, updateTasksState } = useTasksState();
-  const queryClient = useQueryClient();
-  const messageEngine = useMessageEngine();
+  const [tasksState, setTasksState] = useState<TasksGlobalState>({});
 
-  /**
-   * Invalidate tasks query when tasks are updated on background script
-   * due to alarm trigger
-   */
   useEffect(() => {
-    const cleanup = messageEngine.onMessage("UpdateTasks", async () => {
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", tasksState.selectedTaskListId], // needs to update all tasks
-      });
+    storageService.get("tasksState").then((data) => {
+      setTasksState({ ...data });
     });
-    return () => {
-      cleanup();
-    };
-  }, [tasksState.selectedTaskListId, messageEngine, queryClient]);
+
+    storageService.onChange("tasksState", (changes) => {
+      if (changes?.tasksState) {
+        setTasksState(changes.tasksState.newValue ?? {});
+      }
+    });
+  }, []);
 
   const updateSelectedTaskListId = useCallback((id: string) => {
-    updateTasksState({ selectedTaskListId: id });
+    setTasksState(tasksState => ({ ...tasksState, selectedTaskListId: id }));
   }, []);
 
   const value = useMemo(
     () => ({
+      ...tasksState,
       selectedTaskListId: tasksState.selectedTaskListId,
       defaultTaskListId: tasksState.selectedTaskListId,
-      tasks: tasksState.tasks,
       updateSelectedTaskListId,
     }),
     [tasksState, updateSelectedTaskListId]
@@ -80,3 +76,4 @@ export const useTasksGlobalState = () => {
   }
   return context;
 };
+

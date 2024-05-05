@@ -1,22 +1,17 @@
-import { TabContext, TabList, TabPanel } from "@mui/lab";
+import { TabContext } from "@mui/lab";
 import {
   Box,
-  BoxProps,
   IconButton,
   IconButtonProps,
   Stack,
   StackProps,
-  Tab,
-  styled,
-  tabsClasses,
 } from "@mui/material";
 import { Tab as TabType } from "@src/config/settingsDefaults";
-import React, { ReactElement, ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { CalendarMonth, Checklist } from "@mui/icons-material";
 import { useScriptType } from "./Providers/ScriptTypeProvider";
 import { useUserSettings } from "@src/api/user.api";
 import { useRootElement } from "@src/hooks/useRootElement";
-import deepmerge from "@mui/utils/deepmerge";
 
 export function TabsManager({
   tabs,

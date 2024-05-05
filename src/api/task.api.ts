@@ -16,6 +16,7 @@ import React from "react";
 import { deepmerge } from "@mui/utils";
 import { useGlobalState } from "@src/components/Providers/globalStateProvider";
 import { StorageData, storageService } from "@src/storage/storage.service";
+import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
 
 export type TaskList = {
   id: string;
@@ -31,6 +32,7 @@ export const useTasks = ({
 }) => {
   const { task: taskService } = useServicesContext();
   const { open } = useGlobalState();
+  useTasksUpdateMessage()
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", listId],
@@ -260,40 +262,6 @@ export const useUpdateTask = (listId: string) => {
     },
   });
 };
-
-export function useTasksSettings() {
-  const [tasksSettings, setTasksSettings] = React.useState<TasksSettings>(
-    tasksSettingsDefaults
-  );
-  const { task: taskService } = useServicesContext();
-
-  useEffect(() => {
-    taskService.getTasksSettings().then(setTasksSettings);
-    storageService.onChange("tasksSettings", (changes) => {
-      setTasksSettings(
-        changes?.tasksSettings?.newValue ?? {
-          ...tasksSettingsDefaults,
-        }
-      );
-    });
-  }, []);
-
-  const updateTasksSettings = useCallback(
-    (newSettings: Partial<TasksSettings>) => {
-      setTasksSettings((prevSettings) => {
-        const settings = deepmerge(prevSettings, newSettings);
-        taskService.updateTasksSettings(settings);
-        return settings;
-      });
-    },
-    [taskService]
-  );
-
-  return {
-    tasksSettings,
-    updateTasksSettings,
-  };
-}
 
 export function useTasksState() {
   const [tasksState, setTasksState] = useState<TasksGlobalState>({});

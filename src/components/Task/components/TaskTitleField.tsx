@@ -1,27 +1,14 @@
 import {
-  Box,
-  IconButton,
-  IconButtonProps,
-  Menu,
-  MenuItem,
   TextField,
 } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
-import { SavedTask, TaskForm, TaskType } from "../Task";
-import { ElementRef, KeyboardEvent, forwardRef, useRef } from "react";
+import { TaskForm } from "../Task";
+import { KeyboardEvent, forwardRef, useRef } from "react";
 import { constants } from "@src/config/constants";
-import { isTaskPastDue } from "@src/utils/isTaskPastDue";
-import {
-  NotificationAdd,
-  Notifications,
-  NotificationsOff,
-  Warning,
-} from "@mui/icons-material";
 import React from "react";
-import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
-import { useTasks, useUpdateTask } from "@src/api/task.api";
-import { useTasksSettings } from "@src/api/task.api";
+import { useTasks } from "@src/api/task.api";
+import { useTasksSettingsContext } from "@src/components/Providers/TasksSettingsProvider";
 
 export const TaskTitleField = forwardRef<
   HTMLDivElement,
@@ -36,7 +23,7 @@ export const TaskTitleField = forwardRef<
 >(({ onFocus, focused, onblur, strikeThrough, taskDue, taskId }) => {
   const { control } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
-  const { tasksSettings } = useTasksSettings();
+  const { tasksSettings } = useTasksSettingsContext();
   const [hovered, setHovered] = React.useState(false);
   const { selectedTaskListId } = useTasksGlobalState();
   const { data: tasks } = useTasks({ listId: selectedTaskListId });

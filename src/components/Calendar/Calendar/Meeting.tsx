@@ -1,5 +1,4 @@
 import { Stack, Typography, styled } from "@mui/material";
-import { useTasksSettings } from "@src/api/task.api";
 import { useUserSettings } from "@src/api/user.api";
 import { CalendarEvent } from "@src/calendar.types";
 import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";

@@ -3,11 +3,11 @@ import { Stack, Typography, IconButton, Box } from "@mui/material";
 import { TasksReminderBadge } from "./TasksReminderBadge";
 import { useState } from "react";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
-import { useTasksSettings } from "@src/api/task.api";
+import { useTasksSettingsContext } from "@src/components/Providers/TasksSettingsProvider";
 
 export function TasksAccordionSummary() {
   const [hovered, setHovered] = useState(false);
-  const { tasksSettings, updateTasksSettings } = useTasksSettings();
+  const { tasksSettings, updateTasksSettings } = useTasksSettingsContext();
   const { filteredTasks, isFetching } = useFilteredTasks();
 
   const task = filteredTasks?.find(
