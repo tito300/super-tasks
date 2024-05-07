@@ -102,14 +102,14 @@ function NavigationTabs({
   currentTab: TabName;
 }) {
   const scriptType = useScriptType();
-  const { buttonExpanded } = useUserState();
+  const { data:  { accordionExpanded } } = useUserState();
 
   return (
     <>
       <TabIconsContainer
         scriptType={scriptType}
         id="summary-tabs-container"
-        accordionOpen={buttonExpanded}
+        accordionOpen={accordionExpanded}
       >
         <TabOption tabName="tasks" />
         <TabOption tabName="calendar" />

@@ -3,11 +3,11 @@ import { Stack, Typography, IconButton, Box } from "@mui/material";
 import { TasksReminderBadge } from "./TasksReminderBadge";
 import { useState } from "react";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
-import { useTasksSettingsContext } from "@src/components/Providers/TasksSettingsProvider";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
 
 export function TasksAccordionSummary() {
   const [hovered, setHovered] = useState(false);
-  const { tasksSettings, updateTasksSettings } = useTasksSettingsContext();
+  const { data: {blurText}, updateData: updateUserState } = useUserState();
   const { filteredTasks, isFetching } = useFilteredTasks();
 
   const task = filteredTasks?.find(
@@ -34,7 +34,7 @@ export function TasksAccordionSummary() {
         textOverflow="ellipsis"
         overflow="hidden"
         sx={{
-          filter: tasksSettings.blurText ? "blur(7px)" : "none",
+          filter: blurText ? "blur(7px)" : "none",
           color: (theme) => theme.palette.primary.contrastText,
         }}
       >
@@ -45,17 +45,17 @@ export function TasksAccordionSummary() {
           onClick={(e) => e.stopPropagation()}
           sx={{ opacity: hovered ? 1 : 0 }}
         >
-          {tasksSettings.blurText ? (
+          {blurText ? (
             <Visibility
               color="action"
               fontSize="small"
-              onClick={() => updateTasksSettings({ blurText: false })}
+              onClick={() => updateUserState({ blurText: false })}
             />
           ) : (
             <VisibilityOff
               color="action"
               fontSize="small"
-              onClick={() => updateTasksSettings({ blurText: true })}
+              onClick={() => updateUserState({ blurText: true })}
             />
           )}
         </IconButton>

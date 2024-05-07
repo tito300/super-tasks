@@ -25,9 +25,6 @@ export const TaskTitleField = forwardRef<
   const {
     data: { blurText },
   } = useUserState();
-  const {
-    data: { selectedTaskListId },
-  } = useTasksGlobalState();
 
   function handleKeyDown(e: KeyboardEvent) {
     // some websites take focus away on certain

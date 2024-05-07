@@ -104,9 +104,5 @@ type CacheData = {
 };
 
 type CalendarGlobalState = {
-  selectedCalendarId?: string | null;
-  defaultCalendarId?: string | null;
-  calendars?: {
-    [calendarId: string]: any;
-  };
+  selectedDate: Date | null;
 };

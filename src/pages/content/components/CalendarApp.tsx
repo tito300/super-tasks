@@ -5,8 +5,7 @@ import { DockStationAccordionDetails } from "./DockStationAccordionDetails";
 import { ArrowDropDown } from "@mui/icons-material";
 import { CalendarAccordionSummary } from "./CalendarAccordionSummary";
 import { AccordionSummaryStyled } from "./AccordionSummary.styled";
-import { CalendarGlobalStateProvider } from "@src/components/Providers/CalendarGlobalStateProvider";
-import { CalendarLocalStateProvider } from "@src/components/Providers/CalendarLocalStateProvider";
+import { CalendarsStateProvider } from "@src/components/Providers/CalendarStateProvider";
 import { CalendarSettingsProvider } from "@src/components/Providers/CalendarSettingsProvider";
 import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 
@@ -15,8 +14,7 @@ export function CalendarApp() {
 
   return (
     <CalendarSettingsProvider>
-      <CalendarGlobalStateProvider>
-        <CalendarLocalStateProvider>
+      <CalendarsStateProvider>
           {scriptType === "Content" ? (
             <DockStationAccordion>
               <AccordionSummaryStyled expandIcon={<ArrowDropDown />}>
@@ -33,8 +31,7 @@ export function CalendarApp() {
           ) : (
             <CalendarListManager />
           )}
-        </CalendarLocalStateProvider>
-      </CalendarGlobalStateProvider>
+      </CalendarsStateProvider>
     </CalendarSettingsProvider>
   );
 }
