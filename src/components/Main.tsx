@@ -15,6 +15,10 @@ import {
   useUserSettings,
 } from "./Providers/UserSettingsProvider";
 import { UserStateProvider, useUserState } from "./Providers/UserStateProvider";
+import { CalendarSettingsProvider } from "./Providers/CalendarSettingsProvider";
+import { CalendarsStateProvider } from "./Providers/CalendarStateProvider";
+import { TasksSettingsProvider } from "./Providers/TasksSettingsProvider";
+import { TasksStateProvider } from "./Providers/TasksStateProvider";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +47,15 @@ export const Main = ({
                 <UserStateProvider>
                   <CustomThemeProvider theme={theme}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      {children}
+                      <TasksSettingsProvider>
+                        <TasksStateProvider>
+                          <CalendarSettingsProvider>
+                            <CalendarsStateProvider>
+                              {children}
+                            </CalendarsStateProvider>
+                          </CalendarSettingsProvider>
+                        </TasksStateProvider>
+                      </TasksSettingsProvider>
                     </LocalizationProvider>
                   </CustomThemeProvider>
                 </UserStateProvider>

@@ -183,7 +183,7 @@ const ExtensionTaskButton = styled(IconButton)(({ theme }) => {
     fontSize: 0,
     cursor: "grab",
     [":hover"]: {
-      backgroundColor: cyan[500],
+      backgroundColor: cyan[600],
     },
   };
 });
@@ -195,13 +195,13 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
     boxShadow: theme.shadows[3],
     padding: 14,
     marginBottom: 6,
-    backgroundColor: calendarTheme.palette.background.accent,
+    backgroundColor: calendarTheme.palette.primary.main,
     color: "white",
     transform: "translateY(6%)",
     fontSize: 0,
     cursor: "grab",
     [":hover"]: {
-      backgroundColor: calendarTheme.palette.background.accent,
+      backgroundColor: calendarTheme.palette.primary.dark,
     },
   };
 });

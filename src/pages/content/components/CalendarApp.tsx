@@ -13,9 +13,9 @@ export function CalendarApp() {
   const scriptType = useScriptType();
 
   return (
-    <CalendarSettingsProvider>
-      <CalendarsStateProvider>
-          {scriptType === "Content" ? (
+    // <CalendarSettingsProvider>
+    //   <CalendarsStateProvider>
+          scriptType === "Content" ? (
             <DockStationAccordion>
               <AccordionSummaryStyled expandIcon={<ArrowDropDown />}>
                 <CalendarAccordionSummary />
@@ -30,8 +30,8 @@ export function CalendarApp() {
             </DockStationAccordion>
           ) : (
             <CalendarListManager />
-          )}
-      </CalendarsStateProvider>
-    </CalendarSettingsProvider>
+          )
+    //   </CalendarsStateProvider>
+    // </CalendarSettingsProvider>
   );
 }

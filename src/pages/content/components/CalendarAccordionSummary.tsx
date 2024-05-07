@@ -12,6 +12,7 @@ import {
 } from "@src/utils/calendarUtils";
 import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
+import { useCalendarState } from "@src/components/Providers/CalendarStateProvider";
 
 dayjs.extend(duration);
 
@@ -22,8 +23,9 @@ export function CalendarAccordionSummary() {
     updateData: updateUserState,
   } = useUserState();
   const { calendarSettings } = useCalendarSettings();
+  const { data: { selectedCalendarId } } = useCalendarState();
   const { isLoading } = useCalendarEvents({
-    calendarId: "tarek.demachkie@workwave.com",
+    calendarId: selectedCalendarId,
   });
 
   const { nextEvent, timeToNextEvent } = useNextEventTimer();
@@ -111,8 +113,10 @@ export function CalendarAccordionSummary() {
 export function useNextEventTimer() {
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const [timeToNextEvent, setTimeToNextEvent] = useState<Duration | null>(null);
+  const { data: { selectedCalendarId } } = useCalendarState();
+
   const { data: calendarEvents } = useCalendarEvents({
-    calendarId: "tarek.demachkie@workwave.com",
+    calendarId: selectedCalendarId,
   });
 
   useEffect(() => {

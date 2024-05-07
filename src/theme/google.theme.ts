@@ -35,6 +35,9 @@ export const calendarTheme = deepmerge(commonTheme, {
 
 export const tasksTheme = deepmerge(calendarTheme, {
   palette: {
-    background: {},
+    primary: {
+  
+    },
+    
   },
 } as Theme);

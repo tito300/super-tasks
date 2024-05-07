@@ -6,15 +6,16 @@ import { useSyncedState } from "@src/hooks/useSyncedState";
 import { useCalendarSettings } from "./CalendarSettingsProvider";
 
 export type CalendarsGlobalState = {
-  selectedDate: Date | null;
+  selectedDate?: Date | null;
+  selectedCalendarId?: string | null;
 };
 
-export type CalendarsGlobalStateContextType = {
+export type CalendarsStateContextType = {
   data: CalendarsGlobalState;
   updateData: (id: CalendarsGlobalState) => void;
 };
 
-const CalendarsGlobalStateContext = createContext<CalendarsGlobalStateContextType>(
+const CalendarsStateContext = createContext<CalendarsStateContextType>(
   null!
 );
 export function CalendarsStateProvider({
@@ -27,22 +28,23 @@ export function CalendarsStateProvider({
     "calendarState",
     calendarSettings,
     {
-      selectedDate: new Date()
+      selectedDate: new Date(),
+      selectedCalendarId: null,
     }
   );
 
   return (
-    <CalendarsGlobalStateContext.Provider value={syncedState}>
+    <CalendarsStateContext.Provider value={syncedState}>
       {children}
-    </CalendarsGlobalStateContext.Provider>
+    </CalendarsStateContext.Provider>
   );
 }
 
-export const useCalendarsState = () => {
-  const context = useContext(CalendarsGlobalStateContext);
+export const useCalendarState = () => {
+  const context = useContext(CalendarsStateContext);
   if (!context) {
     throw new Error(
-      "useCalendarsGlobalState must be used within a CalendarsGlobalStateProvider"
+      "useCalendarState must be used within a CalendarsGlobalStateProvider"
     );
   }
   return context;

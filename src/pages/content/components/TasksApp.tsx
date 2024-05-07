@@ -26,26 +26,24 @@ export function TasksApp() {
   useEnhancedTasks();
 
   return (
-    <TasksSettingsProvider>
-      <TasksStateProvider>
-        {scriptType === "Content" ? (
-          <TasksAccordion>
-            <AccordionSummaryStyled expandIcon={<ArrowDropDown />}>
-              <TasksAccordionSummary />
-            </AccordionSummaryStyled>
-            <DockStationAccordionDetails id="accordion-details">
-              <Stack
-                sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}
-              >
-                <TaskListManager />
-              </Stack>
-            </DockStationAccordionDetails>
-          </TasksAccordion>
-        ) : (
-          <TaskListManager />
-        )}
-      </TasksStateProvider>
-    </TasksSettingsProvider>
+    // <TasksSettingsProvider>
+    //   <TasksStateProvider>
+    scriptType === "Content" ? (
+      <TasksAccordion>
+        <AccordionSummaryStyled expandIcon={<ArrowDropDown />}>
+          <TasksAccordionSummary />
+        </AccordionSummaryStyled>
+        <DockStationAccordionDetails id="accordion-details">
+          <Stack sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}>
+            <TaskListManager />
+          </Stack>
+        </DockStationAccordionDetails>
+      </TasksAccordion>
+    ) : (
+      <TaskListManager />
+    )
+    //   </TasksStateProvider>
+    // </TasksSettingsProvider>
   );
 }
 
