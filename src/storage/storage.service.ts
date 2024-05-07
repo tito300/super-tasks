@@ -1,5 +1,6 @@
 import { deepmerge } from "@mui/utils";
 import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { UserState } from "@src/components/Providers/UserStateProvider";
 import { TaskEnhanced } from "@src/components/Task/Task";
 import {
   TasksSettings,
@@ -90,7 +91,7 @@ export type StorageData = {
   calendarSettings: CalendarSettings;
   calendarState: CalendarGlobalState;
   userSettings: UserSettings;
-  userState: {};
+  userState: UserState;
   globalState: {
     open: boolean;
   };

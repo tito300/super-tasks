@@ -21,6 +21,11 @@ export function TasksApp() {
   const scriptType = useScriptType();
   useEnhancedTasks();
 
+  useEffect(() => {
+    console.log("mounted TasksApp");
+    console.log("scriptType", scriptType);
+  }, []);
+
   return (
     <TasksSettingsProvider>
       <TasksGlobalStateProvider>

@@ -5,66 +5,51 @@ import {
   IconButtonProps,
   Stack,
   StackProps,
+  styled,
 } from "@mui/material";
-import { Tab as TabType } from "@src/config/settingsDefaults";
-import React, { ReactNode, useEffect } from "react";
+import { TabName } from "@src/config/settingsDefaults";
+import React, { useEffect } from "react";
 import { CalendarMonth, Checklist } from "@mui/icons-material";
 import { useScriptType } from "./Providers/ScriptTypeProvider";
-import { useUserSettings } from "@src/api/user.api";
 import { useRootElement } from "@src/hooks/useRootElement";
+import { ScriptType } from "@src/messageEngine/types/taskMessages";
+import { useUserSettings } from "./Providers/UserSettingsProvider";
+import { useUserState } from "./Providers/UserStateProvider";
 
 export function TabsManager({
   tabs,
   tabIconButtonProps,
   tabIconButtonPropsSelected,
-  renderTabsElement,
   hideTabs,
   ...rootProps
 }: {
   hideTabs?: boolean;
   tabIconButtonProps?: IconButtonProps;
   tabIconButtonPropsSelected?: IconButtonProps;
-  renderTabsElement?: (tabsEl: ReactNode) => React.ReactNode;
-  tabs: Record<TabType, React.ReactNode>;
+  tabs: Record<TabName, React.ReactNode>;
 } & StackProps) {
-  const { userSettings, updateUserSettings } = useUserSettings();
+  const { currentTab, updateUserState } = useUserState();
   const scriptType = useScriptType();
   const rootElement = useRootElement();
 
-  const handleChange = (event: React.SyntheticEvent, newValue: TabType) => {
-    updateUserSettings({ currentTab: newValue });
+  useEffect(() => {
+    console.log("mounted TabsManager");
+  }, []);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: TabName) => {
+    updateUserState({ currentTab: newValue });
   };
 
   useEffect(() => {
-    if (userSettings.currentTab === "calendar") {
+    if (currentTab === "calendar") {
       rootElement.querySelector("#current-time-indicator")?.scrollIntoView({
         behavior: "instant",
         block: "center",
       });
-    } else if (userSettings.currentTab === "tasks") {
+    } else if (currentTab === "tasks") {
       rootElement.scrollTo(0, 0);
     }
-  }, [userSettings.currentTab, rootElement]);
-
-  const tabsEl: ReactNode = (
-    <NavigationTabs
-      handleChange={handleChange}
-      currentTab={userSettings.currentTab}
-    />
-  );
-  const renderTabs = renderTabsElement ? (
-    renderTabsElement(tabsEl)
-  ) : (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        width: "100%",
-      }}
-    >
-      {tabsEl}
-    </Box>
-  );
+  }, [currentTab, rootElement]);
 
   return (
     <Stack
@@ -74,19 +59,21 @@ export function TabsManager({
         typography: "body1",
         ":hover": {
           [`& #summary-tabs-container`]: {
-            bottom:  scriptType === 'Content' ? "calc(100% - 10px)" : "auto",
+            bottom: scriptType === "Content" ? "calc(100% - 10px)" : "auto",
             transition: "bottom 0.1s",
           },
         },
         ...rootProps?.sx,
       }}
     >
-      <TabContext value={userSettings.currentTab}>
-        {!hideTabs && renderTabs}
+      <TabContext value={currentTab}>
+        {!hideTabs && (
+          <NavigationTabs handleChange={handleChange} currentTab={currentTab} />
+        )}
         <Stack
           flexGrow={1}
           sx={{
-            display: userSettings.currentTab === "tasks" ? "flex" : "none",
+            display: currentTab === "tasks" ? "flex" : "none",
           }}
         >
           {tabs["tasks"]}
@@ -94,7 +81,7 @@ export function TabsManager({
         <Stack
           flexGrow={1}
           sx={{
-            display: userSettings.currentTab === "calendar" ? "block" : "none",
+            display: currentTab === "calendar" ? "block" : "none",
           }}
         >
           {tabs["calendar"]}
@@ -108,93 +95,120 @@ function NavigationTabs({
   handleChange,
   currentTab,
 }: {
-  handleChange: (e: any, tab: TabType) => void;
-  currentTab: TabType;
+  handleChange: (e: any, tab: TabName) => void;
+  currentTab: TabName;
 }) {
   const scriptType = useScriptType();
+  const { buttonExpanded } = useUserState();
 
   return (
-    <Box
-      id="summary-tabs-container"
-      sx={{
+    <>
+      <TabIconsContainer
+        scriptType={scriptType}
+        id="summary-tabs-container"
+        accordionOpen={buttonExpanded}
+      >
+        <TabOption tabName="tasks" />
+        <TabOption tabName="calendar" />
+      </TabIconsContainer>
+      {scriptType === "Popup" && (
+        <Box
+          sx={{
+            height: 32,
+            width: "100%",
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function TabOption({ tabName }: { tabName: TabName }) {
+  const scriptType = useScriptType();
+  const { currentTab, updateUserState } = useUserState();
+
+  const selected = currentTab === tabName;
+  const tabIcon =
+    tabName === "tasks" ? (
+      <Checklist fontSize="small" />
+    ) : (
+      <CalendarMonth fontSize="small" />
+    );
+
+  return (
+    <TabIconStyled
+      size="small"
+      onClick={() => updateUserState({ currentTab: tabName })}
+      selected={selected}
+      scriptType={scriptType}
+    >
+      {tabIcon}
+    </TabIconStyled>
+  );
+}
+
+const TabIconsContainer = styled(Stack)<{
+  scriptType: ScriptType;
+  accordionOpen: boolean;
+}>(({ theme, scriptType, accordionOpen }) => ({
+  flexDirection: "row",
+  alignItems: "flex-end",
+  ...(scriptType === "Content"
+    ? {
         position: "absolute",
-        display: "flex",
-        alignItems: "center",
-        bottom: scriptType === 'Popup' ? "auto" : "calc(100% - 38px)",
-        top: scriptType === 'Popup' ? "0" : "auto",
+        bottom: accordionOpen ? "calc(100% - 10px)" : "calc(100% - 40px)",
+        top: "auto",
         right: 5,
         zIndex: -1,
         paddingBottom: 8,
-        borderTopLeftRadius: 4,
-        borderTopRightRadius: 4,
         padding: "0px 4px 6px",
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <IconButton
-        size="small"
-        onClick={(e) => handleChange(e, "tasks")}
-        children={<Checklist fontSize="small" color={"inherit"} />}
-        sx={{
-          // @ts-ignore
-          backgroundColor: (theme) => theme.palette.primary.light,
-          borderTopRightRadius: "4px",
-          borderTopLeftRadius: "4px",
-          borderBottomLeftRadius: 0,
-          borderBottomRightRadius: 0,
-          // @ts-ignore
-          padding: "3px 14px",
-          ":hover": {
-            backgroundColor: (theme) => theme.palette.primary.main,
-          },
-          ...(currentTab === "tasks"
-            ? {
-                backgroundColor: (theme) => theme.palette.primary.main,
-                borderRight: (theme) =>
-                  `1px solid ${theme.palette.primary.contrastText}`,
-                padding: "5px 14px",
-                zIndex: 1,
-              }
-            : {
-                marginRight: "-4px",
-                ":hover": {
-                  backgroundColor: (theme) => theme.palette.primary.dark,
-                },
-              }),
-        }}
-      />
-      <IconButton
-        size="small"
-        onClick={(e) => handleChange(e, "calendar")}
-        children={<CalendarMonth fontSize="small" color={"inherit"} />}
-        sx={{
-          // @ts-ignore
-          backgroundColor: (theme) => theme.palette.primary.light,
-          borderTopRightRadius: "4px",
-          borderTopLeftRadius: "4px",
-          borderBottomLeftRadius: 0,
-          borderBottomRightRadius: 0,
-          // @ts-ignore
-          padding: "3px 14px",
-          ":hover": {
-            backgroundColor: (theme) => theme.palette.primary.main,
-          },
-          ...(currentTab === "calendar"
-            ? {
-                backgroundColor: (theme) => theme.palette.primary.main,
-                borderLeft: (theme) =>
-                  `1px solid ${theme.palette.primary.contrastText}`,
-                padding: "5px 14px",
-              }
-            : {
-                marginLeft: "-4px",
-                zIndex: -1,
-                ":hover": {
-                  backgroundColor: (theme) => theme.palette.primary.dark,
-                },
-              }),
-        }}
-      />
-    </Box>
-  );
-}
+      }
+    : {
+        position: "fixed",
+        overflow: "hidden",
+        backgroundColor: "#f4f5f7",
+        zIndex: 50,
+        width: "100%",
+        borderBottom: `1px solid ${theme.palette.divider}`,
+      }),
+}));
+
+const TabIconStyled = styled(IconButton)<{
+  selected?: boolean;
+  scriptType: ScriptType;
+}>(({ theme, selected, scriptType }) => ({
+  // @ts-ignore
+  backgroundColor: theme.palette.primary.light,
+  borderTopRightRadius: scriptType === "Content" ? 4 : 2,
+  borderTopLeftRadius: scriptType === "Content" ? 4 : 2,
+  borderBottomLeftRadius: 0,
+  borderBottomRightRadius: 0,
+  // @ts-ignore
+  padding: scriptType === "Content" ? "3px 14px" : "5px 14px",
+  ":hover": {
+    backgroundColor: theme.palette.primary.main,
+  },
+
+  ...(selected
+    ? {
+        backgroundColor: theme.palette.primary.main,
+        borderRight:
+          scriptType === "Content"
+            ? `1px solid ${theme.palette.primary.contrastText}`
+            : "none",
+        borderLeft:
+          scriptType === "Content"
+            ? `1px solid ${theme.palette.primary.contrastText}`
+            : "none",
+        padding: "5px 14px",
+        boxShadow:
+          scriptType === "Content" ? "none" : "0px 0px 4px 2px #0000004a",
+      }
+    : {
+        marginLeft: "-4px",
+        zIndex: -1,
+        ":hover": {
+          backgroundColor: theme.palette.primary.dark,
+        },
+      }),
+}));

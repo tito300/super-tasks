@@ -3,20 +3,11 @@ import { SavedTask, TaskEnhanced } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
-import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
-import { useUserSettings } from "./user.api";
-import {
-  CalendarSettings,
-  TasksSettings,
-  UserSettings,
-  tasksSettingsDefaults,
-} from "@src/config/settingsDefaults";
-import React from "react";
-import { deepmerge } from "@mui/utils";
-import { useGlobalState } from "@src/components/Providers/globalStateProvider";
 import { StorageData, storageService } from "@src/storage/storage.service";
 import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
+import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 
 export type TaskList = {
   id: string;
@@ -31,8 +22,9 @@ export const useTasks = ({
   enabled?: boolean;
 }) => {
   const { task: taskService } = useServicesContext();
-  const { open } = useGlobalState();
-  useTasksUpdateMessage()
+  const scriptType = useScriptType();
+
+  useTasksUpdateMessage();
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", listId],
@@ -52,7 +44,7 @@ export const useTasks = ({
         return [];
       }
     },
-    enabled: enabled ?? (open && !!listId),
+    enabled: enabled ?? !!listId,
     // stale time prevents refetching for things like when user focuses on page
     // If you need to force a refetch, use queryClient.invalidateQueries
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -204,7 +196,6 @@ export const useAddTask = (listId: string) => {
 export const useUpdateTask = (listId: string) => {
   const queryClient = useQueryClient();
   const { task: taskService } = useServicesContext();
-  const { userSettings } = useUserSettings();
 
   return useMutation({
     mutationFn: async (task: Partial<SavedTask> & { id: string }) => {

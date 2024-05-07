@@ -21,33 +21,8 @@ export default function Popup({}): JSX.Element {
   }, [open]);
 
   return (
-    <Box sx={{ px: 1, py: 1, minHeight: 400 }}>
+    <Box sx={{ minHeight: 400 }}>
       <TabsManager
-        renderTabsElement={(tabsEl) => (
-          <>
-            <Box
-              sx={{
-                height: 28,
-                width: "100%",
-              }}
-            />
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                borderBottom: 1,
-                borderColor: "divider",
-                position: "fixed",
-                top: 0,
-                zIndex: 50,
-                backgroundColor: "white",
-                width: "100%",
-              }}
-            >
-              {tabsEl}
-            </Box>
-          </>
-        )}
         tabs={{
           tasks: <TasksApp />,
           calendar: <CalendarApp />,

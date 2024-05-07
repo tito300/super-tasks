@@ -1,14 +1,11 @@
 import {
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   SelectChangeEvent,
   Divider,
   Stack,
   IconButton,
-  Typography,
-  LinearProgress,
   Button,
 } from "@mui/material";
 import React, { useEffect, useMemo } from "react";
@@ -16,7 +13,6 @@ import { useTaskLists } from "../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
 import { useTasksGlobalState } from "../Providers/TasksGlobalStateProvider";
 import {
-  Edit,
   KeyboardArrowDown,
   List,
   Refresh,
@@ -24,15 +20,17 @@ import {
 } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
 import { TasksSettings } from "../TasksSettings/TasksSettings";
-import { useUserSettings } from "@src/api/user.api";
-import { useRootElement } from "@src/hooks/useRootElement";
-import { useGlobalState } from "../Providers/globalStateProvider";
+import { useUserState } from "../Providers/UserStateProvider";
+import { useScriptType } from "../Providers/ScriptTypeProvider";
 
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
-  const { open } = useGlobalState();
-  const { data } = useTaskLists({ enabled: open });
+  const scriptType = useScriptType();
+  const { buttonExpanded } = useUserState();
+  const { data } = useTaskLists({
+    enabled: scriptType === "Popup" ? true : buttonExpanded,
+  });
 
   const queryClient = useQueryClient();
   const { selectedTaskListId, updateSelectedTaskListId } =

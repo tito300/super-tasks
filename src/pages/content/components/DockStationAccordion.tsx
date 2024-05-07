@@ -3,9 +3,9 @@ import MuiAccordion, {
   AccordionProps,
   AccordionSlots,
 } from "@mui/material/Accordion";
-import { useTaskLists, useTasks } from "@src/api/task.api";
-import { useUserSettings } from "@src/api/user.api";
 import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { constants } from "@src/config/constants";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,10 +19,7 @@ const Accordion = styled(MuiAccordion)(() => ({
 }));
 
 export function DockStationAccordion({ children, ...props }: AccordionProps) {
-  const { userSettings, updateUserSettings } = useUserSettings();
-  const [localExpanded, setLocalExpanded] = useState(
-    userSettings.accordionExpanded
-  );
+  const { accordionExpanded, updateUserState } = useUserState();
   const { selectedTaskListId } = useTasksGlobalState();
   const queryClient = useQueryClient();
   const messageEngine = getMessageEngine("Content");
@@ -30,7 +27,7 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
   const handleExpansion = useCallback(
     (e: React.SyntheticEvent<Element, Event>, expanded: boolean) => {
       const newValue = expanded;
-      setLocalExpanded(newValue);
+      updateUserState({ accordionExpanded: newValue });
       if (newValue) {
         queryClient.invalidateQueries({
           queryKey: ["tasks", selectedTaskListId],
@@ -41,22 +38,18 @@ export function DockStationAccordion({ children, ...props }: AccordionProps) {
       }
       focusAddTaskInput();
 
-      updateUserSettings({
+      updateUserState({
         accordionExpanded: newValue,
       });
     },
-    [selectedTaskListId, userSettings.accordionExpanded, queryClient]
+    [selectedTaskListId, accordionExpanded, queryClient]
   );
-
-  const expanded = userSettings.syncAccordionExpanded
-    ? userSettings.accordionExpanded
-    : localExpanded;
 
   return (
     <Accordion
       disableGutters
       slotProps={{ transition: { timeout: { appear: 1, enter: 1, exit: 1 } } }}
-      expanded={expanded}
+      expanded={accordionExpanded}
       onChange={handleExpansion}
       {...props}
     >

@@ -1,7 +1,6 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Stack, Typography, IconButton, Chip } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useUserSettings } from "@src/api/user.api";
 import { useCalendarEvents, useCalendarSettings } from "@src/api/calendar.api";
 import dayjs from "dayjs";
 import duration, { Duration } from "dayjs/plugin/duration";
@@ -11,15 +10,17 @@ import {
   getEventStartTime,
   sortCalendarEvents,
 } from "@src/utils/calendarUtils";
+import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
 
 dayjs.extend(duration);
 
 export function CalendarAccordionSummary() {
   const [hovered, setHovered] = useState(false);
-  const { userSettings, updateUserSettings } = useUserSettings();
+  const { blurText, updateUserState } = useUserState();
   const { calendarSettings } = useCalendarSettings();
   const { isLoading } = useCalendarEvents({
-    calendarId: "tarek.demachkie@gmail.com",
+    calendarId: "tarek.demachkie@workwave.com",
   });
 
   const { nextEvent, timeToNextEvent } = useNextEventTimer();
@@ -40,15 +41,15 @@ export function CalendarAccordionSummary() {
           mr: 0.5,
           ...(warnBadge && {
             borderColor: (theme) => theme.palette.warning.dark,
-            backgroundColor: theme => theme.palette.primary.contrastText,
-            color: theme => theme.palette.warning.dark,
-          })
+            backgroundColor: (theme) => theme.palette.primary.contrastText,
+            color: (theme) => theme.palette.warning.dark,
+          }),
         }}
         color={warnBadge ? "warning" : "primary"}
         size="small"
         label={timeToNextEvent?.format("HH:mm") || ""}
       ></Chip>{" "}
-      <span style={{ filter: userSettings.blurText ? "blur(7px)" : "none" }}>
+      <span style={{ filter: blurText ? "blur(7px)" : "none" }}>
         {nextEvent?.summary}
       </span>
     </>
@@ -84,17 +85,17 @@ export function CalendarAccordionSummary() {
           onClick={(e) => e.stopPropagation()}
           sx={{ opacity: hovered ? 1 : 0 }}
         >
-          {userSettings.blurText ? (
+          {blurText ? (
             <Visibility
               color="action"
               fontSize="small"
-              onClick={() => updateUserSettings({ blurText: false })}
+              onClick={() => updateUserState({ blurText: false })}
             />
           ) : (
             <VisibilityOff
               color="action"
               fontSize="small"
-              onClick={() => updateUserSettings({ blurText: true })}
+              onClick={() => updateUserState({ blurText: true })}
             />
           )}
         </IconButton>
@@ -108,7 +109,7 @@ export function useNextEventTimer() {
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const [timeToNextEvent, setTimeToNextEvent] = useState<Duration | null>(null);
   const { data: calendarEvents } = useCalendarEvents({
-    calendarId: "tarek.demachkie@gmail.com",
+    calendarId: "tarek.demachkie@workwave.com",
   });
 
   useEffect(() => {

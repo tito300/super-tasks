@@ -9,36 +9,36 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useCallback, useEffect } from "react";
 import { deepmerge } from "@mui/utils";
 
-export function useUserSettings() {
-  const [userSettings, setUserSettings] =
-    React.useState<UserSettings>(userSettingsDefaults);
-  const { user: userService } = useServicesContext();
+// export function useUserSettings() {
+//   const [userSettings, setUserSettings] =
+//     React.useState<UserSettings>(userSettingsDefaults);
+//   const { user: userService } = useServicesContext();
 
-  useEffect(() => {
-    userService.getUserSettings().then(setUserSettings);
-    chrome.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName === "local" && changes.userSettings) {
-        setUserSettings(changes.userSettings.newValue);
-      }
-    });
-  }, []);
+//   useEffect(() => {
+//     userService.getUserSettings().then(setUserSettings);
+//     chrome.storage.onChanged.addListener((changes, areaName) => {
+//       if (areaName === "local" && changes.userSettings) {
+//         setUserSettings(changes.userSettings.newValue);
+//       }
+//     });
+//   }, []);
 
-  const updateUserSettings = useCallback(
-    (newSettings: Partial<UserSettings>) => {
-      setUserSettings((prevSettings) => {
-        const settings = deepmerge(prevSettings, newSettings);
-        userService.updateUserSettings(settings);
-        return settings;
-      });
-    },
-    [userService]
-  );
+//   const updateUserSettings = useCallback(
+//     (newSettings: Partial<UserSettings>) => {
+//       setUserSettings((prevSettings) => {
+//         const settings = deepmerge(prevSettings, newSettings);
+//         userService.updateUserSettings(settings);
+//         return settings;
+//       });
+//     },
+//     [userService]
+//   );
 
-  return {
-    userSettings,
-    updateUserSettings,
-  };
-}
+//   return {
+//     userSettings,
+//     updateUserSettings,
+//   };
+// }
 
 export function useUpdateUserSettings() {
   const { user: userService } = useServicesContext();

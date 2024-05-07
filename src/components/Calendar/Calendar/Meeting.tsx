@@ -1,6 +1,7 @@
 import { Stack, Typography, styled } from "@mui/material";
-import { useUserSettings } from "@src/api/user.api";
 import { CalendarEvent } from "@src/calendar.types";
+import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";
 import dayjs from "dayjs";
 import { useMemo } from "react";
@@ -20,7 +21,7 @@ const MeetingStyled = styled(Stack)(({ theme }) => ({
 export function Meeting({ event }: { event: CalendarEvent }) {
   const startHour = dayjs(getEventStartTime(event)).hour();
   const startMinute = dayjs(getEventStartTime(event)).minute();
-  const { userSettings } = useUserSettings();
+  const { blurText } = useUserState();
   //   const { tasksSettings } = useTasksSettings();
 
   const { top, height } = useMemo(() => {
@@ -38,14 +39,14 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     <MeetingStyled sx={{ top: top, height: height - 2, maxHeight: height - 2 }}>
       <Typography
         variant="body2"
-        sx={{ filter: userSettings.blurText ? "blur(5px)" : "none" }}
+        sx={{ filter: blurText ? "blur(5px)" : "none" }}
       >
         {event.summary}
       </Typography>
       {height >= 40 && (
         <Typography
           fontSize={14}
-          sx={{ filter: userSettings.blurText ? "blur(5px)" : "none" }}
+          sx={{ filter: blurText ? "blur(5px)" : "none" }}
         >
           {dayjs(getEventStartTime(event)).format("HH:mma")} -{" "}
           {dayjs(getEventEndTime(event)).format("HH:mma")}

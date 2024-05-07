@@ -1,30 +1,24 @@
-import { PropsWithChildren, useContext, useState } from "react";
-import { DockStationControls } from "./DockStationControls";
+import { PropsWithChildren, useEffect, useState } from "react";
 import {
   Badge,
   Box,
-  Grow,
   IconButton,
-  Slide,
   Stack,
   badgeClasses,
   styled,
-  useTheme,
 } from "@mui/material";
-import { Close, MenuOpen, Minimize, Remove } from "@mui/icons-material";
+import { Close, MenuOpen, Remove } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 import { TasksReminderBadge } from "./TasksReminderBadge";
 import { focusAddTaskInput } from "./DockStationAccordion";
 import { CalendarIcon } from "@mui/x-date-pickers";
-import { useUserSettings } from "@src/api/user.api";
-import { calendarTheme, tasksTheme } from "@src/theme/google.theme";
+import { calendarTheme } from "@src/theme/google.theme";
 import { cyan } from "@mui/material/colors";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
-import { useGlobalState } from "@src/components/Providers/globalStateProvider";
 import { CalendarIconBadge } from "./CalendarIconBadge";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -33,12 +27,15 @@ import { CalendarIconBadge } from "./CalendarIconBadge";
 // }));
 
 export function DockStationContainer({ children }: PropsWithChildren) {
-  const { userSettings, updateUserSettings } = useUserSettings();
   const queryClient = useQueryClient();
-  const { open: localOpen, toggleOpen } = useGlobalState();
+  const { buttonExpanded, updateUserState } = useUserState();
   const messageEngine = useMessageEngine();
 
   const [removed, setRemoved] = useState(false);
+
+  useEffect(() => {
+    console.log("mounted DockStationContainer");
+  }, []);
 
   if (removed) {
     return null;
@@ -49,18 +46,12 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     y: window.innerHeight - 32,
   };
 
-  // todo: move logic to global state
-  const open = userSettings.syncButtonExpanded
-    ? userSettings.buttonExpanded
-    : localOpen;
-
   const handleButtonClick = (app: "calendar" | "tasks") => {
-    updateUserSettings({
+    updateUserState({
       currentTab: app,
       buttonExpanded: true,
       accordionExpanded: true,
     });
-    toggleOpen();
 
     if (app === "tasks") {
       queryClient.invalidateQueries({
@@ -78,39 +69,41 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       defaultPosition={defaultPositions}
       // sx={{ width: open ? 0 : 51, height: 51 }}
       popperProps={{
-        open,
+        open: !!buttonExpanded,
         placement: "right-end",
         keepMounted: true,
       }}
       popperChildren={
-        <>
-          <BadgeStyled
-            slotProps={{
-              badge: {
-                id: `${constants.EXTENSION_NAME}-remove-button`,
-              },
-            }}
-            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-            color="default"
-            badgeContent={
-              <IconButton
-                sx={{ padding: 0 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateUserSettings({ buttonExpanded: false });
-                  toggleOpen();
-                }}
-              >
-                <Remove sx={{ fontSize: 14, color: "white" }} />
-              </IconButton>
-            }
+        <BadgeStyled
+          slotProps={{
+            badge: {
+              id: `${constants.EXTENSION_NAME}-remove-button`,
+            },
+          }}
+          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          color="default"
+          badgeContent={
+            <IconButton
+              sx={{ padding: 0 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                updateUserState({ buttonExpanded: false });
+              }}
+            >
+              <Remove sx={{ fontSize: 14, color: "white" }} />
+            </IconButton>
+          }
+        >
+          <Box
+            id="temp-container"
+            sx={{ display: buttonExpanded ? "block" : "none" }}
           >
-            <Box sx={{ display: open ? "block" : "none" }}>{children}</Box>
-          </BadgeStyled>
-        </>
+            {children}
+          </Box>
+        </BadgeStyled>
       }
     >
-      {!open && (
+      {!buttonExpanded && (
         <ButtonsContainer>
           <ExtensionCalendarButton
             onClick={() => handleButtonClick("calendar")}

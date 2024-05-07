@@ -20,6 +20,10 @@ export function OauthRequired({
   const { user: userServices } = useServicesContext();
   const messageEngine = useMessageEngine();
 
+  useEffect(() => {
+    console.log("mounted OauthRequired");
+  }, []);
+
   useLayoutEffect(() => {
     userServices.getAuthToken({ interactive: false }).then((tokenRes) => {
       setToken(tokenRes.token || "");
@@ -46,7 +50,10 @@ export function OauthRequired({
   return (
     <div {...rest}>
       {!tokenSetRef.current ? null : !token || missingRequiredScopes ? (
-        <OauthScreen missingRequiredScopes={missingRequiredScopes} onLoginCLick={handleClick} />
+        <OauthScreen
+          missingRequiredScopes={missingRequiredScopes}
+          onLoginCLick={handleClick}
+        />
       ) : (
         children
       )}

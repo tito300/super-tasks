@@ -8,6 +8,10 @@ export function Content() {
   useTaskReminders();
 
   useEffect(() => {
+    console.log("mounted Content");
+  }, []);
+
+  useEffect(() => {
     const rootEl = document.getElementById(`${constants.EXTENSION_NAME}-root`);
     if (rootEl) {
       requestAnimationFrame(() => {
