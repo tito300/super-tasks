@@ -3,7 +3,7 @@ import { SavedTask, TaskEnhanced } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
-import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { TasksGlobalState } from "@src/components/Providers/TasksStateProvider";
 import { StorageData, storageService } from "@src/storage/storage.service";
 import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
 import { useUserState } from "@src/components/Providers/UserStateProvider";

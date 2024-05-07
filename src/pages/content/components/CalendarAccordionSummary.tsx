@@ -17,7 +17,10 @@ dayjs.extend(duration);
 
 export function CalendarAccordionSummary() {
   const [hovered, setHovered] = useState(false);
-  const { blurText, updateUserState } = useUserState();
+  const {
+    data: { blurText },
+    updateData: updateUserState,
+  } = useUserState();
   const { calendarSettings } = useCalendarSettings();
   const { isLoading } = useCalendarEvents({
     calendarId: "tarek.demachkie@workwave.com",

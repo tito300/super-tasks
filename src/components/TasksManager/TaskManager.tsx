@@ -30,7 +30,7 @@ import { constants } from "@src/config/constants";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { TasksFilters } from "./TasksFilters";
 import { grey } from "@mui/material/colors";
-import { useTasksGlobalState } from "../Providers/TasksGlobalStateProvider";
+import { useTasksGlobalState } from "../Providers/TasksStateProvider";
 import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
 
 export function TaskManager({ listId }: { listId: string }) {
@@ -126,7 +126,9 @@ export function TaskManager({ listId }: { listId: string }) {
 
 function AddTask() {
   const [tempTaskPending, setTempTaskPending] = useState(false);
-  const { selectedTaskListId } = useTasksGlobalState();
+  const {
+    data: { selectedTaskListId },
+  } = useTasksGlobalState();
 
   return (
     <>
@@ -151,7 +153,9 @@ function AddTask() {
 
 function CompletedTasks({ tasks }: { tasks: SavedTask[] }) {
   const [completedOpen, setCompletedOpen] = useState(false);
-  const { selectedTaskListId } = useTasksGlobalState();
+  const {
+    data: { selectedTaskListId },
+  } = useTasksGlobalState();
 
   return (
     <Stack>

@@ -3,7 +3,7 @@ import MuiAccordion, {
   AccordionProps,
   AccordionSlots,
 } from "@mui/material/Accordion";
-import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { useTasksGlobalState } from "@src/components/Providers/TasksStateProvider";
 import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { constants } from "@src/config/constants";
@@ -18,31 +18,26 @@ const Accordion = styled(MuiAccordion)(() => ({
   },
 }));
 
-export function DockStationAccordion({ children, ...props }: AccordionProps) {
-  const { accordionExpanded, updateUserState } = useUserState();
-  const { selectedTaskListId } = useTasksGlobalState();
-  const queryClient = useQueryClient();
-  const messageEngine = getMessageEngine("Content");
+export function DockStationAccordion({
+  children,
+  handleExpand,
+  ...props
+}: AccordionProps & {
+  handleExpand?: (expanded: boolean) => void;
+}) {
+  const {
+    data: { accordionExpanded },
+    updateData: updateUserState,
+  } = useUserState();
 
   const handleExpansion = useCallback(
     (e: React.SyntheticEvent<Element, Event>, expanded: boolean) => {
-      const newValue = expanded;
-      updateUserState({ accordionExpanded: newValue });
-      if (newValue) {
-        queryClient.invalidateQueries({
-          queryKey: ["tasks", selectedTaskListId],
-        });
-        messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
-      } else {
-        messageEngine.sendMessage("StopFetchTasksTimer", null, "Background");
-      }
-      focusAddTaskInput();
-
       updateUserState({
-        accordionExpanded: newValue,
+        accordionExpanded: expanded,
       });
+      handleExpand?.(expanded);
     },
-    [selectedTaskListId, accordionExpanded, queryClient]
+    [accordionExpanded, handleExpand]
   );
 
   return (

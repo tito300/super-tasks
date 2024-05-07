@@ -28,7 +28,10 @@ import { useUserState } from "@src/components/Providers/UserStateProvider";
 
 export function DockStationContainer({ children }: PropsWithChildren) {
   const queryClient = useQueryClient();
-  const { buttonExpanded, updateUserState } = useUserState();
+  const {
+    data: { buttonExpanded },
+    updateData: updateUserState,
+  } = useUserState();
   const messageEngine = useMessageEngine();
 
   const [removed, setRemoved] = useState(false);

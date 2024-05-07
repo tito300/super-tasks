@@ -1,5 +1,5 @@
 import { deepmerge } from "@mui/utils";
-import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { TasksGlobalState } from "@src/components/Providers/TasksStateProvider";
 import { UserState } from "@src/components/Providers/UserStateProvider";
 import { TaskEnhanced } from "@src/components/Task/Task";
 import {

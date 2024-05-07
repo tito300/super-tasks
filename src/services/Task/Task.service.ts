@@ -1,7 +1,7 @@
 import { SavedTask, TaskEnhanced, TaskType } from "@src/components/Task/Task";
 import { fetcher } from "../fetcher";
 import { urls } from "@src/config/urls";
-import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { TasksGlobalState } from "@src/components/Providers/TasksStateProvider";
 import { TaskList } from "@src/api/task.api";
 import { deepmerge } from "@mui/utils";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
@@ -131,7 +131,7 @@ export const TaskServices = {
           });
         }
         messageEngine.broadcastMessage("UpdateTasks", null);
-        chrome.alarms.onAlarm.removeListener(listener)
+        chrome.alarms.onAlarm.removeListener(listener);
       }
     });
   },

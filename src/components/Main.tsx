@@ -65,7 +65,9 @@ function CustomThemeProvider({
   children,
   theme: inTheme,
 }: PropsWithChildren & { theme?: unknown }) {
-  const { currentTab } = useUserState();
+  const {
+    data: { currentTab },
+  } = useUserState();
 
   const theme = useMemo(() => {
     return deepmerge(themeMap[currentTab], inTheme);

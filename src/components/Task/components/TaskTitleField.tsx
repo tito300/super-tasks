@@ -1,14 +1,13 @@
-import {
-  TextField,
-} from "@mui/material";
+import { TextField } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { KeyboardEvent, forwardRef, useRef } from "react";
 import { constants } from "@src/config/constants";
 import React from "react";
-import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { useTasksGlobalState } from "@src/components/Providers/TasksStateProvider";
 import { useTasks } from "@src/api/task.api";
 import { useTasksSettingsContext } from "@src/components/Providers/TasksSettingsProvider";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
 
 export const TaskTitleField = forwardRef<
   HTMLDivElement,
@@ -20,15 +19,15 @@ export const TaskTitleField = forwardRef<
     taskDue?: string;
     taskId?: string;
   }
->(({ onFocus, focused, onblur, strikeThrough, taskDue, taskId }) => {
+>(({ onFocus, focused, onblur, strikeThrough }) => {
   const { control } = useFormContext<TaskForm>();
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
-  const { tasksSettings } = useTasksSettingsContext();
-  const [hovered, setHovered] = React.useState(false);
-  const { selectedTaskListId } = useTasksGlobalState();
-  const { data: tasks } = useTasks({ listId: selectedTaskListId });
-
-  const task = tasks?.find((task) => task.id === taskId);
+  const {
+    data: { blurText },
+  } = useUserState();
+  const {
+    data: { selectedTaskListId },
+  } = useTasksGlobalState();
 
   function handleKeyDown(e: KeyboardEvent) {
     // some websites take focus away on certain
@@ -48,8 +47,6 @@ export const TaskTitleField = forwardRef<
           <TextField
             inputRef={textFieldRef}
             {...field}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
             draggable={focused ? false : true}
             onDragStart={(e) => (focused ? e.preventDefault() : undefined)}
             id={`${constants.EXTENSION_NAME}-task-title-field`}
@@ -62,7 +59,7 @@ export const TaskTitleField = forwardRef<
             sx={{
               pt: 0.3,
               ml: 1,
-              filter: tasksSettings.blurText && !focused ? "blur(7px)" : "none",
+              filter: blurText && !focused ? "blur(7px)" : "none",
               textDecoration: strikeThrough ? "line-through" : "auto",
             }}
             inputProps={{

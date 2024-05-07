@@ -1,11 +1,13 @@
 import { useTasks } from "@src/api/task.api";
-import { useTasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { useTasksGlobalState } from "@src/components/Providers/TasksStateProvider";
 import { useTasksSettingsContext } from "@src/components/Providers/TasksSettingsProvider";
 import { useMemo } from "react";
 
 export function useFilteredTasks() {
   const { tasksSettings } = useTasksSettingsContext();
-  const { selectedTaskListId } = useTasksGlobalState();
+  const {
+    data: { selectedTaskListId },
+  } = useTasksGlobalState();
   const { data: tasks, ...rest } = useTasks({ listId: selectedTaskListId });
 
   // useEffect(() => {

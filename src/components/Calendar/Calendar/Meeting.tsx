@@ -21,7 +21,9 @@ const MeetingStyled = styled(Stack)(({ theme }) => ({
 export function Meeting({ event }: { event: CalendarEvent }) {
   const startHour = dayjs(getEventStartTime(event)).hour();
   const startMinute = dayjs(getEventStartTime(event)).minute();
-  const { blurText } = useUserState();
+  const {
+    data: { blurText },
+  } = useUserState();
   //   const { tasksSettings } = useTasksSettings();
 
   const { top, height } = useMemo(() => {

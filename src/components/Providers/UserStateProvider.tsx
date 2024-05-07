@@ -11,6 +11,7 @@ import { storageService } from "@src/storage/storage.service";
 import { useUserSettings } from "./UserSettingsProvider";
 import { capitalize } from "@mui/material";
 import { TabName } from "@src/config/settingsDefaults";
+import { useSyncedState } from "@src/hooks/useSyncedState";
 
 export type UserState = {
   currentTab: TabName;
@@ -20,84 +21,24 @@ export type UserState = {
   darkMode: boolean;
 };
 
-export type UserStateContextType = UserState & {
-  updateUserState: (newPartialState: Partial<UserState>) => void;
+export type UserStateContextType = {
+  data: UserState;
+  updateData: (newPartialState: Partial<UserState>) => void;
 };
 
 const UserStateContext = createContext<UserStateContextType>(null!);
 export function UserStateProvider({ children }: { children: React.ReactNode }) {
   const { userSettings } = useUserSettings();
-  const [userState, setUserState] = useState<UserState>(() => {
-    return {
-      buttonExpanded: userSettings.buttonExpanded,
-      accordionExpanded: userSettings.accordionExpanded,
-      currentTab: userSettings.currentTab,
-      blurText: userSettings.blurText,
-      darkMode: userSettings.darkMode,
-    };
+  const syncedState = useSyncedState<UserState>("userState", userSettings, {
+    buttonExpanded: userSettings.buttonExpanded,
+    accordionExpanded: userSettings.accordionExpanded,
+    currentTab: userSettings.currentTab,
+    blurText: userSettings.blurText,
+    darkMode: userSettings.darkMode,
   });
 
-  useEffect(() => {
-    storageService.get("userState").then((data) => {
-      setUserState((userState) => ({ ...userState, ...data }));
-    });
-
-    storageService.onChange("userState", (changes) => {
-      function setSyncedState(
-        existingValues: UserState,
-        newValues: Partial<UserState>
-      ) {
-        const mergedValues = { ...existingValues };
-        Object.keys(existingValues).forEach((key) => {
-          // @ts-ignore
-          if (userSettings[`sync${capitalize(key)}`]) {
-            // @ts-ignore
-            mergedValues[key] = newValues[key];
-          }
-        });
-
-        return mergedValues;
-      }
-
-      if (changes?.userState) {
-        setUserState((userState) =>
-          setSyncedState(userState, changes.userState.newValue ?? {})
-        );
-      }
-    });
-  }, []);
-
-  const updateUserState = useCallback((newPartialState: Partial<UserState>) => {
-    setUserState((userState) => {
-      let Updates: Partial<UserState> | undefined;
-      Object.keys(newPartialState).forEach((key) => {
-        // @ts-ignore
-        if (userSettings[`sync${capitalize(key)}`]) {
-          Updates = {
-            ...Updates,
-            // @ts-ignore
-            [key]: newPartialState[key],
-          };
-        }
-      });
-      if (Updates) {
-        storageService.set({ userState: Updates });
-      }
-
-      return { ...userState, ...newPartialState };
-    });
-  }, []);
-
-  const value = useMemo(
-    () => ({
-      ...userState,
-      updateUserState,
-    }),
-    [userState, updateUserState]
-  );
-
   return (
-    <UserStateContext.Provider value={value}>
+    <UserStateContext.Provider value={syncedState}>
       {children}
     </UserStateContext.Provider>
   );

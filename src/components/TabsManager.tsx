@@ -28,7 +28,10 @@ export function TabsManager({
   tabIconButtonPropsSelected?: IconButtonProps;
   tabs: Record<TabName, React.ReactNode>;
 } & StackProps) {
-  const { currentTab, updateUserState } = useUserState();
+  const {
+    data: { currentTab },
+    updateData: updateUserState,
+  } = useUserState();
   const scriptType = useScriptType();
   const rootElement = useRootElement();
 
@@ -125,7 +128,10 @@ function NavigationTabs({
 
 function TabOption({ tabName }: { tabName: TabName }) {
   const scriptType = useScriptType();
-  const { currentTab, updateUserState } = useUserState();
+  const {
+    data: { currentTab },
+    updateData: updateUserState,
+  } = useUserState();
 
   const selected = currentTab === tabName;
   const tabIcon =

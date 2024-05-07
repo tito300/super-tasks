@@ -11,7 +11,7 @@ import {
 import React, { useEffect, useMemo } from "react";
 import { useTaskLists } from "../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
-import { useTasksGlobalState } from "../Providers/TasksGlobalStateProvider";
+import { useTasksGlobalState } from "../Providers/TasksStateProvider";
 import {
   KeyboardArrowDown,
   List,
@@ -27,20 +27,27 @@ export function TaskListManager() {
   const [active, setActive] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const scriptType = useScriptType();
-  const { buttonExpanded } = useUserState();
+  const {
+    data: { buttonExpanded },
+  } = useUserState();
   const { data } = useTaskLists({
     enabled: scriptType === "Popup" ? true : buttonExpanded,
   });
 
   const queryClient = useQueryClient();
-  const { selectedTaskListId, updateSelectedTaskListId } =
-    useTasksGlobalState();
+  const {
+    data: { selectedTaskListId },
+    updateData: updateTasksState,
+  } = useTasksGlobalState();
 
   useEffect(() => {
     if (!selectedTaskListId && data?.length) {
-      updateSelectedTaskListId(data[0].id);
+      updateTasksState({
+        selectedTaskListId: data[0].id,
+        defaultTaskListId: data[0].id,
+      });
     }
-  }, [data]);
+  }, [data, selectedTaskListId]);
 
   const selectedList = useMemo(
     () => data?.find((list) => list.id === selectedTaskListId),
@@ -50,7 +57,10 @@ export function TaskListManager() {
   const selectedListTitle = selectedList?.title ?? "Tasks";
 
   const handleChange = (event: SelectChangeEvent) => {
-    updateSelectedTaskListId(event.target.value);
+    updateTasksState({
+      selectedTaskListId: event.target.value,
+      defaultTaskListId: event.target.value,
+    });
     setActive(false);
   };
   return (

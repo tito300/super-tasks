@@ -8,7 +8,7 @@ import { userService } from "./User/User.service";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { setupToken } from "@src/oauth/setupToken";
 import { requiredScopes } from "@src/config/googleScopes";
-import { TasksGlobalState } from "@src/components/Providers/TasksGlobalStateProvider";
+import { TasksGlobalState } from "@src/components/Providers/TasksStateProvider";
 import { TaskType } from "@src/components/Task/Task";
 import { calendarServices } from "./Calendar/Calendar.service";
 
@@ -16,7 +16,7 @@ let initiated: boolean = false;
 const services = {
   task: TaskServices,
   user: userService,
-  calendar: calendarServices
+  calendar: calendarServices,
 };
 
 const messageEngine = getMessageEngine("Background");
@@ -53,8 +53,6 @@ export const initializeServices = (scriptType: ScriptType) => {
           throw error;
         }
       });
-
-     
     }
 
     initiated = true;
