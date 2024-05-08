@@ -6,9 +6,10 @@ import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 
-const MeetingStyled = styled(Stack)(({ theme }) => ({
+const MeetingStyled = styled(Stack)<{ reservedCount?: number }>(({ theme, reservedCount }) => ({
   position: "absolute",
-  width: "95%",
+  width: `calc(100% - ${(reservedCount || 0) * 10}%)`,
+  border: `1px solid ${theme.palette.primary.contrastText}`,
   backgroundColor: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
   padding: theme.spacing(0.5, 1),
@@ -38,7 +39,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
   }, [event.end.dateTime, startHour, startMinute]);
 
   return (
-    <MeetingStyled sx={{ top: top, height: height - 2, maxHeight: height - 2 }}>
+    <MeetingStyled reservedCount={event.reservationCount} sx={{ top: top, height: height - 2, maxHeight: height - 2 }}>
       <Typography
         variant="body2"
         sx={{ filter: blurText ? "blur(5px)" : "none" }}

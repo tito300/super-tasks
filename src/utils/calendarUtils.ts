@@ -7,6 +7,21 @@ import { rrulestr } from "rrule";
 // cancelled events.
 export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const flatEvents: SavedCalendarEvent[] = [];
+  const reservedSpots: Record<`${string}-${string}`, number> = {}
+
+  function reserveSpot(event: SavedCalendarEvent) {
+    const startHour = dayjs(getEventStartTime(event)).hour();
+    const endHour = dayjs(getEventEndTime(event)).hour();
+
+    // todo
+
+    const reservationCount = (reservedSpots[`${startHour}-${endHour}`] || 0) + 1;
+
+    event.reservationCount = reservationCount
+
+    // @ts-ignore
+    reserveSpot[`${startHour}-${endHour}`] = reservationCount
+  }
 
   const cancelledEvents = calendarEvents.reduce((acc, event) => {
     if (event.status === "cancelled") {
@@ -41,15 +56,22 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
         dayjs(modifiedEvents[event.id].originalStartTime.dateTime).isToday()
       )
         return;
-
+      
       const todaysOccurrence = getTodaysOccurrences(event);
       todaysOccurrence.forEach((occurrence) => {
+        event = {
+          ...event,
+          start: { ...event.start, dateTime: occurrence.toISOString() },
+        }
+
+        reserveSpot(event)
         flatEvents.push({
           ...event,
           start: { ...event.start, dateTime: occurrence.toISOString() },
         });
       });
     } else if (dayjs(getEventStartTime(event)).isToday()) {
+      reserveSpot(event)
       flatEvents.push(event);
     }
   });
