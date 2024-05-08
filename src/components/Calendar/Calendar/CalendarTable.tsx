@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { LinearProgress, styled } from "@mui/material";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Meeting } from "./Meeting";
 import { CalendarEvent, SavedCalendarEvent } from "@src/calendar.types";
@@ -8,7 +8,11 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import isToday from "dayjs/plugin/isToday";
 import { truncate } from "fs/promises";
-import { flattenTodaysEvents, getTodaysOccurrences, isRecurringToday } from "@src/utils/calendarUtils";
+import {
+  flattenTodaysEvents,
+  getTodaysOccurrences,
+  isRecurringToday,
+} from "@src/utils/calendarUtils";
 
 dayjs.extend(isToday);
 dayjs.extend(utc);
@@ -16,8 +20,10 @@ dayjs.extend(timezone);
 
 export function CalendarTable({
   calendarEvents,
+  isLoading,
 }: {
   calendarEvents: SavedCalendarEvent[];
+  isLoading?: boolean;
 }) {
   const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
 
@@ -78,8 +84,6 @@ function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
     ></CurrentTimeStyled>
   );
 }
-
-
 
 const Table = styled("div")`
   position: relative;

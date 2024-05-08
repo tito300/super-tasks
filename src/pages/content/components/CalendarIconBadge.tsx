@@ -9,7 +9,10 @@ export function CalendarIconBadge(props: BadgeProps) {
   const minutesToNextEvent = timeToNextEvent?.asMinutes();
 
   const showBadge =
-    !!nextEvent && !!minutesToNextEvent && minutesToNextEvent <= calendarSettings.badgeCountDownMinutes;
+    !!nextEvent &&
+    !!minutesToNextEvent &&
+    minutesToNextEvent > 0 &&
+    minutesToNextEvent <= calendarSettings.badgeCountDownMinutes;
 
   return (
     <StyledBadge
