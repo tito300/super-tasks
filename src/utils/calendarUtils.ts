@@ -25,32 +25,6 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const flatEvents: SavedCalendarEvent[] = [];
   // const reservedSpots: Record<`${string}-${string}`, number> = {}
 
-  const reservedMinutes: Array<Array<SavedCalendarEvent> | null> = Array.from({
-    length: 1440,
-  }).fill(null) as Array<null>;
-
-  function reserveSpot(event: SavedCalendarEvent) {
-    const startHour = dayjs(getEventStartTime(event)).hour();
-    const startMinute = dayjs(getEventStartTime(event)).minute();
-    const endHour = dayjs(getEventEndTime(event)).hour();
-    const endMinute = dayjs(getEventEndTime(event)).minute();
-
-    const startMinuteIndex = startHour * 60 + startMinute;
-    const endMinuteIndex = endHour * 60 + endMinute;
-
-    for (let i = startMinuteIndex; i < endMinuteIndex; i++) {
-      if (!reservedMinutes[i]) {
-        reservedMinutes[i] = [];
-      }
-      if (i === startMinuteIndex) {
-        event.reservationCount = reservedMinutes[i]!.length;
-        reservedMinutes[i]!.push(event);
-      } else {
-        // reservedMinutes[i][i];
-      }
-    }
-  }
-
   const cancelledEvents = calendarEvents.reduce((acc, event) => {
     if (event.status === "cancelled") {
       acc[event.recurringEventId] =
@@ -92,14 +66,12 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
           start: { ...event.start, dateTime: occurrence.toISOString() },
         };
 
-        reserveSpot(event);
         flatEvents.push({
           ...event,
           start: { ...event.start, dateTime: occurrence.toISOString() },
         });
       });
     } else if (dayjs(getEventStartTime(event)).isToday()) {
-      reserveSpot(event);
       flatEvents.push(event);
     }
   });
@@ -115,8 +87,64 @@ export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
     return dayjs(aStart).diff(dayjs(bStart));
   });
 
+  stackEvents(sortedEvents);
   return sortedEvents;
 }
+
+export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
+  const reservedMinutes: Array<Array<SavedCalendarEvent | null>> = Array.from({
+    length: 1440,
+  }).fill(null).map(() => [...Array.from({ length: 5 }).fill(null)]) as Array<[]>;
+
+  calendarEvents.forEach(stackEvent)
+
+  function stackEvent(event: SavedCalendarEvent) {
+    const startHour = dayjs(getEventStartTime(event)).hour();
+    const startMinute = dayjs(getEventStartTime(event)).minute();
+    const endHour = dayjs(getEventEndTime(event)).hour();
+    const endMinute = dayjs(getEventEndTime(event)).minute();
+
+    const startMinuteIndex = startHour * 60 + startMinute;
+    const endMinuteIndex = endHour * 60 + endMinute;
+
+    let order = 1;
+
+    for (let i = startMinuteIndex; i < endMinuteIndex; i++) {
+      for (let j = 0; j < reservedMinutes[i].length; j++) {
+        if (reservedMinutes[i][j] === null) {
+          if (i === startMinuteIndex) { 
+            order = j + 1
+            reservedMinutes[i][j] = event;
+            for (let k = 0; k < reservedMinutes[i].length; k++) {
+              event.totalStackedEvents = reservedMinutes[i].length;
+            }
+          } else {
+            reservedMinutes[i][order - 1] = event; 
+          };
+          break;
+        }
+      }
+      // if (startMinuteIndex === i && !reservedMinutes[i].length) {
+      //   reservedMinutes[i];
+      // } else {
+      //   reservedMinutes[i]!.push(event);
+      //   if (i === startMinuteIndex) order = reservedMinutes[i]!.length + 1;
+      // }
+    }
+
+    event.reservationCount = order;
+  }
+}
+
+// [
+//   [],
+//   [1],
+//   [1,    2],
+//   [1,    2],
+//   [3,    2]
+//   [3,  null]
+//   [3,  null]
+// ]
 
 export function filterFutureEvents(calendarEvents: SavedCalendarEvent[]) {
   return calendarEvents.filter((event) => {

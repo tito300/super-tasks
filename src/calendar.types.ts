@@ -65,6 +65,7 @@ export type SavedCalendarEvent = {
   colorId?: string;
   // custom to axcess. used to indicate overlapping event order
   reservationCount?: number;
+  totalStackedEvents?: number;
   creator: {
     id: string;
     email: string;

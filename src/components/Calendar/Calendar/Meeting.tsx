@@ -13,21 +13,31 @@ import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 
-const MeetingStyled = styled(Stack)<{ reservedCount?: number }>(
-  ({ theme, reservedCount }) => ({
-    position: "absolute",
-    right: 20,
-    width: `calc(100% - ${(reservedCount || 0) * 10}% - 20px)`,
-    border: `1px solid ${theme.palette.primary.contrastText}`,
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    padding: theme.spacing(0.5, 1),
-    borderRadius: 4,
-    cursor: "pointer",
-    overflow: "hidden",
-    boxSizing: "border-box",
-  })
-);
+const MeetingStyled = styled(Stack)<{
+  reservedCount?: number;
+  totalStackedEvents?: number;
+}>(({ theme, reservedCount, totalStackedEvents }) => {
+  reservedCount = reservedCount || 1;
+  totalStackedEvents = totalStackedEvents || 1;
+  
+  return ({
+  position: "absolute",
+  left: (reservedCount - 1) * 60,
+  width: `calc(100% - ${reservedCount * 60}px - 20px)`,
+  border: `1px solid ${theme.palette.primary.contrastText}`,
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
+  padding: theme.spacing(0.5, 1),
+  borderRadius: 4,
+  cursor: "pointer",
+  overflow: "hidden",
+  boxSizing: "border-box",
+  zIndex: (reservedCount || 1) * 2,
+})});
+
+// 3 - 1 =
+// 1 -> 30
+// 3 -> 10  
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -60,6 +70,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     <CustomWidthTooltip title={event.summary} placement="top">
       <MeetingStyled
         reservedCount={event.reservationCount}
+        totalStackedEvents={event.totalStackedEvents}
         sx={{ top: top, height: height, maxHeight: height }}
       >
         <Typography
