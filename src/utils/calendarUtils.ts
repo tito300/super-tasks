@@ -4,23 +4,51 @@ import { CalendarEvent, SavedCalendarEvent } from "@src/calendar.types";
 import dayjs from "dayjs";
 import { rrulestr } from "rrule";
 
+// [
+//   null,
+//   [[null, null, []]],
+//   [[null, null, [null, null, []]]],
+//   null,
+//   null
+// ];
+
+// [
+//   {},
+//   {},
+//   {},
+//   {},
+//   {}
+// ];
+
 // cancelled events.
 export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const flatEvents: SavedCalendarEvent[] = [];
-  const reservedSpots: Record<`${string}-${string}`, number> = {}
+  // const reservedSpots: Record<`${string}-${string}`, number> = {}
+
+  const reservedMinutes: Array<Array<SavedCalendarEvent> | null> = Array.from({
+    length: 1440,
+  }).fill(null) as Array<null>;
 
   function reserveSpot(event: SavedCalendarEvent) {
     const startHour = dayjs(getEventStartTime(event)).hour();
+    const startMinute = dayjs(getEventStartTime(event)).minute();
     const endHour = dayjs(getEventEndTime(event)).hour();
+    const endMinute = dayjs(getEventEndTime(event)).minute();
 
-    // todo
+    const startMinuteIndex = startHour * 60 + startMinute;
+    const endMinuteIndex = endHour * 60 + endMinute;
 
-    const reservationCount = (reservedSpots[`${startHour}-${endHour}`] || 0) + 1;
-
-    event.reservationCount = reservationCount
-
-    // @ts-ignore
-    reserveSpot[`${startHour}-${endHour}`] = reservationCount
+    for (let i = startMinuteIndex; i < endMinuteIndex; i++) {
+      if (!reservedMinutes[i]) {
+        reservedMinutes[i] = [];
+      }
+      if (i === startMinuteIndex) {
+        event.reservationCount = reservedMinutes[i]!.length;
+        reservedMinutes[i]!.push(event);
+      } else {
+        // reservedMinutes[i][i];
+      }
+    }
   }
 
   const cancelledEvents = calendarEvents.reduce((acc, event) => {
@@ -56,22 +84,22 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
         dayjs(modifiedEvents[event.id].originalStartTime.dateTime).isToday()
       )
         return;
-      
+
       const todaysOccurrence = getTodaysOccurrences(event);
       todaysOccurrence.forEach((occurrence) => {
         event = {
           ...event,
           start: { ...event.start, dateTime: occurrence.toISOString() },
-        }
+        };
 
-        reserveSpot(event)
+        reserveSpot(event);
         flatEvents.push({
           ...event,
           start: { ...event.start, dateTime: occurrence.toISOString() },
         });
       });
     } else if (dayjs(getEventStartTime(event)).isToday()) {
-      reserveSpot(event)
+      reserveSpot(event);
       flatEvents.push(event);
     }
   });

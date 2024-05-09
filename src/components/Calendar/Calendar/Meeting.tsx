@@ -1,4 +1,11 @@
-import { Stack, Typography, styled } from "@mui/material";
+import {
+  Stack,
+  Tooltip,
+  TooltipProps,
+  Typography,
+  styled,
+  tooltipClasses,
+} from "@mui/material";
 import { CalendarEvent } from "@src/calendar.types";
 import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
@@ -6,18 +13,29 @@ import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 
-const MeetingStyled = styled(Stack)<{ reservedCount?: number }>(({ theme, reservedCount }) => ({
-  position: "absolute",
-  width: `calc(100% - ${(reservedCount || 0) * 10}%)`,
-  border: `1px solid ${theme.palette.primary.contrastText}`,
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  padding: theme.spacing(0.5, 1),
-  borderRadius: 4,
-  cursor: "pointer",
-  overflow: "hidden",
-  boxSizing: "border-box",
-}));
+const MeetingStyled = styled(Stack)<{ reservedCount?: number }>(
+  ({ theme, reservedCount }) => ({
+    position: "absolute",
+    right: 20,
+    width: `calc(100% - ${(reservedCount || 0) * 10}% - 20px)`,
+    border: `1px solid ${theme.palette.primary.contrastText}`,
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    padding: theme.spacing(0.5, 1),
+    borderRadius: 4,
+    cursor: "pointer",
+    overflow: "hidden",
+    boxSizing: "border-box",
+  })
+);
+
+const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))({
+  [`& .${tooltipClasses.tooltip}`]: {
+    minWidth: 100,
+  },
+});
 
 export function Meeting({ event }: { event: CalendarEvent }) {
   const startHour = dayjs(getEventStartTime(event)).hour();
@@ -39,22 +57,28 @@ export function Meeting({ event }: { event: CalendarEvent }) {
   }, [event.end.dateTime, startHour, startMinute]);
 
   return (
-    <MeetingStyled reservedCount={event.reservationCount} sx={{ top: top, height: height - 2, maxHeight: height - 2 }}>
-      <Typography
-        variant="body2"
-        sx={{ filter: blurText ? "blur(5px)" : "none" }}
+    <CustomWidthTooltip title={event.summary} placement="top">
+      <MeetingStyled
+        reservedCount={event.reservationCount}
+        sx={{ top: top, height: height, maxHeight: height }}
       >
-        {event.summary}
-      </Typography>
-      {height >= 40 && (
         <Typography
-          fontSize={14}
+          variant="body2"
           sx={{ filter: blurText ? "blur(5px)" : "none" }}
+          whiteSpace="nowrap"
         >
-          {dayjs(getEventStartTime(event)).format("HH:mma")} -{" "}
-          {dayjs(getEventEndTime(event)).format("HH:mma")}
+          {event.summary}
         </Typography>
-      )}
-    </MeetingStyled>
+        {height >= 40 && (
+          <Typography
+            fontSize={14}
+            sx={{ filter: blurText ? "blur(5px)" : "none" }}
+          >
+            {dayjs(getEventStartTime(event)).format("H:mm")} -{" "}
+            {dayjs(getEventEndTime(event)).format("H:mma")}
+          </Typography>
+        )}
+      </MeetingStyled>
+    </CustomWidthTooltip>
   );
 }
