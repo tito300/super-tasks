@@ -19,25 +19,32 @@ const MeetingStyled = styled(Stack)<{
 }>(({ theme, reservedCount, totalStackedEvents }) => {
   reservedCount = reservedCount || 1;
   totalStackedEvents = totalStackedEvents || 1;
-  
-  return ({
-  position: "absolute",
-  left: (reservedCount - 1) * 60,
-  width: `calc(100% - ${reservedCount * 60}px - 20px)`,
-  border: `1px solid ${theme.palette.primary.contrastText}`,
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  padding: theme.spacing(0.5, 1),
-  borderRadius: 4,
-  cursor: "pointer",
-  overflow: "hidden",
-  boxSizing: "border-box",
-  zIndex: (reservedCount || 1) * 2,
-})});
+  const left = (reservedCount - 1) * 60;
+  const width = `calc(100% - ${
+    (totalStackedEvents - 1) * 10
+  }px - ${left}px - 20px)`;
+
+  // 100 - 2 * 10 =
+
+  return {
+    position: "absolute",
+    left: left,
+    width: width,
+    border: `1px solid ${theme.palette.primary.contrastText}`,
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    padding: theme.spacing(0.5, 1),
+    borderRadius: 4,
+    cursor: "pointer",
+    overflow: "hidden",
+    boxSizing: "border-box",
+    zIndex: (reservedCount || 1) * 2,
+  };
+});
 
 // 3 - 1 =
 // 1 -> 30
-// 3 -> 10  
+// 3 -> 10
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />

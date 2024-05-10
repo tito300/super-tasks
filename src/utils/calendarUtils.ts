@@ -94,9 +94,11 @@ export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
 export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
   const reservedMinutes: Array<Array<SavedCalendarEvent | null>> = Array.from({
     length: 1440,
-  }).fill(null).map(() => [...Array.from({ length: 5 }).fill(null)]) as Array<[]>;
+  })
+    .fill(null)
+    .map(() => [...Array.from({ length: 5 }).fill(null)]) as Array<[]>;
 
-  calendarEvents.forEach(stackEvent)
+  calendarEvents.forEach(stackEvent);
 
   function stackEvent(event: SavedCalendarEvent) {
     const startHour = dayjs(getEventStartTime(event)).hour();
@@ -112,15 +114,17 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
     for (let i = startMinuteIndex; i < endMinuteIndex; i++) {
       for (let j = 0; j < reservedMinutes[i].length; j++) {
         if (reservedMinutes[i][j] === null) {
-          if (i === startMinuteIndex) { 
-            order = j + 1
+          if (i === startMinuteIndex) {
+            order = j + 1;
             reservedMinutes[i][j] = event;
             for (let k = 0; k < reservedMinutes[i].length; k++) {
-              event.totalStackedEvents = reservedMinutes[i].length;
+              if (!reservedMinutes[i][k]) break;
+              reservedMinutes[i][k]!.totalStackedEvents =
+                reservedMinutes[i].length;
             }
           } else {
-            reservedMinutes[i][order - 1] = event; 
-          };
+            reservedMinutes[i][order - 1] = event;
+          }
           break;
         }
       }

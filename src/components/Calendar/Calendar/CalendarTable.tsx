@@ -12,6 +12,7 @@ import {
   flattenTodaysEvents,
   getTodaysOccurrences,
   isRecurringToday,
+  sortCalendarEvents,
 } from "@src/utils/calendarUtils";
 
 dayjs.extend(isToday);
@@ -27,9 +28,8 @@ export function CalendarTable({
 }) {
   const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
 
-  const filteredEvents = useMemo(() => {
-    return flattenTodaysEvents(calendarEvents);
-  }, [calendarEvents]);
+  const filteredEvents = sortCalendarEvents(calendarEvents);
+  // }, [calendarEvents]);
 
   return (
     <Table ref={(el) => setTableEl(el)} id="calendar">
