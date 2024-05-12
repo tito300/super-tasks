@@ -17,20 +17,18 @@ export function CalendarListManager() {
 
   useEffect(() => {
     if (!selectedCalendarId && !!calendarList?.length) {
-      updateCalendarState({ selectedCalendarId: calendarList[0].id });
+      updateCalendarState({
+        selectedCalendarId: calendarList.find((c) => c.primary)?.id,
+      });
     }
   }, [calendarList, selectedCalendarId]);
-
-  const primaryCalendar = useMemo(() => {
-    return calendarList?.find((calendar) => calendar.primary) || null;
-  }, [calendarList]);
 
   const isLoading = isListFetching || isEventsFetching;
 
   return (
     <Stack>
       <CalendarControls pl={1} isLoading={isLoading} />
-      <CalendarManager calendarId={primaryCalendar?.id} isLoading={isLoading} />
+      <CalendarManager isLoading={isLoading} />
     </Stack>
   );
 }

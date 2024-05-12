@@ -87,6 +87,7 @@ export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
     return dayjs(aStart).diff(dayjs(bStart));
   });
 
+  console.log("sortedEvents", sortedEvents);
   stackEvents(sortedEvents);
   return sortedEvents;
 }
@@ -119,8 +120,10 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
             reservedMinutes[i][j] = event;
             for (let k = 0; k < reservedMinutes[i].length; k++) {
               if (!reservedMinutes[i][k]) break;
-              reservedMinutes[i][k]!.totalStackedEvents =
-                reservedMinutes[i].length;
+              console.log("reservedMinutes[i][k]", event);
+              reservedMinutes[i][k]!.totalStackedEvents = reservedMinutes[
+                i
+              ].filter((e) => e).length;
             }
           } else {
             reservedMinutes[i][order - 1] = event;

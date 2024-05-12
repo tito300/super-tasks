@@ -7,7 +7,6 @@ import {
   tooltipClasses,
 } from "@mui/material";
 import { CalendarEvent } from "@src/calendar.types";
-import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";
 import dayjs from "dayjs";
@@ -17,19 +16,15 @@ const MeetingStyled = styled(Stack)<{
   reservedCount?: number;
   totalStackedEvents?: number;
 }>(({ theme, reservedCount, totalStackedEvents }) => {
-  reservedCount = reservedCount || 1;
-  totalStackedEvents = totalStackedEvents || 1;
-  const left = (reservedCount - 1) * 60;
-  const width = `calc(100% - ${
-    (totalStackedEvents - 1) * 10
-  }px - ${left}px - 20px)`;
+  const stackOrder = reservedCount || 1;
+  const totalStacked = totalStackedEvents || 1;
 
-  // 100 - 2 * 10 =
+  const positions = getMeetingPositions(stackOrder, totalStacked);
 
   return {
     position: "absolute",
-    left: left,
-    width: width,
+    left: positions.left,
+    right: positions.right,
     border: `1px solid ${theme.palette.primary.contrastText}`,
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.primary.contrastText,
@@ -41,10 +36,6 @@ const MeetingStyled = styled(Stack)<{
     zIndex: (reservedCount || 1) * 2,
   };
 });
-
-// 3 - 1 =
-// 1 -> 30
-// 3 -> 10
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -60,12 +51,10 @@ export function Meeting({ event }: { event: CalendarEvent }) {
   const {
     data: { blurText },
   } = useUserState();
-  //   const { tasksSettings } = useTasksSettings();
-
   const { top, height } = useMemo(() => {
     const top = startHour * 60 + startMinute;
 
-    const endHour = dayjs(event.end.dateTime).hour();
+    const endHour = dayjs(event.end.dateTime).hour() || 24;
     const endMinute = dayjs(event.end.dateTime).minute();
 
     const height = (endHour - startHour) * 60 + endMinute - startMinute;
@@ -89,7 +78,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
         </Typography>
         {height >= 40 && (
           <Typography
-            fontSize={14}
+            fontSize={12}
             sx={{ filter: blurText ? "blur(5px)" : "none" }}
           >
             {dayjs(getEventStartTime(event)).format("H:mm")} -{" "}
@@ -99,4 +88,12 @@ export function Meeting({ event }: { event: CalendarEvent }) {
       </MeetingStyled>
     </CustomWidthTooltip>
   );
+}
+
+function getMeetingPositions(stackOrder: number, totalStacked: number) {
+  const baseRight = 10;
+  const increment = 100 / (totalStacked + 1);
+  const left = `${(stackOrder - 1) * increment}%`;
+  const right = `${baseRight + (totalStacked - stackOrder) * increment}%`;
+  return { left, right };
 }

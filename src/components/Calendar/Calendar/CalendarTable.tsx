@@ -28,8 +28,10 @@ export function CalendarTable({
 }) {
   const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
 
-  const filteredEvents = sortCalendarEvents(calendarEvents);
-  // }, [calendarEvents]);
+  const filteredEvents = useMemo(
+    () => sortCalendarEvents(calendarEvents),
+    [calendarEvents]
+  );
 
   return (
     <Table ref={(el) => setTableEl(el)} id="calendar">

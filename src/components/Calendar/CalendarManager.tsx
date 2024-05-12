@@ -1,5 +1,6 @@
 import { useCalendarEvents } from "@src/api/calendar.api";
 import { CalendarTable } from "./Calendar/CalendarTable";
+import { useCalendarState } from "../Providers/CalendarStateProvider";
 
 export function CalendarManager({
   calendarId,
@@ -8,8 +9,11 @@ export function CalendarManager({
   calendarId?: string | null;
   isLoading: boolean;
 }) {
+  const {
+    data: { selectedCalendarId },
+  } = useCalendarState();
   const { data: calendarEvents, isLoading } = useCalendarEvents({
-    calendarId,
+    calendarId: selectedCalendarId,
   });
 
   return (
