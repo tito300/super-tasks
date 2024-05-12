@@ -9,41 +9,43 @@ import { useEffect } from "react";
  * but we don't want to cause a refetch every time the enhanced tasks change
  */
 export function useEnhancedTasks() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    useEffect(() => {
-        storageService.onChange("tasksEnhanced", (storageData) => {
-            if (!storageData) return;
-            const tasksEnhanced = storageData.tasksEnhanced.newValue;
+  useEffect(() => {
+    storageService.onChange("tasksEnhanced", (storageData) => {
+      if (!storageData) return;
+      const tasksEnhanced = storageData.tasksEnhanced.newValue;
 
-            if (!tasksEnhanced) return;
+      if (!tasksEnhanced) return;
 
-            const updatedTasks: { [listId: string]: TaskEnhanced[] } = {};
+      const updatedTasks: { [listId: string]: TaskEnhanced[] } = {};
 
-            
-            Object.keys(tasksEnhanced).forEach((taskId) => {
-                const task = tasksEnhanced[taskId];
-                const listId = task.listId!;
+      Object.keys(tasksEnhanced).forEach((taskId) => {
+        const task = tasksEnhanced[taskId];
+        const listId = task.listId!;
 
-                if (!updatedTasks[listId]) {
-                    updatedTasks[listId] = [];
-                }
+        if (!updatedTasks[listId]) {
+          updatedTasks[listId] = [];
+        }
 
-                updatedTasks[listId].push({
-                    ...task,
-                    id: taskId,
-                });
-            });
-
-            Object.entries(updatedTasks).forEach(([listId, updatedListTasks]) => {
-                queryClient.setQueryData(["tasks", listId], (tasks: SavedTask[]) => {
-                    if (!tasks) return [];
-                    return tasks.map((task) => {
-                        const updatedTask = updatedListTasks.find((t) => t.id === task.id);
-                        return updatedTask ? { ...task, ...updatedTask } : task;
-                    });
-                });
-            });
+        updatedTasks[listId].push({
+          ...task,
+          id: taskId,
         });
-    }, [queryClient])
+      });
+
+      Object.entries(updatedTasks).forEach(([listId, updatedListTasks]) => {
+        const data = queryClient.getQueryState(["tasks", listId]);
+        if (!data) return; // data hasn't been fetched
+
+        queryClient.setQueryData(["tasks", listId], (tasks: SavedTask[]) => {
+          if (!tasks) return [];
+          return tasks.map((task) => {
+            const updatedTask = updatedListTasks.find((t) => t.id === task.id);
+            return updatedTask ? { ...task, ...updatedTask } : task;
+          });
+        });
+      });
+    });
+  }, [queryClient]);
 }

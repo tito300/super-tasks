@@ -234,11 +234,13 @@ export function Task({
               </Collapse>
             </Stack>
           </Stack>
-          <TaskReminder
-            id="axess-add-reminder-button"
-            visible={!!(data?.alertOn || data?.alert)}
-            task={data!}
-          />
+          {!temporary && (
+            <TaskReminder
+              id="axess-add-reminder-button"
+              visible={!!(data?.alertOn || data?.alert)}
+              task={data!}
+            />
+          )}
           {!temporary && <TaskOptionsMenu listId={listId} />}
         </StyledTask>
       </ClickAwayListener>

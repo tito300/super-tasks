@@ -15,22 +15,20 @@ export function CalendarApp() {
   return (
     // <CalendarSettingsProvider>
     //   <CalendarsStateProvider>
-          scriptType === "Content" ? (
-            <DockStationAccordion>
-              <AccordionSummaryStyled expandIcon={<ArrowDropDown />}>
-                <CalendarAccordionSummary />
-              </AccordionSummaryStyled>
-              <DockStationAccordionDetails id="accordion-details">
-                <Stack
-                  sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}
-                >
-                  <CalendarListManager />
-                </Stack>
-              </DockStationAccordionDetails>
-            </DockStationAccordion>
-          ) : (
+    scriptType === "Content" ? (
+      <DockStationAccordion>
+        <AccordionSummaryStyled expandIcon={<ArrowDropDown />}>
+          <CalendarAccordionSummary />
+        </AccordionSummaryStyled>
+        <DockStationAccordionDetails id="accordion-details">
+          <Stack sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}>
             <CalendarListManager />
-          )
+          </Stack>
+        </DockStationAccordionDetails>
+      </DockStationAccordion>
+    ) : (
+      <CalendarListManager />
+    )
     //   </CalendarsStateProvider>
     // </CalendarSettingsProvider>
   );

@@ -56,6 +56,9 @@ export function TabsManager({
 
   return (
     <Stack
+      onDrag={(e) => e.stopPropagation()}
+      onDragStart={(e) => e.stopPropagation()}
+      onDragEnd={(e) => e.stopPropagation()}
       {...rootProps}
       sx={{
         width: "100%",
@@ -102,7 +105,9 @@ function NavigationTabs({
   currentTab: TabName;
 }) {
   const scriptType = useScriptType();
-  const { data:  { accordionExpanded } } = useUserState();
+  const {
+    data: { accordionExpanded },
+  } = useUserState();
 
   return (
     <>

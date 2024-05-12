@@ -61,7 +61,6 @@ function TasksAccordion({
 
   useEffect(() => {
     console.log("mounted TasksApp");
-    console.log("scriptType", scriptType);
   }, []);
 
   const handleExpansion = useCallback(

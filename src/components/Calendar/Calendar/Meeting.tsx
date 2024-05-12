@@ -30,7 +30,6 @@ const MeetingStyled = styled(Stack)<{
     color: theme.palette.primary.contrastText,
     padding: theme.spacing(0.5, 1),
     borderRadius: 4,
-    cursor: "pointer",
     overflow: "hidden",
     boxSizing: "border-box",
     zIndex: (reservedCount || 1) * 2,

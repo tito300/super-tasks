@@ -1,6 +1,8 @@
 import { useCalendarEvents } from "@src/api/calendar.api";
 import { CalendarTable } from "./Calendar/CalendarTable";
 import { useCalendarState } from "../Providers/CalendarStateProvider";
+import { useEffect } from "react";
+import { useUserState } from "../Providers/UserStateProvider";
 
 export function CalendarManager({
   calendarId,
@@ -12,9 +14,22 @@ export function CalendarManager({
   const {
     data: { selectedCalendarId },
   } = useCalendarState();
-  const { data: calendarEvents, isLoading } = useCalendarEvents({
+  const {
+    data: { accordionExpanded },
+  } = useUserState();
+  const {
+    data: calendarEvents,
+    isLoading,
+    refetch,
+  } = useCalendarEvents({
     calendarId: selectedCalendarId,
   });
+
+  useEffect(() => {
+    if (accordionExpanded) {
+      refetch();
+    }
+  }, [accordionExpanded]);
 
   return (
     <CalendarTable

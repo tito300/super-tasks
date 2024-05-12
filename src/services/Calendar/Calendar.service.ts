@@ -69,7 +69,6 @@ export const calendarServices = {
       .get(`${urls.BASE_URL}/calendars`)
       .then((res) => res.json())
       .then((res) => {
-        console.log("calendar", res);
         return (res || []) as ListCalendar[];
       });
   },

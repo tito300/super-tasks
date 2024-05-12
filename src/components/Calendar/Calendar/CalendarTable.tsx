@@ -14,6 +14,7 @@ import {
   isRecurringToday,
   sortCalendarEvents,
 } from "@src/utils/calendarUtils";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
 
 dayjs.extend(isToday);
 dayjs.extend(utc);
@@ -58,6 +59,9 @@ function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
   const [hours, setHours] = useState(() => new Date().getHours());
   const [minutes, setMinutes] = useState(() => new Date().getMinutes());
   const currentTimeRef = useRef<HTMLDivElement>(null);
+  const {
+    data: { accordionExpanded, buttonExpanded },
+  } = useUserState();
 
   useEffect(() => {
     setInterval(() => {
@@ -70,13 +74,14 @@ function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
   const top = hours * 60 + minutes;
 
   useEffect(() => {
-    if (!currentTimeRef.current) return;
+    if (!currentTimeRef.current || !accordionExpanded || !buttonExpanded)
+      return;
 
     currentTimeRef.current.scrollIntoView({
       behavior: "instant",
       block: "center",
     });
-  }, [hours]);
+  }, [hours, accordionExpanded, buttonExpanded]);
 
   return (
     <CurrentTimeStyled
@@ -123,6 +128,7 @@ const CellHour = styled("div")`
 const CurrentTimeStyled = styled("div")`
   border-bottom: 2px solid red;
   position: absolute;
+  z-index: 10000;
   width: 100%;
   ::before {
     content: "";

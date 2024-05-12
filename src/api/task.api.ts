@@ -60,7 +60,7 @@ export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
       return task.getTaskLists();
     },
     enabled,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 60 * 2, // 5 minutes
   });
 };
 

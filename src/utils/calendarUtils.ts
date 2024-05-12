@@ -4,26 +4,8 @@ import { CalendarEvent, SavedCalendarEvent } from "@src/calendar.types";
 import dayjs from "dayjs";
 import { rrulestr } from "rrule";
 
-// [
-//   null,
-//   [[null, null, []]],
-//   [[null, null, [null, null, []]]],
-//   null,
-//   null
-// ];
-
-// [
-//   {},
-//   {},
-//   {},
-//   {},
-//   {}
-// ];
-
-// cancelled events.
 export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const flatEvents: SavedCalendarEvent[] = [];
-  // const reservedSpots: Record<`${string}-${string}`, number> = {}
 
   const cancelledEvents = calendarEvents.reduce((acc, event) => {
     if (event.status === "cancelled") {
@@ -120,7 +102,6 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
             reservedMinutes[i][j] = event;
             for (let k = 0; k < reservedMinutes[i].length; k++) {
               if (!reservedMinutes[i][k]) break;
-              console.log("reservedMinutes[i][k]", event);
               reservedMinutes[i][k]!.totalStackedEvents = reservedMinutes[
                 i
               ].filter((e) => e).length;
@@ -131,27 +112,11 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
           break;
         }
       }
-      // if (startMinuteIndex === i && !reservedMinutes[i].length) {
-      //   reservedMinutes[i];
-      // } else {
-      //   reservedMinutes[i]!.push(event);
-      //   if (i === startMinuteIndex) order = reservedMinutes[i]!.length + 1;
-      // }
     }
 
     event.reservationCount = order;
   }
 }
-
-// [
-//   [],
-//   [1],
-//   [1,    2],
-//   [1,    2],
-//   [3,    2]
-//   [3,  null]
-//   [3,  null]
-// ]
 
 export function filterFutureEvents(calendarEvents: SavedCalendarEvent[]) {
   return calendarEvents.filter((event) => {
