@@ -1,8 +1,27 @@
 import {
+  CheckCircle,
+  CheckCircleOutline,
+  Close,
+  Help,
+  PeopleAltOutlined,
+  Subject,
+} from "@mui/icons-material";
+import {
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Popover,
   Stack,
   Tooltip,
   TooltipProps,
   Typography,
+  dialogClasses,
   styled,
   tooltipClasses,
 } from "@mui/material";
@@ -10,7 +29,7 @@ import { CalendarEvent } from "@src/calendar.types";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";
 import dayjs from "dayjs";
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 
 const MeetingStyled = styled(Stack)<{
   reservedCount?: number;
@@ -32,6 +51,7 @@ const MeetingStyled = styled(Stack)<{
     borderRadius: 4,
     overflow: "hidden",
     boxSizing: "border-box",
+    cursor: "pointer",
     zIndex: (reservedCount || 1) * 2,
   };
 });
@@ -44,12 +64,38 @@ const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
   },
 });
 
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  [`& .${dialogClasses.paper}`]: {
+    minWidth: 340,
+    margin: theme.spacing(2),
+  },
+  "& .MuiDialogContent-root": {
+    padding: theme.spacing(2),
+  },
+  "& .MuiDialogActions-root": {
+    padding: theme.spacing(1),
+  },
+}));
+
 export function Meeting({ event }: { event: CalendarEvent }) {
   const startHour = dayjs(getEventStartTime(event)).hour();
   const startMinute = dayjs(getEventStartTime(event)).minute();
+  const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
   const {
     data: { blurText },
   } = useUserState();
+  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   const { top, height } = useMemo(() => {
     const top = startHour * 60 + startMinute;
 
@@ -61,31 +107,168 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     return { top, height };
   }, [event.end.dateTime, startHour, startMinute]);
 
+  const attendeesCounts = useMemo(
+    () => ({
+      acceptedAttendees:
+        event.attendees?.filter((a) => a.responseStatus === "accepted")
+          .length || 0,
+      declinedAttendees:
+        event.attendees?.filter((a) => a.responseStatus === "declined")
+          .length || 0,
+      maybeAttendees:
+        event.attendees?.filter((a) => a.responseStatus === "tentative")
+          .length || 0,
+      awaitingAttendees:
+        event.attendees?.filter((a) => a.responseStatus === "needsAction")
+          .length || 0,
+    }),
+    [event.attendees]
+  );
   return (
-    <CustomWidthTooltip title={event.summary} placement="top">
-      <MeetingStyled
-        reservedCount={event.reservationCount}
-        totalStackedEvents={event.totalStackedEvents}
-        sx={{ top: top, height: height, maxHeight: height }}
-      >
-        <Typography
-          variant="body2"
-          sx={{ filter: blurText ? "blur(5px)" : "none" }}
-          whiteSpace="nowrap"
+    <>
+      <CustomWidthTooltip title={event.summary} placement="top">
+        <MeetingStyled
+          reservedCount={event.reservationCount}
+          totalStackedEvents={event.totalStackedEvents}
+          sx={{ top: top, height: height, maxHeight: height }}
+          onClick={handleClick}
         >
-          {event.summary}
-        </Typography>
-        {height >= 40 && (
           <Typography
-            fontSize={12}
+            variant="body2"
             sx={{ filter: blurText ? "blur(5px)" : "none" }}
+            whiteSpace="nowrap"
           >
-            {dayjs(getEventStartTime(event)).format("H:mm")} -{" "}
-            {dayjs(getEventEndTime(event)).format("H:mma")}
+            {event.summary}
           </Typography>
-        )}
-      </MeetingStyled>
-    </CustomWidthTooltip>
+          {height >= 40 && (
+            <Typography
+              fontSize={12}
+              sx={{ filter: blurText ? "blur(5px)" : "none" }}
+            >
+              {dayjs(getEventStartTime(event)).format("H:mm")} -{" "}
+              {dayjs(getEventEndTime(event)).format("H:mma")}
+            </Typography>
+          )}
+        </MeetingStyled>
+      </CustomWidthTooltip>
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        <Stack p={1} pb={2} width={345}>
+          {/* <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            p={1}
+          ></Stack> */}
+          <Stack direction="row" alignItems="flex-start" p={1} pl={1.5}>
+            <Box
+              borderRadius={1}
+              sx={{
+                backgroundColor: (theme) => theme.palette.primary.main,
+                width: 16,
+                height: 14,
+                mt: 1,
+                mx: 0.5,
+              }}
+            ></Box>
+            <Stack ml={1}>
+              <Typography variant="h6" lineHeight={1.1}>
+                {event.summary}
+              </Typography>
+              <Typography variant="body2">
+                {" "}
+                {dayjs(getEventStartTime(event)).format("dddd, MMM M")} -{" "}
+                {dayjs(getEventStartTime(event)).format("H:mm")} -{" "}
+                {dayjs(getEventEndTime(event)).format("H:mma")}
+              </Typography>
+            </Stack>
+          </Stack>
+          <Stack direction="row" alignItems="flex-start" p={1} pl={1.5}>
+            <PeopleAltOutlined color="action" fontSize="small" sx={{ mt: 1 }} />
+            <Stack ml={1}>
+              <Typography variant="body1">
+                {event.attendees?.length || 0} guests
+              </Typography>
+              {event.attendees?.length && (
+                <>
+                  <Typography variant="body2" color="GrayText" mb={1}>
+                    {attendeesCounts.acceptedAttendees
+                      ? `${attendeesCounts.acceptedAttendees} yes,`
+                      : ""}
+                    {attendeesCounts.declinedAttendees
+                      ? `${attendeesCounts.declinedAttendees} no,`
+                      : ""}
+                    {attendeesCounts.maybeAttendees
+                      ? `${attendeesCounts.maybeAttendees} maybe,`
+                      : ""}
+                    {attendeesCounts.awaitingAttendees
+                      ? `${attendeesCounts.awaitingAttendees} awaiting`
+                      : ""}
+                  </Typography>
+                  <Stack gap={0.5}>
+                    {event.attendees.map((attendee) => (
+                      <Stack direction={"row"} alignItems={"center"} gap={0.5}>
+                        <Badge
+                          overlap="circular"
+                          anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "right",
+                          }}
+                          badgeContent={
+                            attendee.responseStatus === "accepted" ? (
+                              <CheckCircle
+                                color="success"
+                                sx={{ fontSize: 18 }}
+                              />
+                            ) : attendee.responseStatus === "tentative" ? (
+                              <Help color="action" sx={{ fontSize: 18 }} />
+                            ) : undefined
+                          }
+                        >
+                          <Avatar sx={{ width: 24, height: 24, fontSize: 12 }}>
+                            {attendee.email.charAt(0).toUpperCase()}
+                          </Avatar>
+                        </Badge>
+                        <Stack ml={0.5}>
+                          <Typography key={attendee.email} variant="body2">
+                            {attendee.displayName || attendee.email}
+                          </Typography>
+                          {attendee.organizer && (
+                            <Typography variant="caption" color="GrayText">
+                              Organizer
+                            </Typography>
+                          )}
+                        </Stack>
+                      </Stack>
+                    ))}
+                  </Stack>
+                </>
+              )}
+            </Stack>
+          </Stack>
+          {event.description && (
+            <Stack direction="row" alignItems="flex-start" p={1} pl={1.5}>
+              <Subject fontSize="small" color="action" sx={{ mt: 1 }} />
+              <Stack ml={1}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: (theme) => theme.palette.action.active }}
+                >
+                  {event.description}
+                </Typography>
+              </Stack>
+            </Stack>
+          )}
+        </Stack>
+      </Popover>
+    </>
   );
 }
 

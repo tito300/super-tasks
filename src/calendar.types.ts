@@ -109,7 +109,7 @@ export type SavedCalendarEvent = {
       self?: boolean;
       resource?: boolean;
       optional?: boolean;
-      responseStatus: unknown;
+      responseStatus: 'needsAction' | 'declined' | 'tentative' | 'accepted' | 'delegated';
       comment: string;
       additionalGuests: number;
     }[];

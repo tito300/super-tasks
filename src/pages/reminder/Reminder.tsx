@@ -7,11 +7,11 @@ export function Reminder() {
       icon={<Notifications />}
       severity="warning"
       slotProps={{ }}
-      action={
-        <Stack direction={"row"} alignItems={"center"}>
-          <Button size="small" color="warning">Snooze</Button>
-          <Button size="small" color="success" variant="outlined">Clear</Button>
-        </Stack>
+      action={<></>
+        // <Stack direction={"row"} alignItems={"center"}>
+        //   <Button size="small" color="warning">Snooze</Button>
+        //   <Button size="small" color="success" variant="outlined">Clear</Button>
+        // </Stack>
       }
     >
       <AlertTitle sx={{ mb: 0 }}>Reminder</AlertTitle>

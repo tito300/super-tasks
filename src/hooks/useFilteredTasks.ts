@@ -81,9 +81,12 @@ export function useFilteredTasks() {
         }
         return false;
       }).sort((a, b) => {
-        if (tasksSettings.filters.sort === "asc") {
+        if (a.due && !b.due) return -1;
+        if (!a.due && b.due) return 1;
+
+        if (tasksSettings.filters.sort === "desc") {
           return new Date(a.due || 0).getTime() - new Date(b.due || 0).getTime();
-        } else if (tasksSettings.filters.sort === "desc") {
+        } else if (tasksSettings.filters.sort === "asc") {
           return new Date(b.due || 0).getTime() - new Date(a.due || 0).getTime();
         } else {
           return 0;
