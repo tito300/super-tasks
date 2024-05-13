@@ -22,11 +22,18 @@ export const userSettingsDefaults = {
 };
 
 export const tasksSettingsDefaults = {
-  tasksFilters: {
+  selectedTaskListId: "",
+  syncSelectedTaskListId: true,
+  defaultTaskListId: "",
+  syncDefaultTaskListId: true,
+  filters: {
     today: true,
     pastDue: true,
     upcoming: false,
+    search: "",
+    sort: ""
   },
+  syncFilters: true,
 };
 
 export const calendarSettingsDefaults = {

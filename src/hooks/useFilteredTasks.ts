@@ -1,14 +1,20 @@
-import { useTasks } from "@src/api/task.api";
-import { useTasksGlobalState } from "@src/components/Providers/TasksStateProvider";
-import { useTasksSettingsContext } from "@src/components/Providers/TasksSettingsProvider";
+import { useTaskLists, useTasks } from "@src/api/task.api";
+import { useTasksState } from "@src/components/Providers/TasksStateProvider";
 import { useMemo } from "react";
 
 export function useFilteredTasks() {
-  const { tasksSettings } = useTasksSettingsContext();
+  const { data: tasksSettings } = useTasksState();
   const {
     data: { selectedTaskListId },
-  } = useTasksGlobalState();
-  const { data: tasks, ...rest } = useTasks({ listId: selectedTaskListId });
+  } = useTasksState();
+  const { isLoading: isListLoading } = useTaskLists({
+    enabled: false,
+  });
+  const {
+    data: tasks,
+    isLoading: isTasksLoading,
+    ...rest
+  } = useTasks({ listId: selectedTaskListId });
 
   // useEffect(() => {
   //   if (selectedTaskListId) {
@@ -21,10 +27,19 @@ export function useFilteredTasks() {
   const filteredTasks = useMemo(() => {
     return (
       tasks?.filter((task) => {
+        if (tasksSettings.filters.search) {
+          if (
+            !task.title
+              ?.toLowerCase()
+              .includes(tasksSettings.filters.search?.toLowerCase())
+          )
+            return false;
+        }
+
         if (task.status === "completed") return false;
         if (!task.title) return false;
 
-        if (tasksSettings.tasksFilters?.today) {
+        if (tasksSettings.filters?.today) {
           if (!task.due) return true;
           if (task.due) {
             const dueDate = new Date(task.due);
@@ -38,7 +53,7 @@ export function useFilteredTasks() {
             }
           }
         }
-        if (tasksSettings.tasksFilters?.pastDue) {
+        if (tasksSettings.filters?.pastDue) {
           if (task.due) {
             const dueDate = new Date(task.due);
             const today = new Date();
@@ -51,7 +66,7 @@ export function useFilteredTasks() {
             }
           }
         }
-        if (tasksSettings.tasksFilters?.upcoming) {
+        if (tasksSettings.filters?.upcoming) {
           if (task.due) {
             const dueDate = new Date(task.due);
             const today = new Date();
@@ -65,14 +80,24 @@ export function useFilteredTasks() {
           }
         }
         return false;
+      }).sort((a, b) => {
+        if (tasksSettings.filters.sort === "asc") {
+          return new Date(a.due || 0).getTime() - new Date(b.due || 0).getTime();
+        } else if (tasksSettings.filters.sort === "desc") {
+          return new Date(b.due || 0).getTime() - new Date(a.due || 0).getTime();
+        } else {
+          return 0;
+        }
       }) || []
     );
-  }, [tasks, tasksSettings.tasksFilters]);
+  }, [tasks, tasksSettings.filters]);
 
   const completedTasks = useMemo(() => {
     if (!tasks) return [];
     return tasks.filter((task) => task.status === "completed");
   }, [tasks]);
 
-  return { filteredTasks, completedTasks, ...rest };
+  const isLoading = isListLoading || isTasksLoading;
+
+  return { filteredTasks, completedTasks, isLoading, ...rest };
 }

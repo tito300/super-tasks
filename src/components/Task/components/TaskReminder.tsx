@@ -6,7 +6,7 @@ import {
 import { IconButtonProps, IconButton, Menu, MenuItem } from "@mui/material";
 import { useUpdateTask } from "@src/api/task.api";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
-import { useTasksGlobalState } from "@src/components/Providers/TasksStateProvider";
+import { useTasksState } from "@src/components/Providers/TasksStateProvider";
 import React from "react";
 import { SavedTask } from "../Task";
 
@@ -24,7 +24,7 @@ export function TaskReminder({
   const open = Boolean(anchorEl);
   const {
     data: { selectedTaskListId },
-  } = useTasksGlobalState();
+  } = useTasksState();
   const mutateTask = useUpdateTask(selectedTaskListId!);
   const { task: taskService } = useServicesContext();
 

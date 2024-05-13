@@ -1,33 +1,27 @@
-import { useTasksState } from "@src/api/task.api";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
-  useCallback,
   useContext,
-  useEffect,
-  useMemo,
-  useState,
 } from "react";
-import { useMessageEngine } from "./MessageEngineProvider";
 import { TaskType } from "../Task/Task";
-import { storageService } from "@src/storage/storage.service";
 import { useSyncedState } from "@src/hooks/useSyncedState";
 import { useTasksSettingsContext } from "./TasksSettingsProvider";
+import { TasksSettings } from "@src/config/settingsDefaults";
 
-export type TasksGlobalState = {
+export type TasksState = {
   selectedTaskListId?: string | null;
   defaultTaskListId?: string | null;
+  filters: TasksSettings["filters"];
   tasks?: {
     [taskId: string]: TaskType | undefined;
   };
 };
 
-export type TasksGlobalStateContextType = {
-  data: TasksGlobalState;
-  updateData: (id: TasksGlobalState) => void;
+export type TasksStateContextType = {
+  data: TasksState;
+  updateData: (id: Partial<TasksState>) => void;
 };
 
-const TasksGlobalStateContext = createContext<TasksGlobalStateContextType>(
+const TasksStateContext = createContext<TasksStateContextType>(
   null!
 );
 export function TasksStateProvider({
@@ -36,25 +30,26 @@ export function TasksStateProvider({
   children: React.ReactNode;
 }) {
   const { tasksSettings } = useTasksSettingsContext();
-  const syncedState = useSyncedState<TasksGlobalState>(
+  const syncedState = useSyncedState<TasksState>(
     "tasksState",
     tasksSettings,
     {
       selectedTaskListId: null,
       defaultTaskListId: null,
+      filters: tasksSettings.filters,
       tasks: {},
     }
   );
 
   return (
-    <TasksGlobalStateContext.Provider value={syncedState}>
+    <TasksStateContext.Provider value={syncedState}>
       {children}
-    </TasksGlobalStateContext.Provider>
+    </TasksStateContext.Provider>
   );
 }
 
-export const useTasksGlobalState = () => {
-  const context = useContext(TasksGlobalStateContext);
+export const useTasksState = () => {
+  const context = useContext(TasksStateContext);
   if (!context) {
     throw new Error(
       "useTasksGlobalState must be used within a TasksGlobalStateProvider"

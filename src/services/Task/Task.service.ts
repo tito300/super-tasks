@@ -1,7 +1,7 @@
 import { SavedTask, TaskEnhanced, TaskType } from "@src/components/Task/Task";
 import { fetcher } from "../fetcher";
 import { urls } from "@src/config/urls";
-import { TasksGlobalState } from "@src/components/Providers/TasksStateProvider";
+import { TasksState } from "@src/components/Providers/TasksStateProvider";
 import { TaskList } from "@src/api/task.api";
 import { deepmerge } from "@mui/utils";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
@@ -19,14 +19,14 @@ const messageEngine = getMessageEngine("Background");
  * only use services from within api hooks
  */
 export const TaskServices = {
-  updateTasksState: async (newState: Partial<TasksGlobalState>) => {
+  updateTasksState: async (newState: Partial<TasksState>) => {
     storageService.set({
       tasksState: newState,
     });
   },
   getTasksState: async () => {
     return storageService.get("tasksState").then((data) => {
-      return (data || {}) as TasksGlobalState;
+      return (data || {}) as TasksState;
     });
   },
   getTasks: async (listId: string) => {

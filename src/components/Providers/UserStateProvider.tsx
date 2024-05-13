@@ -1,15 +1,8 @@
 import {
   createContext,
-  useCallback,
   useContext,
-  useEffect,
-  useMemo,
-  useState,
 } from "react";
-import { TaskType } from "../Task/Task";
-import { storageService } from "@src/storage/storage.service";
 import { useUserSettings } from "./UserSettingsProvider";
-import { capitalize } from "@mui/material";
 import { TabName } from "@src/config/settingsDefaults";
 import { useSyncedState } from "@src/hooks/useSyncedState";
 

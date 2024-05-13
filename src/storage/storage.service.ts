@@ -1,5 +1,5 @@
 import { deepmerge } from "@mui/utils";
-import { TasksGlobalState } from "@src/components/Providers/TasksStateProvider";
+import { TasksState } from "@src/components/Providers/TasksStateProvider";
 import { UserState } from "@src/components/Providers/UserStateProvider";
 import { TaskEnhanced } from "@src/components/Task/Task";
 import {
@@ -86,7 +86,7 @@ type onChangeCallback = (
 export type StorageData = {
   cache: Record<string, CacheData>;
   tasksSettings: TasksSettings;
-  tasksState: TasksGlobalState;
+  tasksState: TasksState;
   tasksEnhanced: { [taskId: string]: TaskEnhanced };
   calendarSettings: CalendarSettings;
   calendarState: CalendarGlobalState;

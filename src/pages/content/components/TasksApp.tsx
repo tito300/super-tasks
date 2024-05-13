@@ -8,10 +8,8 @@ import { useEnhancedTasks } from "@src/hooks/useEnhancedTasks";
 import { useCallback, useEffect } from "react";
 import Stack from "@mui/material/Stack";
 import {
-  TasksStateProvider,
-  useTasksGlobalState,
+  useTasksState,
 } from "@src/components/Providers/TasksStateProvider";
-import { TasksSettingsProvider } from "@src/components/Providers/TasksSettingsProvider";
 import { ArrowDropDown } from "@mui/icons-material";
 import { TasksAccordionSummary } from "./TasksAccordionSummary";
 import { AccordionProps } from "@mui/material";
@@ -57,7 +55,7 @@ function TasksAccordion({
   const scriptType = useScriptType();
   const {
     data: { selectedTaskListId },
-  } = useTasksGlobalState();
+  } = useTasksState();
 
   useEffect(() => {
     console.log("mounted TasksApp");

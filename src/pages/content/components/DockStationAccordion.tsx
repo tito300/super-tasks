@@ -1,15 +1,10 @@
-import { Fade, collapseClasses, styled } from "@mui/material";
+import { collapseClasses, styled } from "@mui/material";
 import MuiAccordion, {
   AccordionProps,
-  AccordionSlots,
 } from "@mui/material/Accordion";
-import { useTasksGlobalState } from "@src/components/Providers/TasksStateProvider";
-import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { constants } from "@src/config/constants";
-import { getMessageEngine } from "@src/messageEngine/MessageEngine";
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback } from "react";
 
 const Accordion = styled(MuiAccordion)(() => ({
   borderRadius: "14px 16px 0 14px !important",
@@ -37,7 +32,7 @@ export function DockStationAccordion({
       });
       handleExpand?.(expanded);
     },
-    [accordionExpanded, handleExpand]
+    [handleExpand]
   );
 
   return (

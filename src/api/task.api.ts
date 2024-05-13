@@ -3,7 +3,7 @@ import { SavedTask, TaskEnhanced } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
-import { TasksGlobalState } from "@src/components/Providers/TasksStateProvider";
+import { TasksState } from "@src/components/Providers/TasksStateProvider";
 import { StorageData, storageService } from "@src/storage/storage.service";
 import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
@@ -253,35 +253,6 @@ export const useUpdateTask = (listId: string) => {
     },
   });
 };
-
-export function useTasksState() {
-  const [tasksState, setTasksState] = useState<TasksGlobalState>({});
-
-  useEffect(() => {
-    storageService.get("tasksState").then((data) => {
-      setTasksState({ ...data });
-    });
-
-    storageService.onChange("tasksState", (changes) => {
-      if (changes?.tasksState) {
-        setTasksState(changes.tasksState.newValue ?? {});
-      }
-    });
-  }, []);
-
-  const updateTasksState = useCallback(
-    (newState: Partial<TasksGlobalState>) => {
-      setTasksState((oldState) => {
-        const mergedState = { ...oldState, ...newState };
-        storageService.set({ tasksState: newState });
-        return mergedState;
-      });
-    },
-    []
-  );
-
-  return { tasksState, updateTasksState };
-}
 
 export function useEnhancedTasks() {
   const [enhancedTasks, setEnhancedTasks] = useState<TaskEnhanced[]>([]);

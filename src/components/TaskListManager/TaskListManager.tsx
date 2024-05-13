@@ -11,7 +11,7 @@ import {
 import React, { useEffect, useMemo } from "react";
 import { useTaskLists } from "../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
-import { useTasksGlobalState } from "../Providers/TasksStateProvider";
+import { useTasksState } from "../Providers/TasksStateProvider";
 import {
   KeyboardArrowDown,
   List,
@@ -38,7 +38,7 @@ export function TaskListManager() {
   const {
     data: { selectedTaskListId },
     updateData: updateTasksState,
-  } = useTasksGlobalState();
+  } = useTasksState();
 
   useEffect(() => {
     if (!selectedTaskListId && data?.length) {
@@ -114,9 +114,6 @@ export function TaskListManager() {
           <IconButton
             size="small"
             onClick={() => {
-              queryClient.invalidateQueries({
-                queryKey: ["tasks", selectedTaskListId],
-              });
               queryClient.invalidateQueries({ queryKey: ["tasks"] });
             }}
           >

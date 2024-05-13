@@ -30,7 +30,7 @@ import { constants } from "@src/config/constants";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { TasksFilters } from "./TasksFilters";
 import { grey } from "@mui/material/colors";
-import { useTasksGlobalState } from "../Providers/TasksStateProvider";
+import { useTasksState } from "../Providers/TasksStateProvider";
 import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
 
 export function TaskManager({ listId }: { listId: string }) {
@@ -38,8 +38,14 @@ export function TaskManager({ listId }: { listId: string }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 3 } })
   );
-  const { filteredTasks, completedTasks, isFetching, isLoading, isError } =
-    useFilteredTasks();
+  const {
+    filteredTasks,
+    completedTasks,
+    isFetching,
+    isLoading,
+    isError,
+    isRefetching,
+  } = useFilteredTasks();
 
   const moveMutation = useMoveTask(listId);
 
@@ -75,7 +81,7 @@ export function TaskManager({ listId }: { listId: string }) {
     <Stack flexGrow={1} sx={{ px: 1, mb: 1.5 }} ref={rootRef}>
       <LinearProgress
         sx={{
-          visibility: !isFetching ? "hidden" : "visible",
+          visibility: isLoading || isRefetching ? "visible" : "hidden",
           color: grey[500],
         }}
       />
@@ -128,7 +134,7 @@ function AddTask() {
   const [tempTaskPending, setTempTaskPending] = useState(false);
   const {
     data: { selectedTaskListId },
-  } = useTasksGlobalState();
+  } = useTasksState();
 
   return (
     <>
@@ -155,7 +161,7 @@ function CompletedTasks({ tasks }: { tasks: SavedTask[] }) {
   const [completedOpen, setCompletedOpen] = useState(false);
   const {
     data: { selectedTaskListId },
-  } = useTasksGlobalState();
+  } = useTasksState();
 
   return (
     <Stack>
@@ -167,7 +173,7 @@ function CompletedTasks({ tasks }: { tasks: SavedTask[] }) {
       >
         {!completedOpen && <ArrowRight fontSize="small" />}
         {completedOpen && <ArrowDropDown fontSize="small" />}
-        <Typography sx={{ ml: 1 }}>Completed</Typography>
+        <Typography sx={{ ml: 1 }}>Completed ({tasks?.length || 0})</Typography>
       </Stack>
       <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
         {tasks.map((task) => (

@@ -3,10 +3,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { KeyboardEvent, forwardRef, useRef } from "react";
 import { constants } from "@src/config/constants";
-import React from "react";
-import { useTasksGlobalState } from "@src/components/Providers/TasksStateProvider";
-import { useTasks } from "@src/api/task.api";
-import { useTasksSettingsContext } from "@src/components/Providers/TasksSettingsProvider";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 
 export const TaskTitleField = forwardRef<

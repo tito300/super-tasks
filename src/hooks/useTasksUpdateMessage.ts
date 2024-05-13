@@ -1,5 +1,5 @@
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
-import { useTasksGlobalState } from "@src/components/Providers/TasksStateProvider";
+import { useTasksState } from "@src/components/Providers/TasksStateProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -8,7 +8,7 @@ export function useTasksUpdateMessage() {
   const messageEngine = useMessageEngine();
   const {
     data: { selectedTaskListId },
-  } = useTasksGlobalState();
+  } = useTasksState();
 
   /**
    * Invalidate tasks query when tasks are updated on background script
