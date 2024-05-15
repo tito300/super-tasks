@@ -17,7 +17,7 @@ export function OauthScreen({
   missingRequiredScopes: boolean;
 }) {
   return (
-    <Card variant="outlined" sx={{ pb: 1 }}>
+    <Card variant="outlined" sx={{ pb: 1, width: 350 }}>
       <CardContent>
         <Typography
           sx={{ fontSize: 14 }}

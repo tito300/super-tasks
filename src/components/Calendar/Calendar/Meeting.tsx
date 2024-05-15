@@ -145,8 +145,8 @@ export function Meeting({ event }: { event: CalendarEvent }) {
               fontSize={12}
               sx={{ filter: blurText ? "blur(5px)" : "none" }}
             >
-              {dayjs(getEventStartTime(event)).format("H:mm")} -{" "}
-              {dayjs(getEventEndTime(event)).format("H:mma")}
+              {getEventStartTime(event).format("H:mm")} -{" "}
+              {getEventEndTime(event)?.format("H:mma")}
             </Typography>
           )}
         </MeetingStyled>

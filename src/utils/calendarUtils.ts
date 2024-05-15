@@ -3,6 +3,11 @@
 import { CalendarEvent, SavedCalendarEvent } from "@src/calendar.types";
 import dayjs from "dayjs";
 import { rrulestr } from "rrule";
+import utc from "dayjs/plugin/utc";
+import timeZone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timeZone);
 
 export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const flatEvents: SavedCalendarEvent[] = [];
@@ -66,7 +71,7 @@ export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
     const aStart = getEventStartTime(a);
     const bStart = getEventStartTime(b);
 
-    return dayjs(aStart).diff(dayjs(bStart));
+    return aStart.diff(bStart);
   });
 
   console.log("sortedEvents", sortedEvents);
@@ -84,13 +89,13 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
   calendarEvents.forEach(stackEvent);
 
   function stackEvent(event: SavedCalendarEvent) {
-    const startHour = dayjs(getEventStartTime(event)).hour();
-    const startMinute = dayjs(getEventStartTime(event)).minute();
-    const endHour = dayjs(getEventEndTime(event)).hour();
-    const endMinute = dayjs(getEventEndTime(event)).minute();
+    const startHour = getEventStartTime(event).hour();
+    const startMinute = getEventStartTime(event).minute();
+    const endHour = getEventEndTime(event)?.hour();
+    const endMinute = getEventEndTime(event)?.minute();
 
     const startMinuteIndex = startHour * 60 + startMinute;
-    const endMinuteIndex = endHour * 60 + endMinute;
+    const endMinuteIndex = endHour ? endHour * 60 + (endMinute || 0) : 0;
 
     let order = 1;
 
@@ -121,7 +126,7 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
 export function filterFutureEvents(calendarEvents: SavedCalendarEvent[]) {
   return calendarEvents.filter((event) => {
     const start = getEventStartTime(event);
-    return dayjs(start).isAfter(dayjs());
+    return start.isAfter(dayjs());
   });
 }
 
@@ -141,7 +146,7 @@ export function isRecurringToday(event: CalendarEvent) {
 export function getRRule(event: CalendarEvent) {
   if (!event.recurrence?.length) return null;
 
-  const startDate = dayjs(getEventStartTime(event));
+  const startDate = getEventStartTime(event);
 
   // Set up the rule
   return rrulestr(event.recurrence[0], {
@@ -163,16 +168,39 @@ export function getTodaysOccurrences(event: CalendarEvent) {
 }
 
 export function getEventStartTime(event: CalendarEvent) {
-  return (
-    event.start?.dateTime ||
-    event.start?.date ||
-    event.originalStartTime?.dateTime ||
-    event.originalStartTime?.date
-  );
+  const start = event.start?.dateTime || event.start?.date;
+
+  // google calendar times are weird. Sometimes they are in utc
+  // and sometimes they are in the event's timezone
+  if (start.includes("Z")) {
+    return dayjs(start).tz(event.start.timeZone);
+  } else if (start) {
+    // const startTime = dayjs.tz(start, event.start.timeZone);
+    return dayjs(start);
+  }
+
+  const original =
+    event.originalStartTime?.dateTime || event.originalStartTime?.date;
+  // const originalStart = dayjs.tz(original, event.originalStartTime?.timeZone);
+  const originalStart = dayjs(original);
+
+  if (original?.includes("Z")) {
+    return dayjs(original).tz(event.originalStartTime?.timeZone);
+  } else {
+    return dayjs(original);
+  }
 }
 
 export function getEventEndTime(event: CalendarEvent) {
-  return event.end?.dateTime || event.end?.date;
+  const end = event.end?.dateTime || event.end?.date;
+
+  if (end) {
+    if (end.includes("Z")) {
+      return dayjs(end).tz(event.end.timeZone);
+    } else {
+      return dayjs(end);
+    }
+  }
 }
 
 // takes a modified event with sequence number and checks if the original event today's recurrence
