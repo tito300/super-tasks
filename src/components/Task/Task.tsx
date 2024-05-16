@@ -88,7 +88,7 @@ export function Task({
   const [focused, setFocused] = useState(autoFocus);
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: data.id || data.title || data.notes || "temp" });
-  const { data: tasks } = useTasks({ enabled: false, listId });
+  const { data: tasks } = useTasks({ enabled: false });
   const [_, updateEnhancedTasks] = useEnhancedTasks();
 
   const addMutation = useAddTask(listId);

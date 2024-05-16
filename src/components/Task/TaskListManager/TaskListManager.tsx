@@ -9,7 +9,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import React, { startTransition, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useTaskLists } from "../../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
 import { useTasksState } from "../../Providers/TasksStateProvider";
@@ -28,6 +28,7 @@ export function TaskListManager() {
   const [active, setActive] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [refetching, setRefetching] = React.useState(false);
+  const [isTransitionPending, startTransition] = React.useTransition();
   const scriptType = useScriptType();
   const {
     data: { buttonExpanded },
@@ -117,17 +118,19 @@ export function TaskListManager() {
             size="small"
             disabled={refetching}
             onClick={() => {
-              setRefetching(true);
-              queryClient
-                .invalidateQueries({ queryKey: ["tasks"] })
-                .then(() => {
-                  startTransition(() => {
-                    setRefetching(false);
+              startTransition(() => {
+                setRefetching(true);
+                queryClient
+                  .invalidateQueries({ queryKey: ["tasks"] })
+                  .then(() => {
+                    startTransition(() => {
+                      setRefetching(false);
+                    });
                   });
-                });
+              })
             }}
           >
-            {refetching ? (
+            {isTransitionPending || refetching ? (
               <CircularProgress size="20px" />
             ) : (
               <Refresh fontSize="small" />

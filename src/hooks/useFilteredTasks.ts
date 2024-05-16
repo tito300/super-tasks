@@ -14,7 +14,7 @@ export function useFilteredTasks() {
     data: tasks,
     isLoading: isTasksLoading,
     ...rest
-  } = useTasks({ listId: selectedTaskListId });
+  } = useTasks();
 
   // useEffect(() => {
   //   if (selectedTaskListId) {

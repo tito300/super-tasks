@@ -3,7 +3,7 @@ import { SavedTask, TaskEnhanced } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
-import { TasksState } from "@src/components/Providers/TasksStateProvider";
+import { TasksState, useTasksState } from "@src/components/Providers/TasksStateProvider";
 import { StorageData, storageService } from "@src/storage/storage.service";
 import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
@@ -16,24 +16,22 @@ export type TaskList = {
 
 export const useTasks = ({
   enabled,
-  listId,
 }: {
-  listId: string | null | undefined;
   enabled?: boolean;
-}) => {
+} = {}) => {
   const { task: taskService } = useServicesContext();
-  const scriptType = useScriptType();
+  const { data: { selectedTaskListId } } = useTasksState();
 
   useTasksUpdateMessage();
 
   return useQuery<SavedTask[]>({
-    queryKey: ["tasks", listId],
+    queryKey: ["tasks", selectedTaskListId],
     placeholderData: [] as SavedTask[],
     queryFn: async () => {
-      if (!listId) return [];
+      if (!selectedTaskListId) return [];
 
       try {
-        const data = await taskService.getTasks(listId);
+        const data = await taskService.getTasks(selectedTaskListId);
         const sortedData = data.sort((a, b) =>
           a.position.localeCompare(b.position)
         );
@@ -44,7 +42,7 @@ export const useTasks = ({
         return [];
       }
     },
-    enabled: enabled ?? !!listId,
+    enabled: enabled ?? !!selectedTaskListId,
     // stale time prevents refetching for things like when user focuses on page
     // If you need to force a refetch, use queryClient.invalidateQueries
     staleTime: 1000 * 60 * 5, // 5 minutes
