@@ -26,7 +26,7 @@ export const StyledTask = styled("div")(({ theme }) => ({
       visibility: "visible",
     },
 
-    " #axess-add-reminder-button": {
+    " #axess-add-reminder-button, #axess-pin-task-button": {
       visibility: "visible",
     },
   },

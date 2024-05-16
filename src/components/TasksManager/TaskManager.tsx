@@ -41,6 +41,7 @@ export function TaskManager({ listId }: { listId: string }) {
   const {
     filteredTasks,
     completedTasks,
+    pinnedTasks,
     isFetching,
     isLoading,
     isError,
@@ -98,6 +99,15 @@ export function TaskManager({ listId }: { listId: string }) {
       )}
 
       <Stack flexGrow={1}>
+        {pinnedTasks?.map((task) => (
+          <Task
+            loading={isLoading}
+            key={task.id || task.title}
+            listId={listId}
+            data={task}
+          />
+        ))}
+
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}

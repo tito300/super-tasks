@@ -26,72 +26,79 @@ export function useFilteredTasks() {
 
   const filteredTasks = useMemo(() => {
     return (
-      tasks?.filter((task) => {
-        if (tasksSettings.filters.search) {
-          if (
-            !task.title
-              ?.toLowerCase()
-              .includes(tasksSettings.filters.search?.toLowerCase())
-          )
-            return false;
-        }
-
-        if (task.status === "completed") return false;
-        if (!task.title) return false;
-
-        if (tasksSettings.filters?.today) {
-          if (!task.due) return true;
-          if (task.due) {
-            const dueDate = new Date(task.due);
-            const today = new Date();
+      tasks
+        ?.filter((task) => {
+          if (tasksSettings.filters.search) {
             if (
-              dueDate.getUTCDate() === today.getDate() &&
-              dueDate.getUTCMonth() === today.getMonth() &&
-              dueDate.getUTCFullYear() === today.getFullYear()
-            ) {
-              return true;
+              !task.title
+                ?.toLowerCase()
+                .includes(tasksSettings.filters.search?.toLowerCase())
+            )
+              return false;
+          }
+
+          if (task.status === "completed") return false;
+          if (task.pinned) return false;
+          if (!task.title) return false;
+
+          if (tasksSettings.filters?.today) {
+            if (!task.due) return true;
+            if (task.due) {
+              const dueDate = new Date(task.due);
+              const today = new Date();
+              if (
+                dueDate.getUTCDate() === today.getDate() &&
+                dueDate.getUTCMonth() === today.getMonth() &&
+                dueDate.getUTCFullYear() === today.getFullYear()
+              ) {
+                return true;
+              }
             }
           }
-        }
-        if (tasksSettings.filters?.pastDue) {
-          if (task.due) {
-            const dueDate = new Date(task.due);
-            const today = new Date();
-            if (
-              dueDate.getUTCDate() < today.getDate() &&
-              dueDate.getUTCMonth() <= today.getMonth() &&
-              dueDate.getUTCFullYear() <= today.getFullYear()
-            ) {
-              return true;
+          if (tasksSettings.filters?.pastDue) {
+            if (task.due) {
+              const dueDate = new Date(task.due);
+              const today = new Date();
+              if (
+                dueDate.getUTCDate() < today.getDate() &&
+                dueDate.getUTCMonth() <= today.getMonth() &&
+                dueDate.getUTCFullYear() <= today.getFullYear()
+              ) {
+                return true;
+              }
             }
           }
-        }
-        if (tasksSettings.filters?.upcoming) {
-          if (task.due) {
-            const dueDate = new Date(task.due);
-            const today = new Date();
-            if (
-              dueDate.getUTCDate() > today.getDate() &&
-              dueDate.getUTCMonth() >= today.getMonth() &&
-              dueDate.getUTCFullYear() >= today.getFullYear()
-            ) {
-              return true;
+          if (tasksSettings.filters?.upcoming) {
+            if (task.due) {
+              const dueDate = new Date(task.due);
+              const today = new Date();
+              if (
+                dueDate.getUTCDate() > today.getDate() &&
+                dueDate.getUTCMonth() >= today.getMonth() &&
+                dueDate.getUTCFullYear() >= today.getFullYear()
+              ) {
+                return true;
+              }
             }
           }
-        }
-        return false;
-      }).sort((a, b) => {
-        if (a.due && !b.due) return -1;
-        if (!a.due && b.due) return 1;
+          return false;
+        })
+        .sort((a, b) => {
+          if (a.due && !b.due) return -1;
+          if (!a.due && b.due) return 1;
 
-        if (tasksSettings.filters.sort === "desc") {
-          return new Date(a.due || 0).getTime() - new Date(b.due || 0).getTime();
-        } else if (tasksSettings.filters.sort === "asc") {
-          return new Date(b.due || 0).getTime() - new Date(a.due || 0).getTime();
-        } else {
-          return 0;
-        }
-      }) || []
+          if (tasksSettings.filters.sort === "desc") {
+            return (
+              new Date(a.due || 0).getTime() - new Date(b.due || 0).getTime()
+            );
+          } else if (tasksSettings.filters.sort === "asc") {
+            return (
+              new Date(b.due || 0).getTime() - new Date(a.due || 0).getTime()
+            );
+          } else {
+            return 0;
+          }
+        }) || []
     );
   }, [tasks, tasksSettings.filters]);
 
@@ -100,7 +107,19 @@ export function useFilteredTasks() {
     return tasks.filter((task) => task.status === "completed");
   }, [tasks]);
 
+  const pinnedTasks = useMemo(() => {
+    if (!tasks) return [];
+    return tasks.filter((task) => task.pinned);
+  }, [tasks]);
+
   const isLoading = isListLoading || isTasksLoading;
 
-  return { filteredTasks, completedTasks, isLoading, ...rest };
+  return {
+    filteredTasks,
+    completedTasks,
+    pinnedTasks,
+    isLoading,
+    tasks,
+    ...rest,
+  };
 }

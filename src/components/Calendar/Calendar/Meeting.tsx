@@ -34,19 +34,32 @@ import { useMemo, useRef, useState } from "react";
 const MeetingStyled = styled(Stack)<{
   reservedCount?: number;
   totalStackedEvents?: number;
-}>(({ theme, reservedCount, totalStackedEvents }) => {
+  responseStatus?: CalendarEvent["attendees"][number]["responseStatus"];
+}>(({ theme, reservedCount, totalStackedEvents, responseStatus }) => {
   const stackOrder = reservedCount || 1;
   const totalStacked = totalStackedEvents || 1;
 
   const positions = getMeetingPositions(stackOrder, totalStacked);
+  const accepted = responseStatus === "accepted";
+  const maybe = responseStatus === "tentative";
+  const declined = responseStatus === "declined";
+  const needsAction = responseStatus === "needsAction";
 
   return {
     position: "absolute",
     left: positions.left,
     right: positions.right,
-    border: `1px solid ${theme.palette.primary.contrastText}`,
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
+    border: `1px solid ${
+      needsAction
+        ? theme.palette.primary.main
+        : theme.palette.primary.contrastText
+    }`,
+    backgroundColor: needsAction
+      ? theme.palette.background.paper
+      : theme.palette.primary.main,
+    color: needsAction
+      ? theme.palette.primary.main
+      : theme.palette.primary.contrastText,
     padding: theme.spacing(0.5, 1),
     borderRadius: 4,
     overflow: "hidden",
@@ -124,12 +137,19 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     }),
     [event.attendees]
   );
+
+  const responseStatus = useMemo(
+    () => event.attendees?.find((a) => a.self)?.responseStatus,
+    [event]
+  );
+
   return (
     <>
       <CustomWidthTooltip title={event.summary} placement="top">
         <MeetingStyled
           reservedCount={event.reservationCount}
           totalStackedEvents={event.totalStackedEvents}
+          responseStatus={responseStatus}
           sx={{ top: top, height: height, maxHeight: height }}
           onClick={handleClick}
         >

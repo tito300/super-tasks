@@ -2,21 +2,25 @@ import { createTheme, Theme } from "@mui/material";
 import { blue, cyan } from "@mui/material/colors";
 import { deepmerge } from "@mui/utils";
 import { Button, ButtonProps } from "@mui/material";
+import { commonAxcessTheme } from "./common.theme";
 
-export const commonTheme: Theme = createTheme({
-  components: {
-    MuiButton: {
-      defaultProps: {
-        disableRipple: true,
+export const commonTheme: Theme = deepmerge(
+  commonAxcessTheme,
+  createTheme({
+    components: {
+      MuiButton: {
+        defaultProps: {
+          disableRipple: true,
+        },
+      },
+      MuiButtonBase: {
+        defaultProps: {
+          disableRipple: true,
+        },
       },
     },
-    MuiButtonBase: {
-      defaultProps: {
-        disableRipple: true,
-      },
-    },
-  },
-});
+  })
+);
 
 export const calendarTheme = deepmerge(commonTheme, {
   palette: {
@@ -35,9 +39,6 @@ export const calendarTheme = deepmerge(commonTheme, {
 
 export const tasksTheme = deepmerge(calendarTheme, {
   palette: {
-    primary: {
-  
-    },
-    
+    primary: {},
   },
 } as Theme);

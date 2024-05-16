@@ -6,8 +6,8 @@ export const userSettingsDefaults = {
   syncCurrentTab: true,
   darkMode: false,
   syncDarkMode: true,
-  buttonExpanded: true,
-  syncButtonExpanded: false,
+  buttonExpanded: false,
+  syncButtonExpanded: true,
   accordionExpanded: false,
   syncAccordionExpanded: false,
   blurText: false,
@@ -31,7 +31,7 @@ export const tasksSettingsDefaults = {
     pastDue: true,
     upcoming: false,
     search: "",
-    sort: ""
+    sort: "",
   },
   syncFilters: true,
 };

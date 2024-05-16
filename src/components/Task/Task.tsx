@@ -3,6 +3,8 @@ import {
   Chip,
   ClickAwayListener,
   Collapse,
+  IconButton,
+  IconButtonProps,
   Stack,
 } from "@mui/material";
 import { StyledTask } from "./Task.styles";
@@ -31,6 +33,8 @@ import dayjs from "dayjs";
 import { TaskDate } from "./components/TaskDate";
 import { DescriptionTextField } from "./components/DescriptionTextField";
 import { TaskReminder } from "./components/TaskReminder";
+import { Pin, PushPin } from "@mui/icons-material";
+import { useTasksState } from "../Providers/TasksStateProvider";
 
 export type TaskType = SavedTask | NewTask;
 
@@ -40,6 +44,7 @@ export type TaskEnhanced = {
   alert?: number | null; // in minutes
   alertSeen?: boolean | null;
   listId: string;
+  pinned?: boolean;
   // add updated date
 };
 
@@ -235,13 +240,16 @@ export function Task({
             </Stack>
           </Stack>
           {!temporary && (
-            <TaskReminder
-              id="axess-add-reminder-button"
-              visible={!!(data?.alertOn || data?.alert)}
-              task={data!}
-            />
+            <>
+              <TaskReminder
+                id="axess-add-reminder-button"
+                visible={!!(data?.alertOn || data?.alert)}
+                task={data!}
+              />
+              <TaskPin id="axess-pin-task-button" task={data!} />
+              <TaskOptionsMenu listId={listId} />
+            </>
           )}
-          {!temporary && <TaskOptionsMenu listId={listId} />}
         </StyledTask>
       </ClickAwayListener>
     </FormProvider>
@@ -266,6 +274,37 @@ export const shouldSaveTempTask = (task?: Partial<SavedTask>) => {
 
   return false;
 };
+
+export function TaskPin({
+  task,
+  ...rest
+}: { task: SavedTask } & IconButtonProps) {
+  const {
+    data: { selectedTaskListId },
+  } = useTasksState();
+  const mutateTask = useUpdateTask(selectedTaskListId!);
+
+  const pinned = task.pinned;
+
+  return (
+    <IconButton
+      size="small"
+      color={pinned ? "primary" : "default"}
+      onClick={(event) => {
+        event.stopPropagation();
+
+        mutateTask.mutate({
+          ...task,
+          pinned: !pinned,
+        });
+      }}
+      {...rest}
+      sx={{ visibility: pinned ? "visible" : "hidden", ...rest.sx }}
+    >
+      <PushPin sx={{ fontSize: 20 }} />
+    </IconButton>
+  );
+}
 
 function SaveButton({
   pendingSave,

@@ -192,8 +192,8 @@ export const TaskServices = {
 function filterEnhancedProperties(
   task: SavedTask | TaskEnhanced | TaskType
 ): Record<Exclude<keyof TaskEnhanced, "id">, any> {
-  const { alert, alertOn, alertSeen, listId, id } = task;
-  return { alert, alertOn, alertSeen, listId };
+  const { alert, alertOn, alertSeen, listId, pinned, id } = task;
+  return { alert, alertOn, alertSeen, listId, pinned };
 }
 
 async function getReminderTopLeftPosition() {

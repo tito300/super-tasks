@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { StorageData, storageService } from "@src/storage/storage.service";
 import { capitalize } from "@mui/material";
 
@@ -19,7 +25,9 @@ export function useSyncedState<T extends {}, K extends any = {}>(
       if (!storedData) {
         storageService.set({ [resourceName]: defaultValues });
       }
-      setData((prevData) => ({ ...prevData, ...storedData }));
+      startTransition(() => {
+        setData((prevData) => ({ ...prevData, ...storedData }));
+      });
     });
     // defaultValues is not a dependency because it should not change
   }, [resourceName]);
@@ -40,10 +48,12 @@ export function useSyncedState<T extends {}, K extends any = {}>(
       }
 
       if (changes?.[resourceName]) {
-        setData((prevData) =>
-          // @ts-ignore
-          setSyncedState(prevData, changes[resourceName].newValue ?? {})
-        );
+        startTransition(() => {
+          setData((prevData) =>
+            // @ts-ignore
+            setSyncedState(prevData, changes[resourceName].newValue ?? {})
+          );
+        });
       }
     });
   }, [resourceName, resourceSettings]);

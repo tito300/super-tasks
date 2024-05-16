@@ -7,15 +7,19 @@ import { useUserState } from "@src/components/Providers/UserStateProvider";
 
 export function TasksAccordionSummary() {
   const [hovered, setHovered] = useState(false);
-  const { data: {blurText}, updateData: updateUserState } = useUserState();
-  const { filteredTasks, isFetching } = useFilteredTasks();
+  const {
+    data: { blurText },
+    updateData: updateUserState,
+  } = useUserState();
+  const { filteredTasks, pinnedTasks, tasks, isFetching } = useFilteredTasks();
 
-  const task = filteredTasks?.find(
+  const relevantTasks = pinnedTasks.length ? pinnedTasks : filteredTasks;
+  const task = relevantTasks?.find(
     (task) => task.status !== "completed" && task.title && task.id
   );
 
   const title =
-    isFetching && !filteredTasks?.length
+    isFetching && !tasks?.length
       ? "loading..."
       : task?.title || "No tasks found";
 
