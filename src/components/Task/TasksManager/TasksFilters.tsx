@@ -1,7 +1,7 @@
 import { ChipProps, Chip, Stack, IconButton, TextField } from "@mui/material";
 import { FilterList, Search, Sort } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
-import { useTasksState } from "../Providers/TasksStateProvider";
+import { useTasksState } from "../../Providers/TasksStateProvider";
 
 export function TasksFilters() {
   const [searchOn, setSearchOn] = useState(false);

@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { TabsManager } from "@src/components/TabsManager";
-import { TaskListManager } from "@src/components/TaskListManager/TaskListManager";
+import { TaskListManager } from "@src/components/Task/TaskListManager/TaskListManager";
 import { urls } from "@src/config/urls";
 import axios from "axios";
 import { useEffect } from "react";

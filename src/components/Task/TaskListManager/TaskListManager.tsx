@@ -10,9 +10,9 @@ import {
   CircularProgress,
 } from "@mui/material";
 import React, { startTransition, useEffect, useMemo } from "react";
-import { useTaskLists } from "../../api/task.api";
+import { useTaskLists } from "../../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
-import { useTasksState } from "../Providers/TasksStateProvider";
+import { useTasksState } from "../../Providers/TasksStateProvider";
 import {
   KeyboardArrowDown,
   List,
@@ -21,8 +21,8 @@ import {
 } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
 import { TasksSettings } from "../TasksSettings/TasksSettings";
-import { useUserState } from "../Providers/UserStateProvider";
-import { useScriptType } from "../Providers/ScriptTypeProvider";
+import { useUserState } from "../../Providers/UserStateProvider";
+import { useScriptType } from "../../Providers/ScriptTypeProvider";
 
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);

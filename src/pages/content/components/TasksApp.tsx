@@ -1,4 +1,4 @@
-import { TaskListManager } from "@src/components/TaskListManager/TaskListManager";
+import { TaskListManager } from "@src/components/Task/TaskListManager/TaskListManager";
 import {
   DockStationAccordion,
   focusAddTaskInput,

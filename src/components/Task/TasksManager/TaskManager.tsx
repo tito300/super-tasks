@@ -7,8 +7,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { SavedTask, Task, createEmptyTask } from "../Task/Task";
-import { useMoveTask } from "../../api/task.api";
+import { SavedTask, Task, createEmptyTask } from "../Task";
+import { useMoveTask } from "../../../api/task.api";
 import {
   Active,
   DndContext,
@@ -24,13 +24,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { AddTask as AddTaskButton } from "../AddTask/AddTask";
-import { TaskSkeleton } from "../Task/Task.skeleton";
+import { TaskSkeleton } from "../Task.skeleton";
 import { ArrowDropDown, ArrowRight } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { TasksFilters } from "./TasksFilters";
 import { grey } from "@mui/material/colors";
-import { useTasksState } from "../Providers/TasksStateProvider";
+import { useTasksState } from "../../Providers/TasksStateProvider";
 
 export function TaskManager({ listId }: { listId: string }) {
   const rootRef = useRef<HTMLDivElement>(null);
