@@ -1,47 +1,34 @@
 import { useTaskLists, useTasks } from "@src/api/task.api";
 import { useTasksState } from "@src/components/Providers/TasksStateProvider";
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 
 export function useFilteredTasks() {
-  const { data: tasksSettings } = useTasksState();
-  const {
-    data: { selectedTaskListId },
-  } = useTasksState();
+  const { data: tasksState } = useTasksState();
   const { isLoading: isListLoading } = useTaskLists({
     enabled: false,
   });
-  const {
-    data: tasks,
-    isLoading: isTasksLoading,
-    ...rest
-  } = useTasks();
+  const { data: tasks, isLoading: isTasksLoading, ...rest } = useTasks();
 
-  // useEffect(() => {
-  //   if (selectedTaskListId) {
-  //     queryClient.invalidateQueries({
-  //       queryKey: ["tasks", selectedTaskListId],
-  //     });
-  //   }
-  // }, [selectedTaskListId]);
+  const filters = useDeferredValue(tasksState.filters);
+  const searchedTasks = useMemo(() => {
+    if (!tasks) return [];
+    return tasks.filter((task) => {
+      if (filters.search) {
+        return task.title?.toLowerCase().includes(filters.search.toLowerCase());
+      }
+      return true;
+    });
+  }, [tasks, filters.search]);
 
   const filteredTasks = useMemo(() => {
     return (
-      tasks
+      searchedTasks
         ?.filter((task) => {
-          if (tasksSettings.filters.search) {
-            if (
-              !task.title
-                ?.toLowerCase()
-                .includes(tasksSettings.filters.search?.toLowerCase())
-            )
-              return false;
-          }
-
           if (task.status === "completed") return false;
           if (task.pinned) return false;
           if (!task.title) return false;
 
-          if (tasksSettings.filters?.today) {
+          if (filters?.today) {
             if (!task.due) return true;
             if (task.due) {
               const dueDate = new Date(task.due);
@@ -55,7 +42,7 @@ export function useFilteredTasks() {
               }
             }
           }
-          if (tasksSettings.filters?.pastDue) {
+          if (filters?.pastDue) {
             if (task.due) {
               const dueDate = new Date(task.due);
               const today = new Date();
@@ -68,7 +55,7 @@ export function useFilteredTasks() {
               }
             }
           }
-          if (tasksSettings.filters?.upcoming) {
+          if (filters?.upcoming) {
             if (task.due) {
               const dueDate = new Date(task.due);
               const today = new Date();
@@ -87,11 +74,11 @@ export function useFilteredTasks() {
           if (a.due && !b.due) return -1;
           if (!a.due && b.due) return 1;
 
-          if (tasksSettings.filters.sort === "desc") {
+          if (filters.sort === "desc") {
             return (
               new Date(a.due || 0).getTime() - new Date(b.due || 0).getTime()
             );
-          } else if (tasksSettings.filters.sort === "asc") {
+          } else if (filters.sort === "asc") {
             return (
               new Date(b.due || 0).getTime() - new Date(a.due || 0).getTime()
             );
@@ -100,17 +87,17 @@ export function useFilteredTasks() {
           }
         }) || []
     );
-  }, [tasks, tasksSettings.filters]);
+  }, [searchedTasks, filters]);
 
   const completedTasks = useMemo(() => {
-    if (!tasks) return [];
-    return tasks.filter((task) => task.status === "completed");
-  }, [tasks]);
+    if (!searchedTasks) return [];
+    return searchedTasks.filter((task) => task.status === "completed");
+  }, [searchedTasks]);
 
   const pinnedTasks = useMemo(() => {
-    if (!tasks) return [];
-    return tasks.filter((task) => task.pinned);
-  }, [tasks]);
+    if (!searchedTasks) return [];
+    return searchedTasks.filter((task) => task.pinned);
+  }, [searchedTasks]);
 
   const isLoading = isListLoading || isTasksLoading;
 

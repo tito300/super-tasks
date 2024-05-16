@@ -5,10 +5,9 @@ import { useTasksState } from "../../Providers/TasksStateProvider";
 
 export function TasksFilters() {
   const [searchOn, setSearchOn] = useState(false);
-  const { data: tasksSettings, updateData: updateTasksSettings } =
-    useTasksState();
+  const { data: tasksState, updateData: updateTasksState } = useTasksState();
   const searchRef = useRef<HTMLInputElement>(null);
-  const { filters } = tasksSettings;
+  const { filters } = tasksState;
 
   useEffect(() => {
     if (!searchOn && filters.search) {
@@ -18,7 +17,7 @@ export function TasksFilters() {
   }, [filters.search]);
 
   function handleFilterClick(filter: keyof typeof filters) {
-    updateTasksSettings({
+    updateTasksState({
       filters: {
         ...filters,
         [filter]: !filters[filter],
@@ -31,7 +30,7 @@ export function TasksFilters() {
   }
 
   function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-    updateTasksSettings({
+    updateTasksState({
       filters: {
         ...filters,
         search: event.target.value,
@@ -46,7 +45,7 @@ export function TasksFilters() {
   }
 
   function handleSortClick() {
-    updateTasksSettings({
+    updateTasksState({
       filters: {
         ...filters,
         sort:
@@ -56,7 +55,12 @@ export function TasksFilters() {
   }
 
   return (
-    <Stack width="100%" direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+    <Stack
+      width="100%"
+      direction={"row"}
+      alignItems={"center"}
+      justifyContent={"space-between"}
+    >
       <Stack direction="row" alignItems="center" mb={0.5} px={0.5} gap={0.5}>
         {!searchOn && (
           <IconButton size="small" onClick={handleSearchClick}>
@@ -90,7 +94,12 @@ export function TasksFilters() {
           label="Upcoming"
         />
       </Stack>
-      <IconButton sx={{ mt: -0.5 }} color={filters.sort ? "primary" : undefined} size="small" onClick={handleSortClick}>
+      <IconButton
+        sx={{ mt: -0.5 }}
+        color={filters.sort ? "primary" : undefined}
+        size="small"
+        onClick={handleSortClick}
+      >
         {!filters.sort ? (
           <FilterList fontSize="small" />
         ) : (

@@ -15,6 +15,8 @@ import {
   sortCalendarEvents,
 } from "@src/utils/calendarUtils";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
+import { useRootElement } from "@src/hooks/useRootElement";
+import { constants } from "@src/config/constants";
 
 dayjs.extend(isToday);
 dayjs.extend(utc);
@@ -60,8 +62,9 @@ function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
   const [minutes, setMinutes] = useState(() => new Date().getMinutes());
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const {
-    data: { accordionExpanded, buttonExpanded },
+    data: { accordionExpanded, buttonExpanded, currentTab },
   } = useUserState();
+  const rootEl = useRootElement();
 
   useEffect(() => {
     setInterval(() => {
@@ -74,14 +77,20 @@ function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
   const top = hours * 60 + minutes;
 
   useEffect(() => {
-    if (!currentTimeRef.current || !accordionExpanded || !buttonExpanded)
+    if (!accordionExpanded || !buttonExpanded || currentTab !== "calendar")
       return;
 
-    currentTimeRef.current.scrollIntoView({
-      behavior: "instant",
-      block: "center",
-    });
-  }, [hours, accordionExpanded, buttonExpanded]);
+    const scrollableEl = rootEl.querySelector<HTMLDivElement>(
+      `#${constants.EXTENSION_NAME}-scrollable-container`
+    );
+    const currentTimeEl = currentTimeRef.current;
+
+    if (!scrollableEl || !currentTimeEl) return;
+
+    // Calculate the offset of the target element relative to the scrollable div
+    const offsetTop = currentTimeEl!.offsetTop - scrollableEl.offsetTop;
+    scrollableEl.scrollTop = offsetTop - 100;
+  }, [hours, accordionExpanded, buttonExpanded, currentTab]);
 
   return (
     <CurrentTimeStyled

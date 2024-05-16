@@ -43,17 +43,6 @@ export function TabsManager({
     updateUserState({ currentTab: newValue });
   };
 
-  useEffect(() => {
-    if (currentTab === "calendar") {
-      rootElement.querySelector("#current-time-indicator")?.scrollIntoView({
-        behavior: "instant",
-        block: "center",
-      });
-    } else if (currentTab === "tasks") {
-      rootElement.scrollTo(0, 0);
-    }
-  }, [currentTab, rootElement]);
-
   return (
     <Stack
       onDrag={(e) => e.stopPropagation()}

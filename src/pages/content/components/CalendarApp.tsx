@@ -8,6 +8,7 @@ import { AccordionSummaryStyled } from "./AccordionSummary.styled";
 import { CalendarsStateProvider } from "@src/components/Providers/CalendarStateProvider";
 import { CalendarSettingsProvider } from "@src/components/Providers/CalendarSettingsProvider";
 import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
+import { constants } from "@src/config/constants";
 
 export function CalendarApp() {
   const scriptType = useScriptType();
@@ -21,7 +22,10 @@ export function CalendarApp() {
           <CalendarAccordionSummary />
         </AccordionSummaryStyled>
         <DockStationAccordionDetails id="accordion-details">
-          <Stack sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}>
+          <Stack
+            id={`${constants.EXTENSION_NAME}-scrollable-container`}
+            sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}
+          >
             <CalendarListManager />
           </Stack>
         </DockStationAccordionDetails>
