@@ -149,6 +149,7 @@ export function Task({
         {
           id: data.id,
           alertSeen: true,
+          alertOn: false,
           listId: data.listId,
         },
       ]);

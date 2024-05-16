@@ -8,24 +8,24 @@ import { storageService } from "@src/storage/storage.service";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useCallback } from "react";
 import { deepmerge } from "@mui/utils";
+import { useCalendarState } from "@src/components/Providers/CalendarStateProvider";
 
 export const useCalendarEvents = ({
   enabled,
-  calendarId,
 }: {
-  calendarId: string | null | undefined;
   enabled?: boolean;
-}) => {
+} = {}) => {
   const { calendar: calendarService } = useServicesContext();
+  const { data: { selectedCalendarId } } = useCalendarState();
 
   return useQuery<SavedCalendarEvent[]>({
-    queryKey: ["calendar", calendarId],
+    queryKey: ["calendar", selectedCalendarId],
     placeholderData: [] as SavedCalendarEvent[],
     queryFn: async () => {
-      if (!calendarId) return [];
+      if (!selectedCalendarId) return [];
 
       try {
-        const data = await calendarService.getCalendarEvents(calendarId);
+        const data = await calendarService.getCalendarEvents(selectedCalendarId);
         console.log("useCalendarEvents queryFn data: ", data);
         return data;
       } catch (err) {
@@ -34,7 +34,7 @@ export const useCalendarEvents = ({
         return [];
       }
     },
-    enabled: !!calendarId,
+    enabled: !!selectedCalendarId,
     // stale time prevents refetching for things like when user focuses on page
     // If you need to force a refetch, use queryClient.invalidateQueries
     staleTime: 1000 * 60 * 5, // 5 minutes

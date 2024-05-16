@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { SavedTask, Task, createEmptyTask } from "../Task/Task";
-import { useMoveTask, useTasks } from "../../api/task.api";
+import { useMoveTask } from "../../api/task.api";
 import {
   Active,
   DndContext,
@@ -31,7 +31,6 @@ import { useFilteredTasks } from "@src/hooks/useFilteredTasks";
 import { TasksFilters } from "./TasksFilters";
 import { grey } from "@mui/material/colors";
 import { useTasksState } from "../Providers/TasksStateProvider";
-import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
 
 export function TaskManager({ listId }: { listId: string }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -82,7 +81,7 @@ export function TaskManager({ listId }: { listId: string }) {
     <Stack flexGrow={1} sx={{ px: 1, mb: 1.5 }} ref={rootRef}>
       <LinearProgress
         sx={{
-          visibility: isLoading || isRefetching ? "visible" : "hidden",
+          visibility: isLoading ? "visible" : "hidden",
           color: grey[500],
         }}
       />

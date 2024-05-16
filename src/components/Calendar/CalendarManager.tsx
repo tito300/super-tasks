@@ -12,18 +12,13 @@ export function CalendarManager({
   isLoading: boolean;
 }) {
   const {
-    data: { selectedCalendarId },
-  } = useCalendarState();
-  const {
     data: { accordionExpanded },
   } = useUserState();
   const {
     data: calendarEvents,
     isLoading,
     refetch,
-  } = useCalendarEvents({
-    calendarId: selectedCalendarId,
-  });
+  } = useCalendarEvents();
 
   useEffect(() => {
     if (accordionExpanded) {

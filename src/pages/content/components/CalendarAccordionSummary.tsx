@@ -23,10 +23,7 @@ export function CalendarAccordionSummary() {
     updateData: updateUserState,
   } = useUserState();
   const { calendarSettings } = useCalendarSettings();
-  const { data: { selectedCalendarId } } = useCalendarState();
-  const { isLoading } = useCalendarEvents({
-    calendarId: selectedCalendarId,
-  });
+  const { isLoading } = useCalendarEvents();
 
   const { nextEvent, timeToNextEvent } = useNextEventTimer();
 
@@ -113,11 +110,8 @@ export function CalendarAccordionSummary() {
 export function useNextEventTimer() {
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const [timeToNextEvent, setTimeToNextEvent] = useState<Duration | null>(null);
-  const { data: { selectedCalendarId } } = useCalendarState();
 
-  const { data: calendarEvents } = useCalendarEvents({
-    calendarId: selectedCalendarId,
-  });
+  const { data: calendarEvents } = useCalendarEvents();
 
   useEffect(() => {
     if (!calendarEvents?.length) return;

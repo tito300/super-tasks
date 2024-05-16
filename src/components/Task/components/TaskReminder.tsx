@@ -77,7 +77,7 @@ export function TaskReminder({
         {task.alertOn ? (
           <NotificationsOff sx={{ fontSize: 20 }} color="warning" />
         ) : task.alert ? (
-          <Notifications color="success" sx={{ fontSize: 20 }} />
+          <Notifications color="primary" sx={{ fontSize: 20 }} />
         ) : (
           <NotificationAdd sx={{ fontSize: 20 }} />
         )}

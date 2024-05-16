@@ -170,9 +170,10 @@ export const TaskServices = {
   updateLocalTaskState: async (
     task: Partial<TaskType> & { id: string; listId: string }
   ) => {
+    // const storage = await storageService.get("tasksEnhanced");
     storageService.set({
       tasksEnhanced: {
-        [task.id!]: filterEnhancedProperties(task),
+        [task.id!]: filterEnhancedProperties(task, { deleteUndefined: true }),
       },
     });
   },
@@ -190,10 +191,21 @@ export const TaskServices = {
 };
 
 function filterEnhancedProperties(
-  task: SavedTask | TaskEnhanced | TaskType
+  task: SavedTask | TaskEnhanced | TaskType, options: { deleteUndefined?: boolean} = {}
 ): Record<Exclude<keyof TaskEnhanced, "id">, any> {
-  const { alert, alertOn, alertSeen, listId, pinned, id } = task;
-  return { alert, alertOn, alertSeen, listId, pinned };
+  const { alert, alertOn, alertSeen, listId, pinned } = task;
+
+  const properties = { alert, alertOn, alertSeen, listId, pinned };
+  if (options.deleteUndefined) {
+    Object.keys(properties).forEach((key) => {
+      if (properties[key as keyof typeof properties] === undefined) {
+        delete properties[key  as keyof typeof properties];
+      }
+    });
+  }
+
+  return properties;
+    
 }
 
 async function getReminderTopLeftPosition() {

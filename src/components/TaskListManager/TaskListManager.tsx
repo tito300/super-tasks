@@ -7,8 +7,9 @@ import {
   Stack,
   IconButton,
   Button,
+  CircularProgress,
 } from "@mui/material";
-import React, { useEffect, useMemo } from "react";
+import React, { startTransition, useEffect, useMemo } from "react";
 import { useTaskLists } from "../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
 import { useTasksState } from "../Providers/TasksStateProvider";
@@ -26,6 +27,7 @@ import { useScriptType } from "../Providers/ScriptTypeProvider";
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [refetching, setRefetching] = React.useState(false);
   const scriptType = useScriptType();
   const {
     data: { buttonExpanded },
@@ -113,11 +115,23 @@ export function TaskListManager() {
           </IconButton>
           <IconButton
             size="small"
+            disabled={refetching}
             onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ["tasks"] });
+              setRefetching(true);
+              queryClient
+                .invalidateQueries({ queryKey: ["tasks"] })
+                .then(() => {
+                  startTransition(() => {
+                    setRefetching(false);
+                  });
+                });
             }}
           >
-            <Refresh fontSize="small" />
+            {refetching ? (
+              <CircularProgress size="20px" />
+            ) : (
+              <Refresh fontSize="small" />
+            )}
           </IconButton>
         </Stack>
       </Stack>

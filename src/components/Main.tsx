@@ -39,31 +39,31 @@ export const Main = ({
   }, []);
   return (
     <ScriptTypeProvider scriptType={scriptType}>
-      <QueryClientProvider client={queryClient}>
-        <MessageEngineProvider scriptType={scriptType}>
-          <ServicesProvider scriptType={scriptType}>
-            <GlobalStateProvider>
-              <UserSettingsProvider>
-                <UserStateProvider>
-                  <CustomThemeProvider theme={theme}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <TasksSettingsProvider>
-                        <TasksStateProvider>
-                          <CalendarSettingsProvider>
-                            <CalendarsStateProvider>
+      <MessageEngineProvider scriptType={scriptType}>
+        <ServicesProvider scriptType={scriptType}>
+          <GlobalStateProvider>
+            <UserSettingsProvider>
+              <UserStateProvider>
+                <CustomThemeProvider theme={theme}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <TasksSettingsProvider>
+                      <TasksStateProvider>
+                        <CalendarSettingsProvider>
+                          <CalendarsStateProvider>
+                            <QueryClientProvider client={queryClient}>
                               {children}
-                            </CalendarsStateProvider>
-                          </CalendarSettingsProvider>
-                        </TasksStateProvider>
-                      </TasksSettingsProvider>
-                    </LocalizationProvider>
-                  </CustomThemeProvider>
-                </UserStateProvider>
-              </UserSettingsProvider>
-            </GlobalStateProvider>
-          </ServicesProvider>
-        </MessageEngineProvider>
-      </QueryClientProvider>
+                            </QueryClientProvider>
+                          </CalendarsStateProvider>
+                        </CalendarSettingsProvider>
+                      </TasksStateProvider>
+                    </TasksSettingsProvider>
+                  </LocalizationProvider>
+                </CustomThemeProvider>
+              </UserStateProvider>
+            </UserSettingsProvider>
+          </GlobalStateProvider>
+        </ServicesProvider>
+      </MessageEngineProvider>
     </ScriptTypeProvider>
   );
 };

@@ -6,14 +6,11 @@ import { LinearProgress, Stack } from "@mui/material";
 import { CalendarControls } from "./CalendarControls";
 
 export function CalendarListManager() {
-  const { data: calendarList, isFetching: isListFetching } = useCalendarLists();
+  const { data: calendarList, isLoading } = useCalendarLists();
   const {
     data: { selectedCalendarId },
     updateData: updateCalendarState,
   } = useCalendarState();
-  const { data, isFetching: isEventsFetching } = useCalendarEvents({
-    calendarId: selectedCalendarId,
-  });
 
   useEffect(() => {
     if (!selectedCalendarId && !!calendarList?.length) {
@@ -22,8 +19,6 @@ export function CalendarListManager() {
       });
     }
   }, [calendarList, selectedCalendarId]);
-
-  const isLoading = isListFetching || isEventsFetching;
 
   return (
     <Stack>
