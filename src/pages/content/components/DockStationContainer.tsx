@@ -45,7 +45,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
   }
 
   const defaultPositions = {
-    x: window.innerWidth - 32,
+    x: window.innerWidth - 38,
     y: window.innerHeight - 32,
   };
 
