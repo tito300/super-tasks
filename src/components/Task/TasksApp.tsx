@@ -66,9 +66,6 @@ function TasksAccordion({
           queryKey: ["tasks", selectedTaskListId],
         });
         focusAddTaskInput();
-        messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
-      } else {
-        messageEngine.sendMessage("StopFetchTasksTimer", null, "Background");
       }
     },
     [selectedTaskListId, queryClient, messageEngine]

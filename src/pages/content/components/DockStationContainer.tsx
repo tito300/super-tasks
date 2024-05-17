@@ -61,8 +61,6 @@ export function DockStationContainer({ children }: PropsWithChildren) {
         queryKey: ["taskLists"],
       });
     }
-    messageEngine.sendMessage("StartFetchTasksTimer", null, "Background");
-
     focusAddTaskInput();
   };
 
@@ -97,12 +95,12 @@ export function DockStationContainer({ children }: PropsWithChildren) {
             </IconButton>
           }
         >
-          <Box
+          {/* <Box
             id="temp-container"
             sx={{ display: buttonExpanded ? "block" : "none" }}
-          >
-            {children}
-          </Box>
+          > */}
+          {children}
+          {/* </Box> */}
         </BadgeStyled>
       }
     >

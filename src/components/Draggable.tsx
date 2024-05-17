@@ -21,7 +21,10 @@ export const Draggable = forwardRef<
     className?: string;
     children: React.ReactNode | (() => React.ReactNode);
   }
->(function Draggable({ children, sx: inSx, id, defaultPosition, ...props }, ref) {
+>(function Draggable(
+  { children, sx: inSx, id, defaultPosition, ...props },
+  ref
+) {
   const [offsets, setOffsets] = useState<{
     x?: number;
     y?: number;
@@ -81,7 +84,14 @@ export const Draggable = forwardRef<
   };
 
   return (
-    <Container id={id} ref={ref} onMouseDown={onMouseDown} sx={sx} {...props}>
+    <Container
+      id={id}
+      data-component="Draggable-Container"
+      ref={ref}
+      onMouseDown={onMouseDown}
+      sx={sx}
+      {...props}
+    >
       {typeof children === "function" ? children() : children}
     </Container>
   );

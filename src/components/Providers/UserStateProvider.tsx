@@ -1,7 +1,4 @@
-import {
-  createContext,
-  useContext,
-} from "react";
+import { createContext, useContext } from "react";
 import { useUserSettings } from "./UserSettingsProvider";
 import { TabName } from "@src/config/settingsDefaults";
 import { useSyncedState } from "@src/hooks/useSyncedState";
@@ -12,6 +9,12 @@ export type UserState = {
   accordionExpanded: boolean;
   blurText: boolean;
   darkMode: boolean;
+  tokens: {
+    google?: {
+      scopesGranted: { tasks?: boolean; calendar?: boolean };
+      token?: string | null;
+    };
+  };
 };
 
 export type UserStateContextType = {
@@ -28,6 +31,15 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     currentTab: userSettings.currentTab,
     blurText: userSettings.blurText,
     darkMode: userSettings.darkMode,
+    tokens: {
+      google: {
+        token: null,
+        scopesGranted: {
+          tasks: false,
+          calendar: false,
+        },
+      },
+    },
   });
 
   return (

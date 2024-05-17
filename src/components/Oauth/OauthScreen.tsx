@@ -47,7 +47,7 @@ export function OauthScreen({
         ) : (
           <Typography variant="body2">
             In order to use {capitalize(constants.EXTENSION_NAME)} browser
-            extension, you need to give authorize your account with Google.
+            extension, you need to login and give us permission.
           </Typography>
         )}
       </CardContent>

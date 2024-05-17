@@ -9,14 +9,15 @@ import {
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { OauthScreen } from "./OauthScreen";
 import { useMessageEngine } from "../Providers/MessageEngineProvider";
+import AppOauthPicker, { scopes } from "./AppOauthPicker";
+import { useUserState } from "../Providers/UserStateProvider";
 
 export function OauthRequired({
   children,
   ...rest
 }: PropsWithChildren & HTMLProps<HTMLDivElement>) {
   const tokenSetRef = useRef(false);
-  const [token, setToken] = useState<string | undefined | null>(undefined);
-  const [requiredScopesGranted, setRequiredScopesGranted] = useState(false);
+  const { data: useState, updateData: updateUserState } = useUserState();
   const { user: userServices } = useServicesContext();
   const messageEngine = useMessageEngine();
 
@@ -26,34 +27,48 @@ export function OauthRequired({
 
   useLayoutEffect(() => {
     userServices.getAuthToken({ interactive: false }).then((tokenRes) => {
-      setToken(tokenRes.token || "");
-      setRequiredScopesGranted(!!tokenRes.requiredScopesGranted);
+      updateUserState({
+        tokens: {
+          ...useState.tokens,
+          google: {
+            token: tokenRes.token,
+            scopesGranted: {
+              calendar: tokenRes?.grantedScopes?.includes(
+                scopes.google.calendar
+              ),
+              tasks: tokenRes?.grantedScopes?.includes(scopes.google.tasks),
+            },
+          },
+        },
+      });
       tokenSetRef.current = true;
     });
 
     messageEngine.onMessage("ReAuthenticate", async () => {
-      setToken(undefined);
+      updateUserState({
+        tokens: {
+          ...useState.tokens,
+          google: {
+            token: null,
+            scopesGranted: {
+              calendar: false,
+              tasks: false,
+            },
+          },
+        },
+      });
     });
   }, []);
-
-  const handleClick = async () => {
-    userServices.getAuthToken({ interactive: true }).then((tokenRes) => {
-      setToken(tokenRes.token);
-      setRequiredScopesGranted(!!tokenRes.requiredScopesGranted);
-    });
-  };
 
   if (document.location.href.includes("accounts.google.com/signin/oauth"))
     return null;
 
-  const missingRequiredScopes = !!token && !requiredScopesGranted;
+  const hasOneAppToken = useState.tokens.google?.token;
+
   return (
     <div {...rest}>
-      {!tokenSetRef.current ? null : !token || missingRequiredScopes ? (
-        <OauthScreen
-          missingRequiredScopes={missingRequiredScopes}
-          onLoginCLick={handleClick}
-        />
+      {!tokenSetRef.current ? null : !hasOneAppToken ? (
+        <AppOauthPicker />
       ) : (
         children
       )}

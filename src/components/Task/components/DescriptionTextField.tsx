@@ -32,7 +32,6 @@ export function DescriptionTextField({ onblur }: { onblur: () => void }) {
             sx: {
               overflow: "auto",
               width: "100%",
-              maxHeight: (theme) => theme.spacing(10),
               color: (theme) => theme.palette.text.secondary,
               pb: 0,
               fontSize: 16,

@@ -38,6 +38,7 @@ export const userService = {
       return {
         token: tokenRes.token,
         requiredScopesGranted,
+        grantedScopes: tokenRes.grantedScopes,
       };
     } catch (err: any) {
       return { token: null, requiredScopesGranted: false };

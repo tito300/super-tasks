@@ -44,10 +44,6 @@ const handleAlarms = async (alarm: Alarms.Alarm) => {
   }
 };
 
-messageEngine.onMessage("StartFetchTasksTimer", async () => {
-  chrome.alarms.create("fetchTasksTimer", { periodInMinutes: 2 });
-});
-
 messageEngine.onMessage("StopFetchTasksTimer", async () => {
   chrome.alarms.clear("fetchTasksTimer");
 });
