@@ -5,8 +5,8 @@ import { TaskListManager } from "@src/components/Task/TaskListManager/TaskListMa
 import { urls } from "@src/config/urls";
 import axios from "axios";
 import { useEffect } from "react";
-import { CalendarApp } from "../content/components/CalendarApp";
-import { TasksApp } from "../content/components/TasksApp";
+import { CalendarApp } from "../../components/Calendar/CalendarApp";
+import { TasksApp } from "../../components/Task/TasksApp";
 import { useGlobalState } from "@src/components/Providers/globalStateProvider";
 
 axios.defaults.baseURL = urls.BASE_URL;

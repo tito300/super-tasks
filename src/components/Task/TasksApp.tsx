@@ -2,18 +2,16 @@ import { TaskListManager } from "@src/components/Task/TaskListManager/TaskListMa
 import {
   DockStationAccordion,
   focusAddTaskInput,
-} from "./DockStationAccordion";
-import { DockStationAccordionDetails } from "./DockStationAccordionDetails";
+} from "../../pages/content/components/DockStationAccordion";
+import { DockStationAccordionDetails } from "../../pages/content/components/DockStationAccordionDetails";
 import { useEnhancedTasks } from "@src/hooks/useEnhancedTasks";
 import { useCallback, useEffect } from "react";
 import Stack from "@mui/material/Stack";
-import {
-  useTasksState,
-} from "@src/components/Providers/TasksStateProvider";
+import { useTasksState } from "@src/components/Providers/TasksStateProvider";
 import { ArrowDropDown } from "@mui/icons-material";
-import { TasksAccordionSummary } from "./TasksAccordionSummary";
+import { TasksAccordionSummary } from "../../pages/content/components/TasksAccordionSummary";
 import { AccordionProps } from "@mui/material";
-import { AccordionSummaryStyled } from "./AccordionSummary.styled";
+import { AccordionSummaryStyled } from "../../pages/content/components/AccordionSummary.styled";
 import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
