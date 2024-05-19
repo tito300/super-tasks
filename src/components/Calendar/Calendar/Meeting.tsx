@@ -91,8 +91,8 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 export function Meeting({ event }: { event: CalendarEvent }) {
-  const startHour = dayjs(getEventStartTime(event)).hour();
-  const startMinute = dayjs(getEventStartTime(event)).minute();
+  const startHour = getEventStartTime(event).hour();
+  const startMinute = getEventStartTime(event).minute();
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
   const {
     data: { blurText },
@@ -115,7 +115,10 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     const endHour = dayjs(event.end.dateTime).hour() || 24;
     const endMinute = dayjs(event.end.dateTime).minute();
 
-    const height = (endHour - startHour) * 60 + endMinute - startMinute;
+    const hours = (endHour - startHour) * 60;
+    const minutes = Math.abs(endMinute - startMinute);
+
+    const height = hours + minutes;
 
     return { top, height };
   }, [event.end.dateTime, startHour, startMinute]);

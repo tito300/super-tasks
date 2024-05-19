@@ -151,7 +151,9 @@ export function getRRule(event: CalendarEvent) {
   // Set up the rule
   return rrulestr(event.recurrence[0], {
     dtstart: startDate.toDate(),
-    tzid: event.start.timeZone,
+    tzid: event.start.dateTime?.includes("Z")
+      ? event.start.timeZone
+      : undefined,
   });
 }
 

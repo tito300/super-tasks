@@ -3,7 +3,10 @@ import { SavedTask, TaskEnhanced } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
-import { TasksState, useTasksState } from "@src/components/Providers/TasksStateProvider";
+import {
+  TasksState,
+  useTasksState,
+} from "@src/components/Providers/TasksStateProvider";
 import { StorageData, storageService } from "@src/storage/storage.service";
 import { useTasksUpdateMessage } from "@src/hooks/useTasksUpdateMessage";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
@@ -20,9 +23,9 @@ export const useTasks = ({
   enabled?: boolean;
 } = {}) => {
   const { task: taskService } = useServicesContext();
-  const { data: { selectedTaskListId } } = useTasksState();
-
-  useTasksUpdateMessage();
+  const {
+    data: { selectedTaskListId },
+  } = useTasksState();
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", selectedTaskListId],
