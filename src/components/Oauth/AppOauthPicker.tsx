@@ -17,6 +17,10 @@ import chatgptIcon from "@assets/img/chatgpt-icon.png";
 import { useState } from "react";
 import { useUserState } from "../Providers/UserStateProvider";
 import { useServicesContext } from "../Providers/ServicesProvider";
+import { useScriptType } from "../Providers/ScriptTypeProvider";
+import { constants } from "@src/config/constants";
+
+const extensionId = chrome.runtime.id;
 
 export const scopes = {
   google: {
@@ -30,6 +34,7 @@ export default function AppOauthPicker() {
   const [selectedApp, setSelectedApp] = useState<"google" | "chatgpt" | null>(
     null
   );
+  const scriptType = useScriptType();
   const [selectedAppScopes, setSelectedAppScopes] = useState<string[]>([]);
 
   const handleScopeClick = (scope: string) => {
@@ -45,64 +50,77 @@ export default function AppOauthPicker() {
 
   return (
     <Paper sx={{ px: 2, py: 2 }}>
-      <Stack>
-        <Typography variant="h6">Pick your Applications</Typography>
-        <Typography variant="subtitle2" pb={1.5}>
-          Don't worry, you can change this later.
-        </Typography>
-        <Stack direction="row" gap={1}>
-          {!step && (
-            <>
-              <AppImg
-                title="Google"
-                selected={selectedApp === "google"}
-                src={googleIcon}
-                onClick={() => {
-                  setSelectedApp("google");
-                }}
-              />
-              <AppImg
-                title="Chatgpt"
-                selected={selectedApp === "chatgpt"}
-                src={chatgptIcon}
-                onClick={() => {
-                  setSelectedApp("chatgpt");
-                }}
-              />
-            </>
-          )}
-          {step === 1 && selectedApp === "google" && (
-            <>
-              <AppImg
-                title="Google Calendar"
-                selected={selectedAppScopes.includes(scopes.google.calendar)}
-                onClick={() => handleScopeClick(scopes.google.calendar)}
-                src={googleCalendar}
-              />
-              <AppImg
-                title="Google Tasks"
-                selected={selectedAppScopes.includes(scopes.google.tasks)}
-                onClick={() => handleScopeClick(scopes.google.tasks)}
-                src={googleTasks}
-              />
-            </>
-          )}
+      {scriptType === "Popup" ? (
+        <Stack>
+          <Typography variant="h6">Pick your Applications</Typography>
+          <Typography variant="subtitle2" pb={1.5}>
+            Don't worry, you can change this later.
+          </Typography>
+          <Stack direction="row" gap={1}>
+            {!step && (
+              <>
+                <AppImg
+                  title="Google"
+                  selected={selectedApp === "google"}
+                  src={`chrome-extension://${extensionId}${googleIcon}`}
+                  onClick={() => {
+                    setSelectedApp("google");
+                  }}
+                />
+                <AppImg
+                  title="Chatgpt"
+                  selected={selectedApp === "chatgpt"}
+                  src={`chrome-extension://${extensionId}${chatgptIcon}`}
+                  onClick={() => {
+                    setSelectedApp("chatgpt");
+                  }}
+                />
+              </>
+            )}
+            {step === 1 && selectedApp === "google" && (
+              <>
+                <AppImg
+                  title="Google Calendar"
+                  selected={selectedAppScopes.includes(scopes.google.calendar)}
+                  onClick={() => handleScopeClick(scopes.google.calendar)}
+                  src={googleCalendar}
+                />
+                <AppImg
+                  title="Google Tasks"
+                  selected={selectedAppScopes.includes(scopes.google.tasks)}
+                  onClick={() => handleScopeClick(scopes.google.tasks)}
+                  src={`chrome-extension://${extensionId}${googleTasks}`}
+                />
+              </>
+            )}
+          </Stack>
+          <Stack direction="row" justifyContent="flex-end">
+            {step === 0 && (
+              <Button
+                disabled={!selectedApp}
+                variant="contained"
+                onClick={() => setStep((step) => step + 1)}
+              >
+                Next
+              </Button>
+            )}
+            {step === 1 && selectedApp === "google" && (
+              <GoogleOauthButton disabled={!selectedAppScopes.length} />
+            )}
+          </Stack>
         </Stack>
-        <Stack direction="row" justifyContent="flex-end">
-          {step === 0 && (
-            <Button
-              disabled={!selectedApp}
-              variant="contained"
-              onClick={() => setStep((step) => step + 1)}
-            >
-              Next
-            </Button>
-          )}
-          {step === 1 && selectedApp === "google" && (
-            <GoogleOauthButton disabled={!selectedAppScopes.length} />
-          )}
+      ) : (
+        <Stack>
+          <Typography variant="h6">
+            {constants.EXTENSION_NAME_CAPITALIZED}
+          </Typography>
+          <Typography variant="subtitle2" pb={1.5}>
+            To use {constants.EXTENSION_NAME_CAPITALIZED}, select your
+            applications by clicking on the extension icon in the browser
+            toolbar.
+          </Typography>
         </Stack>
-      </Stack>
+      )}
     </Paper>
   );
 }
@@ -136,7 +154,12 @@ const GoogleOauthButton = (props: ButtonProps) => {
     <Button
       variant="outlined"
       onClick={handleClick}
-      startIcon={<IconImage src={googleIcon} sx={{ width: 14, height: 14 }} />}
+      startIcon={
+        <IconImage
+          src={`chrome-extension://${extensionId}${googleIcon}`}
+          sx={{ width: 14, height: 14 }}
+        />
+      }
       {...props}
       sx={{ textTransform: "none", ...props.sx }}
     >

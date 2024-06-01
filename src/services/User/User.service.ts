@@ -41,6 +41,7 @@ export const userService = {
         grantedScopes: tokenRes.grantedScopes,
       };
     } catch (err: any) {
+      console.error(err);
       return { token: null, requiredScopesGranted: false };
     }
   },

@@ -1,4 +1,4 @@
-import { LinearProgress, styled } from "@mui/material";
+import { LinearProgress, Stack, styled } from "@mui/material";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Meeting } from "./Meeting";
 import { CalendarEvent, SavedCalendarEvent } from "@src/calendar.types";
@@ -13,6 +13,7 @@ import {
   getTodaysOccurrences,
   isRecurringToday,
   sortCalendarEvents,
+  stackEvents,
 } from "@src/utils/calendarUtils";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { useRootElement } from "@src/hooks/useRootElement";
@@ -31,29 +32,54 @@ export function CalendarTable({
 }) {
   const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
 
-  const filteredEvents = useMemo(
-    () => sortCalendarEvents(calendarEvents),
-    [calendarEvents]
-  );
+  const { events, allDayEvents } = useMemo(() => {
+    const sortedEvents = sortCalendarEvents(calendarEvents);
+
+    // stacks overlapping events
+    stackEvents(sortedEvents);
+
+    const allDayEvents = sortedEvents.filter((event) => {
+      return event.allDay;
+    });
+    const rest = sortedEvents.filter((event) => {
+      return !event.allDay;
+    });
+
+    return { events: rest, allDayEvents };
+  }, [calendarEvents]);
 
   return (
-    <Table ref={(el) => setTableEl(el)} id="calendar">
-      <DayColumn sx={{ width: 52 }}></DayColumn>
-      <DayColumn className="column">
-        {filteredEvents.map((event) => (
-          <Meeting key={event.id} event={event}></Meeting>
-        ))}
-        <CurrentTime tableEl={tableEl} />
-      </DayColumn>
-      {Array.from(Array(24)).map((line, index) => {
-        const top = (index + 1) * 60;
-        return (
-          <HorizontalLine style={{ top: `${top}px` }} data-hour={index + 1}>
-            <CellHour className="cell-time">{convertHours(index + 1)}</CellHour>
-          </HorizontalLine>
-        );
-      })}
-    </Table>
+    <Stack>
+      <Table
+        sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
+      >
+        <AllDayColumn sx={{ width: 52 }}></AllDayColumn>
+        <AllDayColumn>
+          {allDayEvents.map((event) => (
+            <Meeting key={event.id} event={event}></Meeting>
+          ))}
+        </AllDayColumn>
+      </Table>
+      <Table ref={(el) => setTableEl(el)} id="calendar">
+        <DayColumn sx={{ width: 52 }}></DayColumn>
+        <DayColumn className="column">
+          {events.map((event) => (
+            <Meeting key={event.id} event={event}></Meeting>
+          ))}
+          <CurrentTime tableEl={tableEl} />
+        </DayColumn>
+        {Array.from(Array(24)).map((line, index) => {
+          const top = (index + 1) * 60;
+          return (
+            <HorizontalLine style={{ top: `${top}px` }} data-hour={index + 1}>
+              <CellHour className="cell-time">
+                {convertHours(index + 1)}
+              </CellHour>
+            </HorizontalLine>
+          );
+        })}
+      </Table>
+    </Stack>
   );
 }
 
@@ -107,6 +133,14 @@ const Table = styled("div")`
   background-color: white;
   display: flex;
   margin: 0 auto;
+`;
+
+const AllDayColumn = styled(Stack)`
+  position: relative;
+  width: 280px;
+  min-height: 30px;
+  border-right: 1px solid rgb(218, 220, 224);
+  z-index: 10;
 `;
 
 const DayColumn = styled("div")`

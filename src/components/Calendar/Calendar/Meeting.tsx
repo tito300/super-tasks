@@ -31,11 +31,20 @@ import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";
 import dayjs from "dayjs";
 import { useMemo, useRef, useState } from "react";
 
-const MeetingStyled = styled(Stack)<{
+const MeetingStyled = styled(Stack, {
+  shouldForwardProp: (prop) =>
+    ![
+      "allDay",
+      "reservedCount",
+      "responseStatus",
+      "totalStackedEvents",
+    ].includes(prop.toString()),
+})<{
   reservedCount?: number;
   totalStackedEvents?: number;
+  allDay?: boolean;
   responseStatus?: CalendarEvent["attendees"][number]["responseStatus"];
-}>(({ theme, reservedCount, totalStackedEvents, responseStatus }) => {
+}>(({ theme, reservedCount, totalStackedEvents, responseStatus, allDay }) => {
   const stackOrder = reservedCount || 1;
   const totalStacked = totalStackedEvents || 1;
 
@@ -46,7 +55,7 @@ const MeetingStyled = styled(Stack)<{
   const needsAction = responseStatus === "needsAction";
 
   return {
-    position: "absolute",
+    position: allDay ? "relative" : "absolute",
     left: positions.left,
     right: positions.right,
     border: `1px solid ${
@@ -91,9 +100,9 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 export function Meeting({ event }: { event: CalendarEvent }) {
-  const startHour = getEventStartTime(event).hour();
-  const startMinute = getEventStartTime(event).minute();
-  const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
+  const startHour = getEventStartTime(event)?.hour();
+  const startMinute = getEventStartTime(event)?.minute();
+
   const {
     data: { blurText },
   } = useUserState();
@@ -110,13 +119,16 @@ export function Meeting({ event }: { event: CalendarEvent }) {
   const open = Boolean(anchorEl);
 
   const { top, height } = useMemo(() => {
-    const top = startHour * 60 + startMinute;
+    if (event.allDay) return { top: 0, height: 30 };
+    if (!startHour) return { top: 0, height: 30 };
+
+    const top = startHour * 60 + startMinute!;
 
     const endHour = dayjs(event.end.dateTime).hour() || 24;
     const endMinute = dayjs(event.end.dateTime).minute();
 
     const hours = (endHour - startHour) * 60;
-    const minutes = Math.abs(endMinute - startMinute);
+    const minutes = Math.abs(endMinute - startMinute!);
 
     const height = hours + minutes;
 
@@ -150,6 +162,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     <>
       <CustomWidthTooltip title={event.summary} placement="top">
         <MeetingStyled
+          allDay={event.allDay}
           reservedCount={event.reservationCount}
           totalStackedEvents={event.totalStackedEvents}
           responseStatus={responseStatus}
@@ -168,8 +181,10 @@ export function Meeting({ event }: { event: CalendarEvent }) {
               fontSize={12}
               sx={{ filter: blurText ? "blur(5px)" : "none" }}
             >
-              {getEventStartTime(event).format("H:mm")} -{" "}
-              {getEventEndTime(event)?.format("H:mma")}
+              {event.allDay
+                ? dayjs(event.start.date).format("ddd, MMM D")
+                : getEventStartTime(event)!.format("H:mm")}{" "}
+              - {getEventEndTime(event)?.format("H:mma")}
             </Typography>
           )}
         </MeetingStyled>

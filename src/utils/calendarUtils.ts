@@ -71,11 +71,10 @@ export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
     const aStart = getEventStartTime(a);
     const bStart = getEventStartTime(b);
 
-    return aStart.diff(bStart);
+    // return aStart.diff(bStart);
+    return aStart ? aStart.diff(bStart) : 0;
   });
 
-  console.log("sortedEvents", sortedEvents);
-  stackEvents(sortedEvents);
   return sortedEvents;
 }
 
@@ -89,12 +88,18 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
   calendarEvents.forEach(stackEvent);
 
   function stackEvent(event: SavedCalendarEvent) {
-    const startHour = getEventStartTime(event).hour();
-    const startMinute = getEventStartTime(event).minute();
+    const startHour = getEventStartTime(event)?.hour();
+    const startMinute = getEventStartTime(event)?.minute();
     const endHour = getEventEndTime(event)?.hour();
     const endMinute = getEventEndTime(event)?.minute();
 
-    const startMinuteIndex = startHour * 60 + startMinute;
+    if (!startHour) {
+      // event is all day
+      event.allDay = true;
+      return;
+    }
+
+    const startMinuteIndex = startHour * 60 + startMinute!;
     const endMinuteIndex = endHour ? endHour * 60 + (endMinute || 0) : 0;
 
     let order = 1;
@@ -126,7 +131,7 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
 export function filterFutureEvents(calendarEvents: SavedCalendarEvent[]) {
   return calendarEvents.filter((event) => {
     const start = getEventStartTime(event);
-    return start.isAfter(dayjs());
+    return start?.isAfter(dayjs());
   });
 }
 
@@ -150,7 +155,7 @@ export function getRRule(event: CalendarEvent) {
 
   // Set up the rule
   return rrulestr(event.recurrence[0], {
-    dtstart: startDate.toDate(),
+    dtstart: startDate?.toDate(),
     tzid: event.start.dateTime?.includes("Z")
       ? event.start.timeZone
       : undefined,
@@ -170,25 +175,22 @@ export function getTodaysOccurrences(event: CalendarEvent) {
 }
 
 export function getEventStartTime(event: CalendarEvent) {
-  const start = event.start?.dateTime || event.start?.date;
+  const start = event.start?.dateTime;
 
   // google calendar times are weird. Sometimes they are in utc
   // and sometimes they are in the event's timezone
-  if (start.includes("Z")) {
+  if (start?.includes("Z")) {
     return dayjs(start).tz(event.start.timeZone);
   } else if (start) {
     // const startTime = dayjs.tz(start, event.start.timeZone);
     return dayjs(start);
   }
 
-  const original =
-    event.originalStartTime?.dateTime || event.originalStartTime?.date;
-  // const originalStart = dayjs.tz(original, event.originalStartTime?.timeZone);
-  const originalStart = dayjs(original);
+  const original = event.originalStartTime?.dateTime;
 
   if (original?.includes("Z")) {
     return dayjs(original).tz(event.originalStartTime?.timeZone);
-  } else {
+  } else if (original) {
     return dayjs(original);
   }
 }

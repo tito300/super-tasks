@@ -66,6 +66,7 @@ export type SavedCalendarEvent = {
   // custom to axcess. used to indicate overlapping event order
   reservationCount?: number;
   totalStackedEvents?: number;
+  allDay?: boolean;
   creator: {
     id: string;
     email: string;
@@ -100,19 +101,23 @@ export type SavedCalendarEvent = {
   visibility: string;
   iCalUID: string;
   sequence: number;
-  attendees: 
-    {
-      id: string;
-      email: string;
-      displayName: string;
-      organizer?: boolean;
-      self?: boolean;
-      resource?: boolean;
-      optional?: boolean;
-      responseStatus: 'needsAction' | 'declined' | 'tentative' | 'accepted' | 'delegated';
-      comment: string;
-      additionalGuests: number;
-    }[];
+  attendees: {
+    id: string;
+    email: string;
+    displayName: string;
+    organizer?: boolean;
+    self?: boolean;
+    resource?: boolean;
+    optional?: boolean;
+    responseStatus:
+      | "needsAction"
+      | "declined"
+      | "tentative"
+      | "accepted"
+      | "delegated";
+    comment: string;
+    additionalGuests: number;
+  }[];
   attendeesOmitted: boolean;
   extendedProperties: {
     private: {
@@ -133,17 +138,16 @@ export type SavedCalendarEvent = {
         statusCode: string;
       };
     };
-    entryPoints: 
-      {
-        entryPointType: string;
-        uri: string;
-        label: string;
-        pin: string;
-        accessCode: string;
-        meetingCode: string;
-        passcode: string;
-        password: string;
-      }[];
+    entryPoints: {
+      entryPointType: string;
+      uri: string;
+      label: string;
+      pin: string;
+      accessCode: string;
+      meetingCode: string;
+      passcode: string;
+      password: string;
+    }[];
     conferenceSolution: {
       key: {
         type: string;
@@ -175,11 +179,10 @@ export type SavedCalendarEvent = {
   locked?: boolean;
   reminders: {
     useDefault: boolean;
-    overrides?: 
-      {
-        method: string;
-        minutes: number;
-      }[];
+    overrides?: {
+      method: string;
+      minutes: number;
+    }[];
   };
   source?: {
     url: string;
@@ -208,17 +211,16 @@ export type SavedCalendarEvent = {
     declineMessage: string;
     chatStatus: string;
   };
-  attachments?: 
-    {
-      fileUrl: string;
-      title: string;
-      mimeType: string;
-      iconLink: string;
-      fileId: string;
-    }[];
+  attachments?: {
+    fileUrl: string;
+    title: string;
+    mimeType: string;
+    iconLink: string;
+    fileId: string;
+  }[];
   eventType: "default" | "outOfOffice" | "focusTime" | "workingLocation";
 };
 
-export type NewCalendarEvent = Omit<SavedCalendarEvent, 'id'> & { id?: null };
+export type NewCalendarEvent = Omit<SavedCalendarEvent, "id"> & { id?: null };
 
-export type CalendarEvent = SavedCalendarEvent | NewCalendarEvent; 
+export type CalendarEvent = SavedCalendarEvent | NewCalendarEvent;

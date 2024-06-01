@@ -14,7 +14,7 @@ export function DockStation() {
 
   return (
     <DockStationContainer>
-      <OauthRequired>
+      <OauthRequired style={{ width: 385 }}>
         <Box sx={{ width: 385 }}>
           <TabsManager
             flexGrow={1}
