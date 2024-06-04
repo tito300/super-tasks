@@ -31,7 +31,7 @@ import { getEventEndTime, getEventStartTime } from "@src/utils/calendarUtils";
 import dayjs from "dayjs";
 import { useMemo, useRef, useState } from "react";
 
-const MeetingStyled = styled(Stack, {
+export const MeetingStyled = styled(Stack, {
   shouldForwardProp: (prop) =>
     ![
       "allDay",
@@ -127,10 +127,9 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     const endHour = dayjs(event.end.dateTime).hour() || 24;
     const endMinute = dayjs(event.end.dateTime).minute();
 
-    const hours = (endHour - startHour) * 60;
-    const minutes = Math.abs(endMinute - startMinute!);
+    const bottom = endHour * 60 + endMinute!;
 
-    const height = hours + minutes;
+    const height = bottom - top;
 
     return { top, height };
   }, [event.end.dateTime, startHour, startMinute]);

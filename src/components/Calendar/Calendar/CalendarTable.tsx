@@ -18,6 +18,7 @@ import {
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { useRootElement } from "@src/hooks/useRootElement";
 import { constants } from "@src/config/constants";
+import { MeetingSkeleton } from "./Meeting.skeleton";
 
 dayjs.extend(isToday);
 dayjs.extend(utc);
@@ -49,23 +50,49 @@ export function CalendarTable({
   }, [calendarEvents]);
 
   return (
-    <Stack>
+    <Stack position="relative">
+      {!!allDayEvents?.length && (
+        <Table
+          sx={{
+            borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+            position: "fixed",
+            width: "100%",
+            zIndex: 100,
+            paddingTop: 1,
+            paddingBottom: 0.5,
+            boxShadow: `0px 3px 5px -2px rgb(0 0 0 / 11%), 0px 3px 4px 0px rgb(0 0 0 / 0%), 0px 1px 8px 0px rgb(0 0 0 / 4%)`,
+          }}
+        >
+          <AllDayColumn sx={{ width: 52 }}></AllDayColumn>
+          <AllDayColumn>
+            {allDayEvents.map((event) => (
+              <Meeting key={event.id} event={event}></Meeting>
+            ))}
+          </AllDayColumn>
+        </Table>
+      )}
       <Table
-        sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
+        ref={(el) => setTableEl(el)}
+        id="calendar"
+        sx={{ paddingTop: !!allDayEvents?.length ? 7.5 : 0 }}
       >
-        <AllDayColumn sx={{ width: 52 }}></AllDayColumn>
-        <AllDayColumn>
-          {allDayEvents.map((event) => (
-            <Meeting key={event.id} event={event}></Meeting>
-          ))}
-        </AllDayColumn>
-      </Table>
-      <Table ref={(el) => setTableEl(el)} id="calendar">
         <DayColumn sx={{ width: 52 }}></DayColumn>
         <DayColumn className="column">
-          {events.map((event) => (
-            <Meeting key={event.id} event={event}></Meeting>
-          ))}
+          {isLoading ? (
+            <>
+              <MeetingSkeleton top={60 * 3} height={60} />
+              <MeetingSkeleton top={60 * 6} height={30} />
+              <MeetingSkeleton top={60 * 9} height={60} />
+              <MeetingSkeleton top={60 * 12} height={30} />
+              <MeetingSkeleton top={60 * 15} height={60} />
+              <MeetingSkeleton top={60 * 18} height={30} />
+              <MeetingSkeleton top={60 * 22} height={60} />
+            </>
+          ) : (
+            events.map((event) => (
+              <Meeting key={event.id} event={event}></Meeting>
+            ))
+          )}
           <CurrentTime tableEl={tableEl} />
         </DayColumn>
         {Array.from(Array(24)).map((line, index) => {
@@ -129,10 +156,10 @@ function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
 
 const Table = styled("div")`
   position: relative;
-  width: fit-content;
   background-color: white;
   display: flex;
-  margin: 0 auto;
+  padding: 0 16px;
+  width: 100%;
 `;
 
 const AllDayColumn = styled(Stack)`
