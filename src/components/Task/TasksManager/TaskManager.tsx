@@ -184,7 +184,12 @@ function CompletedTasks({ tasks }: { tasks: SavedTask[] }) {
         {completedOpen && <ArrowDropDown fontSize="small" />}
         <Typography sx={{ ml: 1 }}>Completed ({tasks?.length || 0})</Typography>
       </Stack>
-      <Collapse in={completedOpen} sx={{ opacity: 0.75 }}>
+      <Collapse
+        in={completedOpen}
+        unmountOnExit
+        mountOnEnter
+        sx={{ opacity: 0.75 }}
+      >
         {tasks.map((task) => (
           <Task
             listId={selectedTaskListId!}

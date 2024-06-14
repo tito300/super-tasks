@@ -15,9 +15,12 @@ import { AccordionSummaryStyled } from "../../pages/content/components/Accordion
 import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
+import { useLogRender } from "@src/hooks/useLogRender";
 
 export function TasksApp() {
   const scriptType = useScriptType();
+
+  useLogRender("TasksApp");
 
   useEnhancedTasks();
 

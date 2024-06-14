@@ -1,4 +1,4 @@
-import { TextField } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 import { TaskForm } from "../Task";
 import { KeyboardEvent, forwardRef, useRef } from "react";
@@ -30,12 +30,23 @@ export const TaskTitleField = forwardRef<
       textFieldRef.current?.blur();
     }
   }
-
   return (
     <Controller
       control={control}
       name="title"
       render={({ field }) => {
+        if (!focused)
+          return (
+            <Typography
+              sx={{ filter: blurText && !focused ? "blur(7px)" : "none" }}
+              onFocus={onFocus}
+              onClick={onFocus}
+              lineHeight={1.9}
+            >
+              {field.value}
+            </Typography>
+          );
+
         return (
           <TextField
             inputRef={textFieldRef}
@@ -52,7 +63,6 @@ export const TaskTitleField = forwardRef<
             sx={{
               pt: 0.3,
               ml: 1,
-              filter: blurText && !focused ? "blur(7px)" : "none",
               textDecoration: strikeThrough ? "line-through" : "auto",
             }}
             inputProps={{

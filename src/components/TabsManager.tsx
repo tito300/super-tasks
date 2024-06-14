@@ -15,6 +15,7 @@ import { useRootElement } from "@src/hooks/useRootElement";
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { useUserSettings } from "./Providers/UserSettingsProvider";
 import { useUserState } from "./Providers/UserStateProvider";
+import { useLogRender } from "@src/hooks/useLogRender";
 
 export function TabsManager({
   tabs,
@@ -33,11 +34,8 @@ export function TabsManager({
     updateData: updateUserState,
   } = useUserState();
   const scriptType = useScriptType();
-  const rootElement = useRootElement();
 
-  useEffect(() => {
-    console.log("mounted TabsManager");
-  }, []);
+  useLogRender("TabsManager");
 
   const handleChange = (event: React.SyntheticEvent, newValue: TabName) => {
     updateUserState({ currentTab: newValue });

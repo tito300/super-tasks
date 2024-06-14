@@ -3,13 +3,11 @@ import { useEffect } from "react";
 import { DockStation } from "./components/DockStation";
 import { constants } from "@src/config/constants";
 import { useTaskReminders } from "@src/hooks/useTaskReminders";
+import { useLogRender } from "@src/hooks/useLogRender";
 
 export function Content() {
   useTaskReminders();
-
-  useEffect(() => {
-    console.log("mounted Content");
-  }, []);
+  useLogRender("Content");
 
   useEffect(() => {
     const rootEl = document.getElementById(`${constants.EXTENSION_NAME}-root`);

@@ -1,9 +1,8 @@
 import { collapseClasses, styled } from "@mui/material";
-import MuiAccordion, {
-  AccordionProps,
-} from "@mui/material/Accordion";
+import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { constants } from "@src/config/constants";
+import { useLogRender } from "@src/hooks/useLogRender";
 import { useCallback } from "react";
 
 const Accordion = styled(MuiAccordion)(() => ({
@@ -24,6 +23,8 @@ export function DockStationAccordion({
     data: { accordionExpanded },
     updateData: updateUserState,
   } = useUserState();
+
+  useLogRender("DockStationAccordion");
 
   const handleExpansion = useCallback(
     (e: React.SyntheticEvent<Element, Event>, expanded: boolean) => {

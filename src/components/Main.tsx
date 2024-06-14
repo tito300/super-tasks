@@ -19,6 +19,7 @@ import { CalendarSettingsProvider } from "./Providers/CalendarSettingsProvider";
 import { CalendarsStateProvider } from "./Providers/CalendarStateProvider";
 import { TasksSettingsProvider } from "./Providers/TasksSettingsProvider";
 import { TasksStateProvider } from "./Providers/TasksStateProvider";
+import { useLogRender } from "@src/hooks/useLogRender";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,8 @@ export const Main = ({
   theme?: unknown;
   remount?: () => void;
 }) => {
+  useLogRender("Main");
+
   useEffect(() => {
     console.log("mounted");
   }, []);

@@ -47,19 +47,20 @@ export function TasksAccordionSummary() {
       <Stack direction="row" alignItems="center" ml="auto" gap={0.25}>
         <IconButton
           onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
           sx={{ opacity: hovered ? 1 : 0 }}
         >
           {blurText ? (
             <Visibility
               color="action"
               fontSize="small"
-              onClick={() => updateUserState({ blurText: false })}
+              onMouseDown={() => updateUserState({ blurText: false })}
             />
           ) : (
             <VisibilityOff
               color="action"
               fontSize="small"
-              onClick={() => updateUserState({ blurText: true })}
+              onMouseDown={() => updateUserState({ blurText: true })}
             />
           )}
         </IconButton>

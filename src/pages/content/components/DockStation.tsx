@@ -6,11 +6,10 @@ import { TabsManager } from "@src/components/TabsManager";
 import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 import { useEffect } from "react";
 import { Box } from "@mui/material";
+import { useLogRender } from "@src/hooks/useLogRender";
 
 export function DockStation() {
-  useEffect(() => {
-    console.log("mounted DockStation");
-  }, []);
+  useLogRender("DockStation");
 
   return (
     <DockStationContainer>

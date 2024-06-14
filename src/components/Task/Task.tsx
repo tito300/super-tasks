@@ -35,6 +35,7 @@ import { DescriptionTextField } from "./components/DescriptionTextField";
 import { TaskReminder } from "./components/TaskReminder";
 import { Pin, PushPin } from "@mui/icons-material";
 import { useTasksState } from "../Providers/TasksStateProvider";
+import { useLogRender } from "@src/hooks/useLogRender";
 
 export type TaskType = SavedTask | NewTask;
 
@@ -90,6 +91,8 @@ export function Task({
     useSortable({ id: data.id || data.title || data.notes || "temp" });
   const { data: tasks } = useTasks({ enabled: false });
   const [_, updateEnhancedTasks] = useEnhancedTasks();
+
+  useLogRender("Task");
 
   const addMutation = useAddTask(listId);
   const updateMutation = useUpdateTask(listId);
@@ -207,7 +210,7 @@ export function Task({
                   />
                 </Stack>
               )}
-              <Collapse in={expanded}>
+              <Collapse unmountOnExit in={expanded}>
                 <Stack alignItems="normal">
                   <DescriptionTextField
                     onblur={() =>

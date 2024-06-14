@@ -3,7 +3,6 @@ import { Main } from "@src/components/Main";
 import { Content } from "./Content";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import { createTheme } from "@mui/material";
 import { constants } from "@src/config/constants";
 
 hook();
