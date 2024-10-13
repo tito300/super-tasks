@@ -119,7 +119,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
   const open = Boolean(anchorEl);
 
   const { top, height } = useMemo(() => {
-    if (event.allDay) return { top: 0, height: 30 };
+    if (event.allDay) return { top: 0, height: 20 };
     if (!startHour) return { top: 0, height: 30 };
 
     const top = startHour * 60 + startMinute!;
@@ -172,6 +172,8 @@ export function Meeting({ event }: { event: CalendarEvent }) {
             variant="body2"
             sx={{ filter: blurText ? "blur(5px)" : "none" }}
             whiteSpace="nowrap"
+            lineHeight={event.allDay ? 0.8 : undefined}
+            fontSize={event.allDay ? 12 : undefined}
           >
             {event.summary}
           </Typography>

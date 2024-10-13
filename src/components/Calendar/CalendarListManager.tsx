@@ -21,7 +21,11 @@ export function CalendarListManager() {
   }, [calendarList, selectedCalendarId]);
 
   return (
-    <Stack>
+    <Stack
+      sx={{
+        position: "relative",
+      }}
+    >
       <CalendarControls pl={1} isLoading={isLoading} />
       <CalendarManager isLoading={isLoading} />
     </Stack>

@@ -48,7 +48,7 @@ export function TasksAccordionSummary() {
         <IconButton
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
-          sx={{ opacity: hovered ? 1 : 0 }}
+          sx={{ opacity: hovered || blurText ? 1 : 0 }}
         >
           {blurText ? (
             <Visibility

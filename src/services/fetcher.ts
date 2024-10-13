@@ -1,6 +1,14 @@
 import { storageService } from "@src/storage/storage.service";
+import axios from "axios";
 
-export const commonHeaders: Record<string, any> = {};
+const commonHeaders: Record<string, any> = {};
+
+export const setupToken = (token?: string | null) => {
+  commonHeaders["Content-Oauth"] = token;
+  axios.defaults.headers.common["Content-Oauth"] = token;
+};
+
+export const getCommonHeaders = () => commonHeaders;
 
 /**
  * Wrapper around fetch that includes default headers

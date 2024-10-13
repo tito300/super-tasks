@@ -58,10 +58,6 @@ function TasksAccordion({
     data: { selectedTaskListId },
   } = useTasksState();
 
-  useEffect(() => {
-    console.log("mounted TasksApp");
-  }, []);
-
   const handleExpansion = useCallback(
     (expanded: boolean) => {
       if (expanded) {

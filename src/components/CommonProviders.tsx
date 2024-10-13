@@ -20,26 +20,25 @@ import { CalendarsStateProvider } from "./Providers/CalendarStateProvider";
 import { TasksSettingsProvider } from "./Providers/TasksSettingsProvider";
 import { TasksStateProvider } from "./Providers/TasksStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
+import { AppRenderer } from "./AppRenderer";
 
 const queryClient = new QueryClient();
 
 /**
  * use Main in every script (content, popup)
  */
-export const Main = ({
+export const CommonProviders = ({
   children,
   scriptType,
   theme,
-}: PropsWithChildren & {
+}: {
   scriptType: ScriptType;
   theme?: unknown;
   remount?: () => void;
+  children: (ready: boolean) => React.ReactNode;
 }) => {
   useLogRender("Main");
 
-  useEffect(() => {
-    console.log("mounted");
-  }, []);
   return (
     <ScriptTypeProvider scriptType={scriptType}>
       <MessageEngineProvider scriptType={scriptType}>
@@ -54,7 +53,7 @@ export const Main = ({
                         <CalendarSettingsProvider>
                           <CalendarsStateProvider>
                             <QueryClientProvider client={queryClient}>
-                              {children}
+                              <AppRenderer>{children}</AppRenderer>
                             </QueryClientProvider>
                           </CalendarsStateProvider>
                         </CalendarSettingsProvider>

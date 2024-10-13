@@ -18,7 +18,6 @@ import { createMockCalendarEvent } from "./calendar.mock";
 import { storageService } from "@src/storage/storage.service";
 
 export type ServiceMethodName = keyof typeof calendarServices;
-const messageEngine = getMessageEngine("Background");
 
 /**
  * only use services from within api hooks

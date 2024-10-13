@@ -14,11 +14,14 @@ import { TasksReminderBadge } from "./TasksReminderBadge";
 import { focusAddTaskInput } from "./DockStationAccordion";
 import { CalendarIcon } from "@mui/x-date-pickers";
 import { calendarTheme } from "@src/theme/google.theme";
+import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
+import googleTasksIcon from "@assets/img/google-tasks-icon.png";
 import { cyan } from "@mui/material/colors";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { CalendarIconBadge } from "./CalendarIconBadge";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
+import { runtime } from "webextension-polyfill";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -32,13 +35,8 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     data: { buttonExpanded },
     updateData: updateUserState,
   } = useUserState();
-  const messageEngine = useMessageEngine();
 
   const [removed, setRemoved] = useState(false);
-
-  useEffect(() => {
-    console.log("mounted DockStationContainer");
-  }, []);
 
   if (removed) {
     return null;
@@ -111,7 +109,12 @@ export function DockStationContainer({ children }: PropsWithChildren) {
             id={`${constants.EXTENSION_NAME}-calendar-btn`}
           >
             <CalendarIconBadge>
-              <CalendarIcon />
+              <img
+                src={googleCalendarIcon}
+                alt="calendar"
+                width={28}
+                height={28}
+              />
             </CalendarIconBadge>
           </ExtensionCalendarButton>
           <ExtensionTaskButton
@@ -139,7 +142,12 @@ export function DockStationContainer({ children }: PropsWithChildren) {
                   </IconButton>
                 }
               >
-                <MenuOpen fontSize="large" />
+                <img
+                  src={runtime.getURL("google-tasks-icon.png")}
+                  alt="tasks"
+                  width={35}
+                  height={35}
+                />
               </BadgeStyled>
             </TasksReminderBadge>
           </ExtensionTaskButton>
@@ -177,11 +185,11 @@ const ExtensionTaskButton = styled(IconButton)(({ theme }) => {
     position: "absolute",
     bottom: 0,
     boxShadow: theme.shadows[3],
-    backgroundColor: cyan[400],
+    backgroundColor: "#fff",
     fontSize: 0,
     cursor: "grab",
     [":hover"]: {
-      backgroundColor: cyan[600],
+      backgroundColor: "#fff",
     },
   };
 });
@@ -191,15 +199,15 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
     position: "absolute",
     bottom: 0,
     boxShadow: theme.shadows[3],
-    padding: 14,
-    marginBottom: 6,
-    backgroundColor: calendarTheme.palette.primary.main,
+    marginBottom: 2,
+    backgroundColor: "#fff",
     color: "white",
     transform: "translateY(6%)",
     fontSize: 0,
+    padding: "12px",
     cursor: "grab",
-    [":hover"]: {
-      backgroundColor: calendarTheme.palette.primary.dark,
+    ["&:hover"]: {
+      boxShadow: theme.shadows[6],
     },
   };
 });

@@ -1,11 +1,9 @@
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
-import { setupToken } from "@src/oauth/setupToken";
 import { initializeServices } from "@src/services";
 import { Alarms } from "webextension-polyfill";
 
 const htmlFile = "oauth.html";
 
-// setupToken();
 const messageEngine = getMessageEngine("Background");
 const services = initializeServices("Background");
 

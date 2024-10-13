@@ -8,17 +8,18 @@ import {
 import { StorageData, storageService } from "@src/storage/storage.service";
 import { capitalize } from "@mui/material";
 
-type SyncedState<T> = {
-  data: T;
-  updateData: (newData: Partial<T>) => void;
-};
+// type SyncedState<T> = {
+//   data: T;
+//   updateData: (newData: Partial<T>) => void;
+// };
 
 export function useSyncedState<T extends {}, K extends any = {}>(
   resourceName: keyof StorageData,
   resourceSettings: K,
   defaultValues: T
-): SyncedState<T> {
+) {
   const [data, setData] = useState<T>(() => ({ ...defaultValues }));
+  const [dataSyncing, setDataSyncing] = useState(true);
 
   useEffect(() => {
     storageService.get(resourceName).then((storedData) => {
@@ -27,6 +28,7 @@ export function useSyncedState<T extends {}, K extends any = {}>(
       }
       startTransition(() => {
         setData((prevData) => ({ ...prevData, ...storedData }));
+        setDataSyncing(false);
       });
     });
     // defaultValues is not a dependency because it should not change
@@ -81,5 +83,8 @@ export function useSyncedState<T extends {}, K extends any = {}>(
     [resourceName, resourceSettings]
   );
 
-  return useMemo(() => ({ data, updateData }), [data, updateData]);
+  return useMemo(
+    () => ({ data, updateData, dataSyncing }),
+    [data, updateData, dataSyncing]
+  );
 }

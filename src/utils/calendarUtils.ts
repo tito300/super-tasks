@@ -31,6 +31,18 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   }, {} as Record<string, SavedCalendarEvent>);
 
   calendarEvents.forEach((event) => {
+    const startTime = getEventStartTime(event);
+    if (!startTime && event.start?.date) {
+      // event is all day
+      event.allDay = true;
+
+      if (dayjs(event.start.date).isToday()) {
+        flatEvents.push(event);
+      } else {
+        return;
+      }
+    }
+
     if (event.eventType !== "default") return;
     if (event.status === "cancelled") return;
     if (event.recurrence?.length) {
@@ -93,11 +105,7 @@ export function stackEvents(calendarEvents: SavedCalendarEvent[]) {
     const endHour = getEventEndTime(event)?.hour();
     const endMinute = getEventEndTime(event)?.minute();
 
-    if (!startHour) {
-      // event is all day
-      event.allDay = true;
-      return;
-    }
+    if (!startHour) return;
 
     const startMinuteIndex = startHour * 60 + startMinute!;
     const endMinuteIndex = endHour ? endHour * 60 + (endMinute || 0) : 0;

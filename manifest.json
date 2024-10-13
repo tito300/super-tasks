@@ -27,7 +27,15 @@
   "icons": {
     "128": "icon-128.png"
   },
-  "permissions": ["activeTab", "tabs", "storage", "identity", "alarms", "notifications", "system.display"],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "identity",
+    "alarms",
+    "notifications",
+    "system.display"
+  ],
   "chrome_url_overrides": { "newtab": "src/pages/newtab/index.html" },
   "content_scripts": [
     {
@@ -39,8 +47,13 @@
   "devtools_page": "src/pages/devtools/index.html",
   "web_accessible_resources": [
     {
-      "resources": ["contentStyle.css", "icon-128.png", "icon-32.png"],
-      "matches": []
+      "resources": [
+        "contentStyle.css",
+        "icon-128.png",
+        "icon-32.png",
+        "google-tasks-icon.png"
+      ],
+      "matches": ["<all_urls>"]
     }
   ]
 }

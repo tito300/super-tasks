@@ -19,6 +19,16 @@ export const userSettingsDefaults = {
     y: 0,
   },
   syncPosition: false,
+  syncTokens: true,
+  tokens: {
+    google: {
+      token: null,
+      scopesGranted: {
+        tasks: false,
+        calendar: false,
+      },
+    },
+  },
 };
 
 export const tasksSettingsDefaults = {

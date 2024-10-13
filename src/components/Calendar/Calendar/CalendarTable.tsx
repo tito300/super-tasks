@@ -1,20 +1,12 @@
-import { LinearProgress, Stack, styled } from "@mui/material";
+import { Stack, styled } from "@mui/material";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Meeting } from "./Meeting";
-import { CalendarEvent, SavedCalendarEvent } from "@src/calendar.types";
-import { RRule, rrulestr, datetime } from "rrule";
+import { SavedCalendarEvent } from "@src/calendar.types";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import isToday from "dayjs/plugin/isToday";
-import { truncate } from "fs/promises";
-import {
-  flattenTodaysEvents,
-  getTodaysOccurrences,
-  isRecurringToday,
-  sortCalendarEvents,
-  stackEvents,
-} from "@src/utils/calendarUtils";
+import { sortCalendarEvents, stackEvents } from "@src/utils/calendarUtils";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { useRootElement } from "@src/hooks/useRootElement";
 import { constants } from "@src/config/constants";
@@ -55,7 +47,9 @@ export function CalendarTable({
         <Table
           sx={{
             borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-            position: "fixed",
+            position: "sticky",
+            top: 30,
+            left: 0,
             width: "100%",
             zIndex: 100,
             paddingTop: 1,
@@ -63,19 +57,15 @@ export function CalendarTable({
             boxShadow: `0px 3px 5px -2px rgb(0 0 0 / 11%), 0px 3px 4px 0px rgb(0 0 0 / 0%), 0px 1px 8px 0px rgb(0 0 0 / 4%)`,
           }}
         >
-          <AllDayColumn sx={{ width: 52 }}></AllDayColumn>
-          <AllDayColumn>
+          <AllDayColumn allDay sx={{ width: 52 }}></AllDayColumn>
+          <AllDayColumn allDay>
             {allDayEvents.map((event) => (
               <Meeting key={event.id} event={event}></Meeting>
             ))}
           </AllDayColumn>
         </Table>
       )}
-      <Table
-        ref={(el) => setTableEl(el)}
-        id="calendar"
-        sx={{ paddingTop: !!allDayEvents?.length ? 7.5 : 0 }}
-      >
+      <Table ref={(el) => setTableEl(el)} id="calendar">
         <DayColumn sx={{ width: 52 }}></DayColumn>
         <DayColumn className="column">
           {isLoading ? (
@@ -96,12 +86,10 @@ export function CalendarTable({
           <CurrentTime tableEl={tableEl} />
         </DayColumn>
         {Array.from(Array(24)).map((line, index) => {
-          const top = (index + 1) * 60;
+          const top = index * 60;
           return (
             <HorizontalLine style={{ top: `${top}px` }} data-hour={index + 1}>
-              <CellHour className="cell-time">
-                {convertHours(index + 1)}
-              </CellHour>
+              <CellHour className="cell-time">{convertHours(index)}</CellHour>
             </HorizontalLine>
           );
         })}
@@ -162,13 +150,13 @@ const Table = styled("div")`
   width: 100%;
 `;
 
-const AllDayColumn = styled(Stack)`
-  position: relative;
-  width: 280px;
-  min-height: 30px;
-  border-right: 1px solid rgb(218, 220, 224);
-  z-index: 10;
-`;
+const AllDayColumn = styled(Stack)<{ allDay?: boolean }>(({ allDay }) => ({
+  position: "relative",
+  width: "280px",
+  minHeight: allDay ? undefined : "30px",
+  borderRight: "1px solid rgb(218, 220, 224)",
+  zIndex: 10,
+}));
 
 const DayColumn = styled("div")`
   position: relative;
@@ -213,5 +201,5 @@ const CurrentTimeStyled = styled("div")`
 `;
 
 function convertHours(hours: number) {
-  return hours > 12 ? `${hours - 12} PM` : `${hours} AM`;
+  return !hours ? "" : hours > 12 ? `${hours - 12} PM` : `${hours} AM`;
 }

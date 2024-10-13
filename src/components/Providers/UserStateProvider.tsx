@@ -20,6 +20,7 @@ export type UserState = {
 export type UserStateContextType = {
   data: UserState;
   updateData: (newPartialState: Partial<UserState>) => void;
+  dataSyncing: boolean;
 };
 
 const UserStateContext = createContext<UserStateContextType>(null!);
@@ -31,15 +32,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     currentTab: userSettings.currentTab,
     blurText: userSettings.blurText,
     darkMode: userSettings.darkMode,
-    tokens: {
-      google: {
-        token: null,
-        scopesGranted: {
-          tasks: false,
-          calendar: false,
-        },
-      },
-    },
+    tokens: userSettings.tokens,
   });
 
   return (

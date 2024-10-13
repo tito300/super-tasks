@@ -16,10 +16,6 @@ export function DraggablePopper({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    console.log("mounted DraggablePopper");
-  }, []);
-
-  useEffect(() => {
     if (draggableRef.current) {
       setAnchorEl(draggableRef.current);
     }

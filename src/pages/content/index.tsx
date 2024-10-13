@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { Main } from "@src/components/Main";
+import { CommonProviders } from "@src/components/CommonProviders";
 import { Content } from "./Content";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
@@ -68,9 +68,9 @@ function hook() {
 
   root.render(
     <CacheProvider value={stylesCache}>
-      <Main theme={theme} scriptType="Content">
-        <Content />
-      </Main>
+      <CommonProviders theme={theme} scriptType="Content">
+        {(ready) => (ready ? <Content /> : null)}
+      </CommonProviders>
     </CacheProvider>
   );
 }

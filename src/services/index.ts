@@ -1,14 +1,8 @@
-import {
-  ScriptType,
-  ServiceCallMessage,
-} from "@src/messageEngine/types/taskMessages";
+import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { TaskServices } from "./Task/Task.service";
 import { proxyService } from "./proxyService";
 import { userService } from "./User/User.service";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
-import { setupToken } from "@src/oauth/setupToken";
-import { requiredScopes } from "@src/config/googleScopes";
-import { TasksState } from "@src/components/Providers/TasksStateProvider";
 import { TaskType } from "@src/components/Task/Task";
 import { calendarServices } from "./Calendar/Calendar.service";
 
@@ -19,7 +13,7 @@ const services = {
   calendar: calendarServices,
 };
 
-const messageEngine = getMessageEngine("Background");
+let messageEngine: ReturnType<typeof getMessageEngine>;
 
 export type ServiceName = keyof typeof services;
 
@@ -32,6 +26,8 @@ export const getService = (serviceName: ServiceName) => {
 };
 
 export const initializeServices = (scriptType: ScriptType) => {
+  messageEngine = getMessageEngine(scriptType);
+
   if (!initiated) {
     if (scriptType === "Background") {
       messageEngine.onMessage("ServiceCall", async (message) => {
@@ -71,7 +67,8 @@ async function handle401Errors(error: unknown, retry: () => Promise<any>) {
   if (error && typeof error === "object" && "status" in error) {
     if (error.status !== 401) return;
 
-    const res = await services.user.getAuthToken();
+    console.log("Handling 401 error");
+    const res = await services.user.getGoogleAuthToken();
 
     if (res.token) {
       return retry();

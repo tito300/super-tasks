@@ -44,7 +44,6 @@ export function TaskManager({ listId }: { listId: string }) {
     isFetching,
     isLoading,
     isError,
-    isRefetching,
   } = useFilteredTasks();
 
   const moveMutation = useMoveTask(listId);
@@ -85,7 +84,6 @@ export function TaskManager({ listId }: { listId: string }) {
           color: grey[500],
         }}
       />
-      <Box sx={{ height: 8, width: "100%" }} />
       <TasksFilters />
       <AddTask />
       {isFetching && !filteredTasks.length && (

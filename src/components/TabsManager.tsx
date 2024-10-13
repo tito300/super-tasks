@@ -5,6 +5,7 @@ import {
   IconButtonProps,
   Stack,
   StackProps,
+  alpha,
   styled,
 } from "@mui/material";
 import { TabName } from "@src/config/settingsDefaults";
@@ -16,6 +17,8 @@ import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { useUserSettings } from "./Providers/UserSettingsProvider";
 import { useUserState } from "./Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
+import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
+import { runtime } from "webextension-polyfill";
 
 export function TabsManager({
   tabs,
@@ -93,8 +96,11 @@ function NavigationTabs({
 }) {
   const scriptType = useScriptType();
   const {
-    data: { accordionExpanded },
+    data: { accordionExpanded, tokens },
   } = useUserState();
+
+  const tasksAvailable = tokens?.google?.scopesGranted?.tasks;
+  const calendarAvailable = tokens?.google?.scopesGranted?.calendar;
 
   return (
     <>
@@ -103,8 +109,8 @@ function NavigationTabs({
         id="summary-tabs-container"
         accordionOpen={accordionExpanded}
       >
-        <TabOption tabName="tasks" />
-        <TabOption tabName="calendar" />
+        {tasksAvailable && <TabOption tabName="tasks" />}
+        {calendarAvailable && <TabOption tabName="calendar" />}
       </TabIconsContainer>
       {scriptType === "Popup" && (
         <Box
@@ -128,9 +134,14 @@ function TabOption({ tabName }: { tabName: TabName }) {
   const selected = currentTab === tabName;
   const tabIcon =
     tabName === "tasks" ? (
-      <Checklist fontSize="small" />
+      <img
+        src={chrome.runtime.getURL("google-tasks-icon.png")}
+        alt="tasks"
+        width={20}
+        height={20}
+      />
     ) : (
-      <CalendarMonth fontSize="small" />
+      <img src={googleCalendarIcon} alt="calendar" width={18} height={18} />
     );
 
   return (
@@ -176,7 +187,10 @@ const TabIconStyled = styled(IconButton)<{
   scriptType: ScriptType;
 }>(({ theme, selected, scriptType }) => ({
   // @ts-ignore
-  backgroundColor: theme.palette.primary.light,
+  backgroundColor: theme.palette.background.paper,
+  // @ts-ignore
+  border: `1px solid ${theme.palette.divider}`,
+  borderBottom: "none",
   borderTopRightRadius: scriptType === "Content" ? 4 : 2,
   borderTopLeftRadius: scriptType === "Content" ? 4 : 2,
   borderBottomLeftRadius: 0,
@@ -184,20 +198,13 @@ const TabIconStyled = styled(IconButton)<{
   // @ts-ignore
   padding: scriptType === "Content" ? "3px 14px" : "5px 14px",
   ":hover": {
-    backgroundColor: theme.palette.primary.main,
+    backgroundColor: "#f1f1f1",
   },
 
   ...(selected
     ? {
-        backgroundColor: theme.palette.primary.main,
-        borderRight:
-          scriptType === "Content"
-            ? `1px solid ${theme.palette.primary.contrastText}`
-            : "none",
-        borderLeft:
-          scriptType === "Content"
-            ? `1px solid ${theme.palette.primary.contrastText}`
-            : "none",
+        backgroundColor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.primary.main}`,
         padding: "5px 14px",
         boxShadow:
           scriptType === "Content" ? "none" : "0px 0px 4px 2px #0000004a",
@@ -205,8 +212,8 @@ const TabIconStyled = styled(IconButton)<{
     : {
         marginLeft: "-4px",
         zIndex: -1,
-        ":hover": {
-          backgroundColor: theme.palette.primary.dark,
-        },
+        // ":hover": {
+        //   backgroundColor: #f1f1f1,
+        // },
       }),
 }));

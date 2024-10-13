@@ -5,8 +5,8 @@ import {
   tasksSettingsDefaults,
   userSettingsDefaults,
 } from "@src/config/settingsDefaults";
-import { setupToken } from "@src/oauth/setupToken";
 import { storageService } from "@src/storage/storage.service";
+import { setupToken } from "../fetcher";
 
 export type UserServiceMethodName = keyof typeof userService;
 export const userService = {
@@ -23,10 +23,19 @@ export const userService = {
     });
   },
 
-  async getAuthToken(options?: { interactive?: boolean }) {
+  setGoogleTokenHeader(token?: string) {
+    setupToken(token);
+  },
+
+  async getGoogleAuthToken(options?: {
+    interactive?: boolean;
+    scopes?: string[];
+  }) {
     try {
       const tokenRes = await chrome.identity.getAuthToken({
         interactive: !!options?.interactive,
+        scopes: options?.scopes || [],
+        // scopes: ["https://www.googleapis.com/auth/tasks"],
       });
       const requiredScopesGranted = tokenRes?.token
         ? requiredScopes.every((scope) =>
@@ -34,7 +43,7 @@ export const userService = {
           )
         : false;
 
-      setupToken(tokenRes.token);
+      userService.setGoogleTokenHeader(tokenRes.token);
       return {
         token: tokenRes.token,
         requiredScopesGranted,

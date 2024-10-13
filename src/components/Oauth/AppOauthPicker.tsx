@@ -105,7 +105,10 @@ export default function AppOauthPicker() {
               </Button>
             )}
             {step === 1 && selectedApp === "google" && (
-              <GoogleOauthButton disabled={!selectedAppScopes.length} />
+              <GoogleOauthButton
+                disabled={!selectedAppScopes.length}
+                selectedScopes={selectedAppScopes}
+              />
             )}
           </Stack>
         </Stack>
@@ -125,30 +128,35 @@ export default function AppOauthPicker() {
   );
 }
 
-const GoogleOauthButton = (props: ButtonProps) => {
+const GoogleOauthButton = (
+  props: ButtonProps & { selectedScopes: string[] }
+) => {
   const { user: userServices } = useServicesContext();
   const {
     data: { tokens },
     updateData,
   } = useUserState();
+  const { selectedScopes, ...rest } = props;
 
   const handleClick = async () => {
-    userServices.getAuthToken({ interactive: true }).then((tokenRes) => {
-      updateData({
-        tokens: {
-          ...tokens,
-          google: {
-            token: tokenRes.token,
-            scopesGranted: {
-              calendar: tokenRes?.grantedScopes?.includes(
-                scopes.google.calendar
-              ),
-              tasks: tokenRes?.grantedScopes?.includes(scopes.google.tasks),
+    userServices
+      .getGoogleAuthToken({ interactive: true, scopes: selectedScopes })
+      .then((tokenRes) => {
+        updateData({
+          tokens: {
+            ...tokens,
+            google: {
+              token: tokenRes.token,
+              scopesGranted: {
+                calendar: tokenRes?.grantedScopes?.includes(
+                  scopes.google.calendar
+                ),
+                tasks: tokenRes?.grantedScopes?.includes(scopes.google.tasks),
+              },
             },
           },
-        },
+        });
       });
-    });
   };
   return (
     <Button
@@ -160,8 +168,8 @@ const GoogleOauthButton = (props: ButtonProps) => {
           sx={{ width: 14, height: 14 }}
         />
       }
-      {...props}
-      sx={{ textTransform: "none", ...props.sx }}
+      {...rest}
+      sx={{ textTransform: "none", ...rest.sx }}
     >
       Sign in with Google
     </Button>
