@@ -31,7 +31,12 @@ export function CalendarApp() {
         </DockStationAccordionDetails>
       </DockStationAccordion>
     ) : (
-      <CalendarListManager />
+      <Stack
+        id={`${constants.EXTENSION_NAME}-scrollable-container`}
+        sx={{ height: "450px", overflowY: "auto", overflowX: "clip" }}
+      >
+        <CalendarListManager />
+      </Stack>
     )
     //   </CalendarsStateProvider>
     // </CalendarSettingsProvider>

@@ -11,6 +11,7 @@ import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { useRootElement } from "@src/hooks/useRootElement";
 import { constants } from "@src/config/constants";
 import { MeetingSkeleton } from "./Meeting.skeleton";
+import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 
 dayjs.extend(isToday);
 dayjs.extend(utc);
@@ -106,6 +107,7 @@ function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
     data: { accordionExpanded, buttonExpanded, currentTab },
   } = useUserState();
   const rootEl = useRootElement();
+  const scriptType = useScriptType();
 
   useEffect(() => {
     setInterval(() => {
@@ -118,7 +120,8 @@ function CurrentTime({ tableEl }: { tableEl: HTMLDivElement | null }) {
   const top = hours * 60 + minutes;
 
   useEffect(() => {
-    if (!accordionExpanded || !buttonExpanded || currentTab !== "calendar")
+    if (currentTab !== "calendar") return;
+    if (scriptType === "Content" && (!accordionExpanded || !buttonExpanded))
       return;
 
     const scrollableEl = rootEl.querySelector<HTMLDivElement>(

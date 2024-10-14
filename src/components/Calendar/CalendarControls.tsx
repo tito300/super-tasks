@@ -33,7 +33,7 @@ export function CalendarControls(props: StackProps & { isLoading?: boolean }) {
       {...props}
       sx={{
         position: "sticky",
-        top: scriptType === "Popup" ? "30px" : 0,
+        top: 0,
         left: 0,
         right: 0,
         zIndex: 400,
