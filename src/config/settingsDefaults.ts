@@ -1,4 +1,4 @@
-export type TabName = "tasks" | "calendar";
+export type TabName = "tasks" | "calendar" | "add";
 
 // values in here should only be treated as defaults
 export const userSettingsDefaults = {

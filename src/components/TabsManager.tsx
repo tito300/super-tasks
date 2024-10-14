@@ -5,20 +5,16 @@ import {
   IconButtonProps,
   Stack,
   StackProps,
-  alpha,
   styled,
 } from "@mui/material";
 import { TabName } from "@src/config/settingsDefaults";
-import React, { useEffect } from "react";
-import { CalendarMonth, Checklist } from "@mui/icons-material";
+import React from "react";
 import { useScriptType } from "./Providers/ScriptTypeProvider";
-import { useRootElement } from "@src/hooks/useRootElement";
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
-import { useUserSettings } from "./Providers/UserSettingsProvider";
 import { useUserState } from "./Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
 import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
-import { runtime } from "webextension-polyfill";
+import AddIcon from "@mui/icons-material/Add";
 
 export function TabsManager({
   tabs,
@@ -34,15 +30,10 @@ export function TabsManager({
 } & StackProps) {
   const {
     data: { currentTab },
-    updateData: updateUserState,
   } = useUserState();
   const scriptType = useScriptType();
 
   useLogRender("TabsManager");
-
-  const handleChange = (event: React.SyntheticEvent, newValue: TabName) => {
-    updateUserState({ currentTab: newValue });
-  };
 
   return (
     <Stack
@@ -63,37 +54,42 @@ export function TabsManager({
       }}
     >
       <TabContext value={currentTab}>
-        {!hideTabs && (
-          <NavigationTabs handleChange={handleChange} currentTab={currentTab} />
-        )}
+        {!hideTabs && <NavigationTabs />}
         <Stack
           flexGrow={1}
           sx={{
-            display: currentTab === "tasks" ? "flex" : "none",
+            display:
+              currentTab === "tasks" || !tabs[currentTab] ? "flex" : "none",
           }}
         >
           {tabs["tasks"]}
         </Stack>
-        <Stack
-          flexGrow={1}
-          sx={{
-            display: currentTab === "calendar" ? "block" : "none",
-          }}
-        >
-          {tabs["calendar"]}
-        </Stack>
+        {tabs["calendar"] && (
+          <Stack
+            flexGrow={1}
+            sx={{
+              display: currentTab === "calendar" ? "block" : "none",
+            }}
+          >
+            {tabs["calendar"]}
+          </Stack>
+        )}
+        {tabs["add"] && (
+          <Stack
+            flexGrow={1}
+            sx={{
+              display: currentTab === "add" ? "block" : "none",
+            }}
+          >
+            {tabs["add"]}
+          </Stack>
+        )}
       </TabContext>
     </Stack>
   );
 }
 
-function NavigationTabs({
-  handleChange,
-  currentTab,
-}: {
-  handleChange: (e: any, tab: TabName) => void;
-  currentTab: TabName;
-}) {
+function NavigationTabs() {
   const scriptType = useScriptType();
   const {
     data: { accordionExpanded, tokens },
@@ -101,6 +97,8 @@ function NavigationTabs({
 
   const tasksAvailable = tokens?.google?.scopesGranted?.tasks;
   const calendarAvailable = tokens?.google?.scopesGranted?.calendar;
+
+  const canAddMore = !tasksAvailable || !calendarAvailable;
 
   return (
     <>
@@ -111,6 +109,7 @@ function NavigationTabs({
       >
         {tasksAvailable && <TabOption tabName="tasks" />}
         {calendarAvailable && <TabOption tabName="calendar" />}
+        {canAddMore && scriptType === "Popup" && <TabOption tabName="add" />}
       </TabIconsContainer>
       {scriptType === "Popup" && (
         <Box
@@ -140,8 +139,10 @@ function TabOption({ tabName }: { tabName: TabName }) {
         width={20}
         height={20}
       />
-    ) : (
+    ) : tabName === "calendar" ? (
       <img src={googleCalendarIcon} alt="calendar" width={18} height={18} />
+    ) : (
+      <AddIcon fontSize="small" />
     );
 
   return (

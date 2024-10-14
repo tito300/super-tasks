@@ -7,6 +7,7 @@ import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 import { useEffect } from "react";
 import { Box } from "@mui/material";
 import { useLogRender } from "@src/hooks/useLogRender";
+// import AppOauthPicker from "@src/components/Oauth/AppOauthPicker";
 
 export function DockStation() {
   useLogRender("DockStation");
@@ -20,6 +21,7 @@ export function DockStation() {
             tabs={{
               tasks: <TasksApp />,
               calendar: <CalendarApp />,
+              add: null,
             }}
           />
         </Box>
