@@ -65,10 +65,7 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
           start: { ...event.start, dateTime: occurrence.toISOString() },
         };
 
-        flatEvents.push({
-          ...event,
-          start: { ...event.start, dateTime: occurrence.toISOString() },
-        });
+        flatEvents.push(event);
       });
     } else if (dayjs(getEventStartTime(event)).isToday()) {
       flatEvents.push(event);
@@ -79,6 +76,7 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
 }
 
 export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
+  console.log("calendarEvents", calendarEvents);
   const sortedEvents = flattenTodaysEvents(calendarEvents).sort((a, b) => {
     const aStart = getEventStartTime(a);
     const bStart = getEventStartTime(b);
@@ -187,7 +185,7 @@ export function getEventStartTime(event: CalendarEvent) {
 
   // google calendar times are weird. Sometimes they are in utc
   // and sometimes they are in the event's timezone
-  if (start?.includes("Z")) {
+  if (start?.includes("Z") && event.start.timeZone !== "UTC") {
     return dayjs(start).tz(event.start.timeZone);
   } else if (start) {
     // const startTime = dayjs.tz(start, event.start.timeZone);
