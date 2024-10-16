@@ -41,13 +41,14 @@ export default function AppOauthPicker(paperProps: PaperProps) {
 
   useEffect(() => {
     if (!dataSyncing) {
-      const googleAuth = userState.tokens.google;
-      if (googleAuth) {
+      const { gTasks, gCalendar } = userState.selectedApps;
+
+      if (userState.tokens.google) {
         setSelectedApps((selectedApps) => {
           return {
             ...selectedApps,
-            gTasks: !!googleAuth.scopesGranted.tasks,
-            gCalendar: !!googleAuth.scopesGranted.calendar,
+            gTasks: !!gTasks,
+            gCalendar: !!gCalendar,
           };
         });
       }
@@ -175,18 +176,20 @@ const GoogleOauthButton = (
     userServices
       .getGoogleAuthToken({ interactive: true, scopes: selectedScopes })
       .then((tokenRes) => {
+        if (!tokenRes?.token) return;
+
         updateData({
           tokens: {
             ...tokens,
-            google: {
-              token: tokenRes.token,
-              scopesGranted: {
-                calendar: tokenRes?.grantedScopes?.includes(
-                  scopes.google.calendar
-                ),
-                tasks: tokenRes?.grantedScopes?.includes(scopes.google.tasks),
-              },
-            },
+            google: tokenRes.token,
+          },
+          selectedApps: {
+            gCalendar: !!tokenRes?.grantedScopes?.includes(
+              scopes.google.calendar
+            ),
+
+            gTasks: !!tokenRes?.grantedScopes?.includes(scopes.google.tasks),
+            chatGpt: false,
           },
         });
       });

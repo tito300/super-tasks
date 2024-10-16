@@ -92,11 +92,11 @@ export function TabsManager({
 function NavigationTabs() {
   const scriptType = useScriptType();
   const {
-    data: { accordionExpanded, tokens },
+    data: { accordionExpanded, selectedApps },
   } = useUserState();
 
-  const tasksAvailable = tokens?.google?.scopesGranted?.tasks;
-  const calendarAvailable = tokens?.google?.scopesGranted?.calendar;
+  const tasksAvailable = selectedApps.gTasks;
+  const calendarAvailable = selectedApps.gCalendar;
 
   const canAddMore = !tasksAvailable || !calendarAvailable;
 

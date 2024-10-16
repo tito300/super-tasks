@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import { useUserSettings } from "./UserSettingsProvider";
-import { TabName } from "@src/config/settingsDefaults";
+import { TabName, UserSettings } from "@src/config/settingsDefaults";
 import { useSyncedState } from "@src/hooks/useSyncedState";
 
 export type UserState = {
@@ -9,12 +9,8 @@ export type UserState = {
   accordionExpanded: boolean;
   blurText: boolean;
   darkMode: boolean;
-  tokens: {
-    google?: {
-      scopesGranted: { tasks?: boolean; calendar?: boolean };
-      token?: string | null;
-    };
-  };
+  tokens: UserSettings["tokens"];
+  selectedApps: UserSettings["selectedApps"];
 };
 
 export type UserStateContextType = {
@@ -33,6 +29,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     blurText: userSettings.blurText,
     darkMode: userSettings.darkMode,
     tokens: userSettings.tokens,
+    selectedApps: userSettings.selectedApps,
   });
 
   return (

@@ -16,7 +16,9 @@ export const useCalendarEvents = ({
   enabled?: boolean;
 } = {}) => {
   const { calendar: calendarService } = useServicesContext();
-  const { data: { selectedCalendarId } } = useCalendarState();
+  const {
+    data: { selectedCalendarId },
+  } = useCalendarState();
 
   return useQuery<SavedCalendarEvent[]>({
     queryKey: ["calendar", selectedCalendarId],
@@ -25,8 +27,9 @@ export const useCalendarEvents = ({
       if (!selectedCalendarId) return [];
 
       try {
-        const data = await calendarService.getCalendarEvents(selectedCalendarId);
-        console.log("useCalendarEvents queryFn data: ", data);
+        const data = await calendarService.getCalendarEvents(
+          selectedCalendarId
+        );
         return data;
       } catch (err) {
         console.error("error fetching calendar");

@@ -10,7 +10,6 @@ import { useServicesContext } from "../Providers/ServicesProvider";
 import { useMessageEngine } from "../Providers/MessageEngineProvider";
 import AppOauthPicker, { scopes } from "./AppOauthPicker";
 import { useUserState } from "../Providers/UserStateProvider";
-import { getCommonHeaders, setupToken } from "@src/services/fetcher";
 
 export function OauthRequired({
   children,
@@ -27,21 +26,21 @@ export function OauthRequired({
 
   function getGrantedScopes() {
     const scopes = [];
-    if (userState.tokens.google?.scopesGranted.calendar)
+    if (userState.selectedApps.gCalendar)
       scopes.push("https://www.googleapis.com/auth/calendar");
-    if (userState.tokens.google?.scopesGranted.tasks)
+    if (userState.selectedApps.gTasks)
       scopes.push("https://www.googleapis.com/auth/tasks");
     return scopes;
   }
 
   useLayoutEffect(() => {
-    if (userState.tokens.google?.token) {
-      userServices.setGoogleTokenHeader(userState.tokens.google.token);
+    if (userState.tokens.google) {
+      userServices.setGoogleTokenHeader(userState.tokens.google);
     }
-  }, [userState.tokens.google?.token]);
+  }, [userState.tokens.google]);
 
   useEffect(() => {
-    if (!dataSyncing && !userState.tokens.google?.token) {
+    if (!dataSyncing && !userState.tokens.google) {
       userServices
         .getGoogleAuthToken({ interactive: false, scopes: getGrantedScopes() })
         .then((tokenRes) => {
@@ -50,31 +49,27 @@ export function OauthRequired({
           updateUserState({
             tokens: {
               ...userState.tokens,
-              google: {
-                token: tokenRes.token,
-                scopesGranted: {
-                  calendar: tokenRes?.grantedScopes?.includes(
-                    scopes.google.calendar
-                  ),
-                  tasks: tokenRes?.grantedScopes?.includes(scopes.google.tasks),
-                },
-              },
+              google: tokenRes.token,
+            },
+            selectedApps: {
+              gCalendar: !!tokenRes?.grantedScopes?.includes(
+                scopes.google.calendar
+              ),
+              gTasks: !!tokenRes?.grantedScopes?.includes(scopes.google.tasks),
+              chatGpt: false,
             },
           });
           tokenSetRef.current = true;
         });
     }
-  }, [dataSyncing, userState?.tokens?.google?.token]);
+  }, [dataSyncing, userState?.tokens?.google]);
 
   useEffect(() => {
     messageEngine.onMessage("ReAuthenticate", async () => {
       updateUserState({
         tokens: {
           ...userState.tokens,
-          google: {
-            ...(userState.tokens?.google || ({} as any)),
-            token: null,
-          },
+          google: "",
         },
       });
     });
@@ -83,7 +78,7 @@ export function OauthRequired({
   if (document.location.href.includes("accounts.google.com/signin/oauth"))
     return null;
 
-  const hasOneAppToken = !!userState.tokens.google?.token;
+  const hasOneAppToken = !!userState.tokens.google;
 
   return (
     <div {...rest}>
