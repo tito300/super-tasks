@@ -38,10 +38,13 @@ export const TaskTitleField = forwardRef<
         if (!focused)
           return (
             <Typography
-              sx={{ filter: blurText && !focused ? "blur(7px)" : "none" }}
+              sx={{
+                filter: blurText && !focused ? "blur(7px)" : "none",
+                margin: "0.25rem 0",
+              }}
               onFocus={onFocus}
               onClick={onFocus}
-              lineHeight={1.9}
+              lineHeight={1.5}
             >
               {field.value}
             </Typography>

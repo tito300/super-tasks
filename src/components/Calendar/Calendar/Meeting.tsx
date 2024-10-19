@@ -296,12 +296,10 @@ export function Meeting({ event }: { event: CalendarEvent }) {
             <Stack direction="row" alignItems="flex-start" p={1} pl={1.5}>
               <Subject fontSize="small" color="action" sx={{ mt: 1 }} />
               <Stack ml={1}>
-                <Typography
-                  variant="body2"
+                <Box
                   sx={{ color: (theme) => theme.palette.action.active }}
-                >
-                  {event.description}
-                </Typography>
+                  dangerouslySetInnerHTML={{ __html: event.description }}
+                ></Box>
               </Stack>
             </Stack>
           )}
