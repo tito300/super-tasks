@@ -34,7 +34,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   const [selectedApps, setSelectedApps] = useState({
     gTasks: false,
     gCalendar: false,
-    chatgpt: false,
+    chatGpt: false,
   });
   const scriptType = useScriptType();
   const { data: userState, dataSyncing } = useUserState();
@@ -120,9 +120,9 @@ export default function AppOauthPicker(paperProps: PaperProps) {
                 />
                 <AppImg
                   title="Chatgpt"
-                  selected={selectedApps.chatgpt}
+                  selected={selectedApps.chatGpt}
                   src={`chrome-extension://${extensionId}${chatgptIcon}`}
-                  onClick={() => handleAppClick("chatgpt")}
+                  onClick={() => handleAppClick("chatGpt")}
                 />
               </>
             )}
@@ -142,6 +142,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
               <GoogleOauthButton
                 disabled={!selectedScopes.length}
                 selectedScopes={selectedScopes}
+                selectedApps={selectedApps}
               />
             )}
           </Stack>
@@ -163,14 +164,17 @@ export default function AppOauthPicker(paperProps: PaperProps) {
 }
 
 const GoogleOauthButton = (
-  props: ButtonProps & { selectedScopes: string[] }
+  props: ButtonProps & {
+    selectedScopes: string[];
+    selectedApps: { gTasks: boolean; gCalendar: boolean; chatGpt: boolean };
+  }
 ) => {
   const { user: userServices } = useServicesContext();
   const {
     data: { tokens },
     updateData,
   } = useUserState();
-  const { selectedScopes, ...rest } = props;
+  const { selectedScopes, selectedApps, ...rest } = props;
 
   const handleClick = async () => {
     userServices
@@ -184,12 +188,9 @@ const GoogleOauthButton = (
             google: tokenRes.token,
           },
           selectedApps: {
-            gCalendar: !!tokenRes?.grantedScopes?.includes(
-              scopes.google.calendar
-            ),
-
-            gTasks: !!tokenRes?.grantedScopes?.includes(scopes.google.tasks),
-            chatGpt: false,
+            gCalendar: selectedApps.gCalendar,
+            gTasks: selectedApps.gTasks,
+            chatGpt: selectedApps.chatGpt,
           },
         });
       });

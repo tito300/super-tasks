@@ -21,6 +21,9 @@ import { TasksSettingsProvider } from "./Providers/TasksSettingsProvider";
 import { TasksStateProvider } from "./Providers/TasksStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
 import { AppRenderer } from "./AppRenderer";
+import { ChatGptSettingsProvider } from "./Providers/ChatGptSettingsProvider";
+import { ChatGptStateProvider } from "./Providers/ChatGptStateProvider";
+import { chatGptTheme } from "@src/theme/chatGpt.theme";
 
 const queryClient = new QueryClient();
 
@@ -52,9 +55,13 @@ export const CommonProviders = ({
                       <TasksStateProvider>
                         <CalendarSettingsProvider>
                           <CalendarsStateProvider>
-                            <QueryClientProvider client={queryClient}>
-                              <AppRenderer>{children}</AppRenderer>
-                            </QueryClientProvider>
+                            <ChatGptSettingsProvider>
+                              <ChatGptStateProvider>
+                                <QueryClientProvider client={queryClient}>
+                                  <AppRenderer>{children}</AppRenderer>
+                                </QueryClientProvider>
+                              </ChatGptStateProvider>
+                            </ChatGptSettingsProvider>
                           </CalendarsStateProvider>
                         </CalendarSettingsProvider>
                       </TasksStateProvider>
@@ -73,6 +80,7 @@ export const CommonProviders = ({
 const themeMap = {
   tasks: tasksTheme,
   calendar: calendarTheme,
+  chatGpt: chatGptTheme,
 };
 
 function CustomThemeProvider({

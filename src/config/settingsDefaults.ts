@@ -1,4 +1,6 @@
-export type TabName = "tasks" | "calendar" | "add";
+import { assertApps } from "./appsConfig";
+
+export type TabName = "tasks" | "calendar" | "chatGpt" | "add";
 
 // values in here should only be treated as defaults
 export const userSettingsDefaults = {
@@ -32,6 +34,8 @@ export const userSettingsDefaults = {
   },
 };
 
+assertApps(userSettingsDefaults.selectedApps);
+
 insureSyncIsDefined(userSettingsDefaults, "userSettingsDefaults");
 
 export const tasksSettingsDefaults = {
@@ -48,8 +52,15 @@ export const tasksSettingsDefaults = {
   },
   syncFilters: true,
 };
-
 insureSyncIsDefined(tasksSettingsDefaults, "tasksSettingsDefaults");
+
+export const chatGptSettingsDefaults = {
+  syncMessages: true,
+  syncComposerDraft: true,
+  syncPending: true,
+};
+
+insureSyncIsDefined(chatGptSettingsDefaults, "chatGptSettingsDefaults");
 
 export const calendarSettingsDefaults = {
   // used to determine when to start showing the count down badge

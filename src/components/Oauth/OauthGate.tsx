@@ -52,11 +52,11 @@ export function OauthRequired({
               google: tokenRes.token,
             },
             selectedApps: {
+              ...userState.selectedApps,
               gCalendar: !!tokenRes?.grantedScopes?.includes(
                 scopes.google.calendar
               ),
               gTasks: !!tokenRes?.grantedScopes?.includes(scopes.google.tasks),
-              chatGpt: false,
             },
           });
           tokenSetRef.current = true;

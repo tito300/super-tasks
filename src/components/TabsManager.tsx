@@ -15,6 +15,7 @@ import { useUserState } from "./Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
 import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
 import AddIcon from "@mui/icons-material/Add";
+import chatGptCalendarIcon from "@assets/img/chatgpt-icon.png";
 
 export function TabsManager({
   tabs,
@@ -74,6 +75,16 @@ export function TabsManager({
             {tabs["calendar"]}
           </Stack>
         )}
+        {tabs["chatGpt"] && (
+          <Stack
+            flexGrow={1}
+            sx={{
+              display: currentTab === "chatGpt" ? "block" : "none",
+            }}
+          >
+            {tabs["chatGpt"]}
+          </Stack>
+        )}
         {tabs["add"] && (
           <Stack
             flexGrow={1}
@@ -97,8 +108,9 @@ function NavigationTabs() {
 
   const tasksAvailable = selectedApps.gTasks;
   const calendarAvailable = selectedApps.gCalendar;
+  const chatGptAvailable = selectedApps.chatGpt;
 
-  const canAddMore = !tasksAvailable || !calendarAvailable;
+  const canAddMore = !tasksAvailable || !calendarAvailable || !chatGptAvailable;
 
   return (
     <>
@@ -109,6 +121,7 @@ function NavigationTabs() {
       >
         {tasksAvailable && <TabOption tabName="tasks" />}
         {calendarAvailable && <TabOption tabName="calendar" />}
+        {chatGptAvailable && <TabOption tabName="chatGpt" />}
         {canAddMore && scriptType === "Popup" && <TabOption tabName="add" />}
       </TabIconsContainer>
       {scriptType === "Popup" && (
@@ -141,6 +154,8 @@ function TabOption({ tabName }: { tabName: TabName }) {
       />
     ) : tabName === "calendar" ? (
       <img src={googleCalendarIcon} alt="calendar" width={18} height={18} />
+    ) : tabName === "chatGpt" ? (
+      <img src={chatGptCalendarIcon} alt="calendar" width={18} height={18} />
     ) : (
       <AddIcon fontSize="small" />
     );

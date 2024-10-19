@@ -1,4 +1,7 @@
 import { deepmerge } from "@mui/utils";
+import { ChatMessage } from "@src/chatGpt.types";
+import { ChatGptSettings } from "@src/components/Providers/ChatGptSettingsProvider";
+import { ChatGptState } from "@src/components/Providers/ChatGptStateProvider";
 import { TasksState } from "@src/components/Providers/TasksStateProvider";
 import { UserState } from "@src/components/Providers/UserStateProvider";
 import { TaskEnhanced } from "@src/components/Task/Task";
@@ -66,7 +69,9 @@ const storageKeys = [
   "userState",
   "globalState",
   "tasksEnhanced",
-] satisfies Array<keyof StorageData>;
+  "chatGptSettings",
+  "chatGptState",
+] as const;
 
 function isStorageKey(key: any): key is keyof StorageData {
   return key && storageKeys.includes(key);
@@ -92,6 +97,8 @@ export type StorageData = {
   calendarState: CalendarGlobalState;
   userSettings: UserSettings;
   userState: UserState;
+  chatGptSettings: ChatGptSettings;
+  chatGptState: ChatGptState;
   globalState: {
     open: boolean;
   };

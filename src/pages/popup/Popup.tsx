@@ -11,6 +11,7 @@ import { useGlobalState } from "@src/components/Providers/globalStateProvider";
 import { OauthRequired } from "@src/components/Oauth/OauthGate";
 import AppOauthPicker from "@src/components/Oauth/AppOauthPicker";
 import { AppPickerTab } from "@src/components/Oauth/AppPickerTab";
+import { ChatGpt } from "@src/components/chatGpt/ChatGpt";
 
 axios.defaults.baseURL = urls.BASE_URL;
 
@@ -29,6 +30,7 @@ export default function Popup({}): JSX.Element {
         tabs={{
           tasks: <TasksApp />,
           calendar: <CalendarApp />,
+          chatGpt: <ChatGpt />,
           add: <AppPickerTab />,
         }}
       />

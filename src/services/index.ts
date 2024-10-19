@@ -5,12 +5,15 @@ import { userService } from "./User/User.service";
 import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { TaskType } from "@src/components/Task/Task";
 import { calendarServices } from "./Calendar/Calendar.service";
+import { chatGptService } from "./ChatGpt/ChatGpt.service";
+import { assertApps } from "@src/config/appsConfig";
 
 let initiated: boolean = false;
 const services = {
   task: TaskServices,
   user: userService,
   calendar: calendarServices,
+  chatGpt: chatGptService,
 };
 
 let messageEngine: ReturnType<typeof getMessageEngine>;
