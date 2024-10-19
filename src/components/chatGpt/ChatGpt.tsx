@@ -236,6 +236,12 @@ export const MessageComposer = ({
     updateData({ composerDraft: e.target.value });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      onSubmit(composerDraft);
+    }
+  };
+
   return (
     <Stack {...rest} direction="row" spacing={2} alignItems="center">
       <TextField
@@ -245,7 +251,7 @@ export const MessageComposer = ({
         fullWidth
         size="small"
         hiddenLabel
-        multiline
+        onKeyDown={handleKeyDown}
         onChange={handleChange}
       />
       <IconButton color="primary" onClick={() => onSubmit(composerDraft)}>
@@ -285,7 +291,7 @@ export const Conversation = () => {
     });
 
     chatGpt
-      .getChatGptResponse(message)
+      .getChatGptResponse(messagesClone)
       .then((response) => {
         messagesClone = [...messagesClone, response];
         updateData({ messages: messagesClone, pending: false });

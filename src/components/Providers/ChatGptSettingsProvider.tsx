@@ -14,8 +14,9 @@ import { deepmerge } from "@mui/utils";
 import { ChatMessage } from "@src/chatGpt.types";
 
 export type ChatGptSettings = {
-  messages: ChatMessage[];
   syncMessages: boolean;
+  syncComposerDraft: boolean;
+  syncPending: boolean;
 };
 
 type ChatGptSettingsContext = {
