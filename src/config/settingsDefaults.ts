@@ -58,6 +58,7 @@ export const chatGptSettingsDefaults = {
   syncMessages: true,
   syncComposerDraft: true,
   syncPending: true,
+  syncModel: true,
 };
 
 insureSyncIsDefined(chatGptSettingsDefaults, "chatGptSettingsDefaults");

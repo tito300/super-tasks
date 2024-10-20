@@ -2,15 +2,8 @@ import SendIcon from "@mui/icons-material/Send";
 import {
   Avatar,
   Box,
-  Divider,
-  Fab,
-  Grid,
   IconButton,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  makeStyles,
+  MenuList,
   Paper,
   Stack,
   StackProps,
@@ -22,10 +15,18 @@ import {
 import chatGptIcon from "@assets/img/chatgpt-icon.png";
 import { constants } from "@src/config/constants";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { useSyncedState } from "@src/hooks/useSyncedState";
-import { useChatGptState } from "../Providers/ChatGptStateProvider";
-import { useEffect, useState } from "react";
+import {
+  LlmModel,
+  llmModels,
+  useChatGptState,
+} from "../Providers/ChatGptStateProvider";
+import { useState } from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
+import { Chip } from "@mui/material";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { Menu } from "@mui/material";
+import { MenuItem } from "@mui/material";
+import Markdown from "react-markdown";
 
 const messages = [
   {
@@ -162,10 +163,24 @@ export const ChatGpt = () => {
 };
 
 export const ChatGptControls = (props: {}) => {
-  const { updateData } = useChatGptState();
+  const { data: chatGptState, updateData } = useChatGptState();
   const handleResetClick = () => {
     updateData({ messages: [], composerDraft: "" });
   };
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleChangeModalClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleModelClick = (model: LlmModel) => {
+    updateData({ model });
+    handleClose();
+  };
+
   return (
     <>
       <Box py={3} width={"100%"}></Box>
@@ -180,11 +195,41 @@ export const ChatGptControls = (props: {}) => {
           left: 0,
           right: 0,
           zIndex: 400,
+          paddingLeft: (theme) => theme.spacing(1),
           // boxShadow: `0px 3px 5px -2px rgb(0 0 0 / 11%), 0px 3px 4px 0px rgb(0 0 0 / 0%), 0px 1px 8px 0px rgb(0 0 0 / 4%)`,
           backgroundColor: (theme) => theme.palette.background.paper,
           borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
         }}
       >
+        <Chip
+          variant="outlined"
+          size={"small"}
+          sx={{ textTransform: "uppercase" }}
+          label={chatGptState.model}
+          onClick={handleChangeModalClick}
+          onDelete={handleChangeModalClick}
+          deleteIcon={<KeyboardArrowDownIcon />}
+        />
+        <Menu
+          id="model-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          MenuListProps={{
+            "aria-labelledby": "basic-button",
+          }}
+        >
+          <MenuList dense>
+            {llmModels.map((model) => (
+              <MenuItem
+                sx={{ textTransform: "uppercase" }}
+                onClick={() => handleModelClick(model)}
+              >
+                {model}
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Menu>
         <Tooltip title="start over">
           <IconButton
             sx={{ ml: "auto" }}
@@ -268,7 +313,7 @@ const ConversationFooter = styled(Stack)({
 
 export const Conversation = () => {
   const {
-    data: { messages, pending },
+    data: { messages, pending, model },
     updateData,
     dataSyncing,
   } = useChatGptState();
@@ -291,7 +336,7 @@ export const Conversation = () => {
     });
 
     chatGpt
-      .getChatGptResponse(messagesClone)
+      .getChatGptResponse(messagesClone, model)
       .then((response) => {
         messagesClone = [...messagesClone, response];
         updateData({ messages: messagesClone, pending: false });
@@ -418,7 +463,7 @@ export const Message = ({ message }: { message: Message }) => {
         elevation={inbound ? 0 : 2}
         sx={{ padding: inbound ? 0 : 1, borderRadius: 2 }}
       >
-        <Typography>{message.message}</Typography>
+        <Markdown>{message.message}</Markdown>
       </Paper>
     </MessageContainer>
   );

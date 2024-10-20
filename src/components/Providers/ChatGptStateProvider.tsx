@@ -4,15 +4,26 @@ import { ChatMessage } from "@src/chatGpt.types";
 import { useChatGptSettings } from "./ChatGptSettingsProvider";
 // import { useChatGptSettings } from "./ChatGptSettingsProvider";
 
+export const llmModels = ["gpt-3.5-turbo", "gpt-4o-mini"] as const;
+export type LlmModel = (typeof llmModels)[number];
+
 export type ChatGptState = {
   messages: ChatMessage[];
   composerDraft: string;
   pending: boolean;
+  model: LlmModel;
 };
 
 export type ChatGptStateContextType = ReturnType<
   typeof useSyncedState<ChatGptState>
 >;
+
+export const chatGptStateDefaults = {
+  messages: [],
+  composerDraft: "",
+  pending: false,
+  model: "gpt-4o-mini" as const,
+};
 
 const ChatGptStateContext = createContext<ChatGptStateContextType>(null!);
 export function ChatGptStateProvider({
@@ -24,11 +35,7 @@ export function ChatGptStateProvider({
   const syncedState = useSyncedState<ChatGptState>(
     "chatGptState",
     chatGptSettings,
-    {
-      messages: [],
-      composerDraft: "",
-      pending: false,
-    }
+    chatGptStateDefaults
   );
 
   return (

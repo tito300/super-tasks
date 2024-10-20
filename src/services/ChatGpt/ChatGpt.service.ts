@@ -5,9 +5,10 @@ import { wait } from "@src/utils/wait";
 import { storageService } from "@src/storage/storage.service";
 import { ChatGptSettings } from "@src/components/Providers/ChatGptSettingsProvider";
 import { chatGptSettingsDefaults } from "@src/config/settingsDefaults";
+import { LlmModel } from "@src/components/Providers/ChatGptStateProvider";
 
 export const chatGptService = {
-  getChatGptResponse: async (messages: ChatMessage[]) => {
+  getChatGptResponse: async (messages: ChatMessage[], model: LlmModel) => {
     //   await wait(2000);
     //   return {
     //     id: 1,
@@ -20,11 +21,10 @@ export const chatGptService = {
     return fetcher
       .post(`${urls.BASE_URL}/ai/chat`, {
         messages,
-        model: "gpt",
+        model,
       })
       .then((res) => res.json())
       .then((res) => {
-        console.log("gpt response : ", res);
         return res as ChatMessage;
       });
   },
