@@ -7,7 +7,7 @@ import {
   badgeClasses,
   styled,
 } from "@mui/material";
-import { Close, MenuOpen, Remove } from "@mui/icons-material";
+import { Close, MenuOpen, Remove, WidthFull } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 import { TasksReminderBadge } from "./TasksReminderBadge";
@@ -15,7 +15,6 @@ import { focusAddTaskInput } from "./DockStationAccordion";
 import { CalendarIcon } from "@mui/x-date-pickers";
 import { calendarTheme } from "@src/theme/google.theme";
 import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
-import googleTasksIcon from "@assets/img/google-tasks-icon.png";
 import { cyan } from "@mui/material/colors";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
@@ -47,7 +46,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     y: window.innerHeight - 32,
   };
 
-  const handleButtonClick = (app: "calendar" | "tasks") => {
+  const handleButtonClick = (app: "calendar" | "tasks" | "chatGpt") => {
     updateUserState({
       currentTab: app,
       buttonExpanded: true,
@@ -104,6 +103,17 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     >
       {!buttonExpanded && (
         <ButtonsContainer>
+          <ExtensionAiButton
+            onClick={() => handleButtonClick("chatGpt")}
+            id={`${constants.EXTENSION_NAME}-ai-button`}
+          >
+            <img
+              src={runtime.getURL("chatgpt-icon.png")}
+              alt="calendar"
+              width={28}
+              height={28}
+            />
+          </ExtensionAiButton>
           <ExtensionCalendarButton
             onClick={() => handleButtonClick("calendar")}
             id={`${constants.EXTENSION_NAME}-calendar-btn`}
@@ -184,6 +194,7 @@ const ExtensionTaskButton = styled(IconButton)(({ theme }) => {
   return {
     position: "absolute",
     bottom: 0,
+    right: 0,
     boxShadow: theme.shadows[3],
     backgroundColor: "#fff",
     fontSize: 0,
@@ -198,6 +209,7 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
   return {
     position: "absolute",
     bottom: 0,
+    right: 0,
     boxShadow: theme.shadows[3],
     marginBottom: 2,
     backgroundColor: "#fff",
@@ -212,15 +224,38 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
   };
 });
 
+const ExtensionAiButton = styled(IconButton)(({ theme }) => {
+  return {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    boxShadow: theme.shadows[3],
+    marginBottom: 2,
+    backgroundColor: "#fff",
+    color: "white",
+    transform: "translateY(12%)",
+    fontSize: 0,
+    padding: "12px",
+    cursor: "grab",
+    ["&:hover"]: {
+      boxShadow: theme.shadows[6],
+    },
+  };
+});
+
 const ButtonsContainer = styled(Stack)(({ theme }) => {
   return {
     height: 51,
     width: 51,
-    ":hover": {
-      height: 200,
+    "&:hover": {
+      height: 120,
+      width: 120,
     },
     [`:hover& #${constants.EXTENSION_NAME}-calendar-btn`]: {
       transform: "translateY(-108%)",
+    },
+    [`:hover& #${constants.EXTENSION_NAME}-ai-button`]: {
+      transform: "translateX(-116%)",
     },
   };
 });

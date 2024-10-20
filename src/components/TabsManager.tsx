@@ -3,6 +3,7 @@ import {
   Box,
   IconButton,
   IconButtonProps,
+  Paper,
   Stack,
   StackProps,
   styled,
@@ -16,6 +17,17 @@ import { useLogRender } from "@src/hooks/useLogRender";
 import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
 import AddIcon from "@mui/icons-material/Add";
 import chatGptCalendarIcon from "@assets/img/chatgpt-icon.png";
+import { constants } from "@src/config/constants";
+
+const AppContainer = styled(Paper)({
+  position: "relative",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "auto",
+  overflowX: "clip",
+  height: "450px",
+  backgroundColor: "white",
+});
 
 export function TabsManager({
   tabs,
@@ -56,45 +68,50 @@ export function TabsManager({
     >
       <TabContext value={currentTab}>
         {!hideTabs && <NavigationTabs />}
-        <Stack
-          flexGrow={1}
-          sx={{
-            display:
-              currentTab === "tasks" || !tabs[currentTab] ? "flex" : "none",
-          }}
+        <AppContainer
+          elevation={2}
+          id={`${constants.EXTENSION_NAME}-scrollable-container`}
         >
-          {tabs["tasks"]}
-        </Stack>
-        {tabs["calendar"] && (
           <Stack
             flexGrow={1}
             sx={{
-              display: currentTab === "calendar" ? "block" : "none",
+              display:
+                currentTab === "tasks" || !tabs[currentTab] ? "flex" : "none",
             }}
           >
-            {tabs["calendar"]}
+            {tabs["tasks"]}
           </Stack>
-        )}
-        {tabs["chatGpt"] && (
-          <Stack
-            flexGrow={1}
-            sx={{
-              display: currentTab === "chatGpt" ? "block" : "none",
-            }}
-          >
-            {tabs["chatGpt"]}
-          </Stack>
-        )}
-        {tabs["add"] && (
-          <Stack
-            flexGrow={1}
-            sx={{
-              display: currentTab === "add" ? "block" : "none",
-            }}
-          >
-            {tabs["add"]}
-          </Stack>
-        )}
+          {tabs["calendar"] && (
+            <Stack
+              flexGrow={1}
+              sx={{
+                display: currentTab === "calendar" ? "block" : "none",
+              }}
+            >
+              {tabs["calendar"]}
+            </Stack>
+          )}
+          {tabs["chatGpt"] && (
+            <Stack
+              flexGrow={1}
+              sx={{
+                display: currentTab === "chatGpt" ? "block" : "none",
+              }}
+            >
+              {tabs["chatGpt"]}
+            </Stack>
+          )}
+          {tabs["add"] && (
+            <Stack
+              flexGrow={1}
+              sx={{
+                display: currentTab === "add" ? "block" : "none",
+              }}
+            >
+              {tabs["add"]}
+            </Stack>
+          )}
+        </AppContainer>
       </TabContext>
     </Stack>
   );
@@ -103,7 +120,7 @@ export function TabsManager({
 function NavigationTabs() {
   const scriptType = useScriptType();
   const {
-    data: { accordionExpanded, selectedApps },
+    data: { selectedApps },
   } = useUserState();
 
   const tasksAvailable = selectedApps.gTasks;
@@ -114,11 +131,7 @@ function NavigationTabs() {
 
   return (
     <>
-      <TabIconsContainer
-        scriptType={scriptType}
-        id="summary-tabs-container"
-        accordionOpen={accordionExpanded}
-      >
+      <TabIconsContainer scriptType={scriptType} id="summary-tabs-container">
         {tasksAvailable && <TabOption tabName="tasks" />}
         {calendarAvailable && <TabOption tabName="calendar" />}
         {chatGptAvailable && <TabOption tabName="chatGpt" />}
@@ -174,28 +187,17 @@ function TabOption({ tabName }: { tabName: TabName }) {
 
 const TabIconsContainer = styled(Stack)<{
   scriptType: ScriptType;
-  accordionOpen: boolean;
-}>(({ theme, scriptType, accordionOpen }) => ({
+}>(({ theme, scriptType }) => ({
   flexDirection: "row",
   alignItems: "flex-end",
-  ...(scriptType === "Content"
-    ? {
-        position: "absolute",
-        bottom: accordionOpen ? "calc(100% - 10px)" : "calc(100% - 40px)",
-        top: "auto",
-        right: 5,
-        zIndex: -1,
-        paddingBottom: 8,
-        padding: "0px 4px 6px",
-      }
-    : {
-        position: "fixed",
-        overflow: "hidden",
-        backgroundColor: "#f4f5f7",
-        zIndex: 50,
-        width: "100%",
-        borderBottom: `1px solid ${theme.palette.divider}`,
-      }),
+  position: "fixed",
+  backgroundColor: "#d1d5de",
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
+  zIndex: 50,
+  width: "100%",
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  ...(scriptType === "Content" && { position: "initial" }),
 }));
 
 const TabIconStyled = styled(IconButton)<{

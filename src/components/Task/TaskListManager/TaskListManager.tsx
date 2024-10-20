@@ -23,6 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { TasksSettings } from "../TasksSettings/TasksSettings";
 import { useUserState } from "../../Providers/UserStateProvider";
 import { useScriptType } from "../../Providers/ScriptTypeProvider";
+import { AppControls } from "@src/components/shared/AppControls";
 
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);
@@ -68,77 +69,56 @@ export function TaskListManager() {
   };
   return (
     <>
-      <Stack
-        id="task-list-manager"
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        pl={1}
-      >
-        {!active && (
-          <Button
-            size="small"
-            sx={{ color: (theme) => theme.palette.action.active }}
-            startIcon={<List fontSize="medium" />}
-            onClick={() => setActive(true)}
-            endIcon={<KeyboardArrowDown fontSize="small" />}
-          >
-            {selectedListTitle}
-          </Button>
-        )}
-        {active && (
-          <FormControl variant="standard" sx={{ pl: 1, minWidth: 120 }}>
-            <Select
-              id="demo-simple-select-standard"
-              disableUnderline
-              defaultOpen={true}
-              value={selectedTaskListId ?? ""}
-              onChange={handleChange}
-              onBlur={() => setActive(false)}
-            >
-              {data?.map((list, i) => (
-                <MenuItem selected={i === 0} key={list.id} value={list.id}>
-                  {list.title}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
-        <Stack direction="row" alignItems={"center"}>
-          <IconButton
-            color={settingsOpen ? "primary" : "default"}
-            onClick={() => {
-              setSettingsOpen(!settingsOpen);
-            }}
-            size="small"
-          >
-            <Settings fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            disabled={refetching}
-            onClick={() => {
+      <AppControls
+        reloading={isTransitionPending || refetching}
+        settingsOpen={settingsOpen}
+        onSettingsClick={() => {
+          setSettingsOpen(!settingsOpen);
+        }}
+        onReloadClick={() => {
+          startTransition(() => {
+            setRefetching(true);
+            queryClient.invalidateQueries({ queryKey: ["tasks"] }).then(() => {
               startTransition(() => {
-                setRefetching(true);
-                queryClient
-                  .invalidateQueries({ queryKey: ["tasks"] })
-                  .then(() => {
-                    startTransition(() => {
-                      setRefetching(false);
-                    });
-                  });
-              })
-            }}
-          >
-            {isTransitionPending || refetching ? (
-              <CircularProgress size="20px" />
-            ) : (
-              <Refresh fontSize="small" />
-            )}
-          </IconButton>
-        </Stack>
-      </Stack>
-      <Divider />
+                setRefetching(false);
+              });
+            });
+          });
+        }}
+      >
+        <>
+          {!active && (
+            <Button
+              size="small"
+              sx={{ color: (theme) => theme.palette.action.active }}
+              startIcon={<List fontSize="medium" />}
+              onClick={() => setActive(true)}
+              endIcon={<KeyboardArrowDown fontSize="small" />}
+            >
+              {selectedListTitle}
+            </Button>
+          )}
+          {active && (
+            <FormControl variant="standard" sx={{ pl: 1, minWidth: 120 }}>
+              <Select
+                id="demo-simple-select-standard"
+                disableUnderline
+                defaultOpen={true}
+                value={selectedTaskListId ?? ""}
+                onChange={handleChange}
+                onBlur={() => setActive(false)}
+              >
+                {data?.map((list, i) => (
+                  <MenuItem selected={i === 0} key={list.id} value={list.id}>
+                    {list.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+        </>
+      </AppControls>
+
       {settingsOpen ? (
         <TasksSettings />
       ) : (

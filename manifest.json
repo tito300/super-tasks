@@ -51,7 +51,8 @@
         "contentStyle.css",
         "icon-128.png",
         "icon-32.png",
-        "google-tasks-icon.png"
+        "google-tasks-icon.png",
+        "chatgpt-icon.png"
       ],
       "matches": ["<all_urls>"]
     }

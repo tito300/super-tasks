@@ -16,28 +16,24 @@ export function CalendarApp() {
   return (
     // <CalendarSettingsProvider>
     //   <CalendarsStateProvider>
-    scriptType === "Content" ? (
-      <DockStationAccordion>
-        <AccordionSummaryStyled expandIcon={<ArrowDropDown />}>
-          <CalendarAccordionSummary />
-        </AccordionSummaryStyled>
-        <DockStationAccordionDetails id="accordion-details">
-          <Stack
-            id={`${constants.EXTENSION_NAME}-scrollable-container`}
-            sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}
-          >
-            <CalendarListManager />
-          </Stack>
-        </DockStationAccordionDetails>
-      </DockStationAccordion>
-    ) : (
-      <Stack
-        id={`${constants.EXTENSION_NAME}-scrollable-container`}
-        sx={{ height: "450px", overflowY: "auto", overflowX: "clip" }}
-      >
-        <CalendarListManager />
-      </Stack>
-    )
+    // scriptType === "Content" ? (
+    //   <DockStationAccordion>
+    //     <AccordionSummaryStyled expandIcon={<ArrowDropDown />}>
+    //       <CalendarAccordionSummary />
+    //     </AccordionSummaryStyled>
+    //     <DockStationAccordionDetails id="accordion-details">
+    //       <Stack
+    //         id={`${constants.EXTENSION_NAME}-scrollable-container`}
+    //         sx={{ height: "50vh", overflowY: "auto", overflowX: "clip" }}
+    //       >
+    //         <CalendarListManager />
+    //       </Stack>
+    //     </DockStationAccordionDetails>
+    //   </DockStationAccordion>
+    // ) : (
+
+    <CalendarListManager />
+    // )
     //   </CalendarsStateProvider>
     // </CalendarSettingsProvider>
   );

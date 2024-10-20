@@ -27,6 +27,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { Menu } from "@mui/material";
 import { MenuItem } from "@mui/material";
 import Markdown from "react-markdown";
+import { AppControls } from "../shared/AppControls";
 
 const messages = [
   {
@@ -182,65 +183,43 @@ export const ChatGptControls = (props: {}) => {
   };
 
   return (
-    <>
-      <Box py={3} width={"100%"}></Box>
-      <Stack
-        direction="row"
-        alignItems={"center"}
-        justifyContent={"space-between"}
-        {...props}
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 400,
-          paddingLeft: (theme) => theme.spacing(1),
-          // boxShadow: `0px 3px 5px -2px rgb(0 0 0 / 11%), 0px 3px 4px 0px rgb(0 0 0 / 0%), 0px 1px 8px 0px rgb(0 0 0 / 4%)`,
-          backgroundColor: (theme) => theme.palette.background.paper,
-          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+    <AppControls
+      settingsOpen={false}
+      onSettingsClick={() => {}}
+      reloading={false}
+      onReloadClick={handleResetClick}
+      reloadIcon={<DeleteForeverIcon />}
+    >
+      <Chip
+        variant="outlined"
+        size={"small"}
+        sx={{ textTransform: "uppercase" }}
+        label={chatGptState.model}
+        onClick={handleChangeModalClick}
+        onDelete={handleChangeModalClick}
+        deleteIcon={<KeyboardArrowDownIcon />}
+      />
+      <Menu
+        id="model-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          "aria-labelledby": "basic-button",
         }}
       >
-        <Chip
-          variant="outlined"
-          size={"small"}
-          sx={{ textTransform: "uppercase" }}
-          label={chatGptState.model}
-          onClick={handleChangeModalClick}
-          onDelete={handleChangeModalClick}
-          deleteIcon={<KeyboardArrowDownIcon />}
-        />
-        <Menu
-          id="model-menu"
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          MenuListProps={{
-            "aria-labelledby": "basic-button",
-          }}
-        >
-          <MenuList dense>
-            {llmModels.map((model) => (
-              <MenuItem
-                sx={{ textTransform: "uppercase" }}
-                onClick={() => handleModelClick(model)}
-              >
-                {model}
-              </MenuItem>
-            ))}
-          </MenuList>
-        </Menu>
-        <Tooltip title="start over">
-          <IconButton
-            sx={{ ml: "auto" }}
-            size="small"
-            onClick={handleResetClick}
-          >
-            <DeleteForeverIcon />
-          </IconButton>
-        </Tooltip>
-      </Stack>
-    </>
+        <MenuList dense>
+          {llmModels.map((model) => (
+            <MenuItem
+              sx={{ textTransform: "uppercase" }}
+              onClick={() => handleModelClick(model)}
+            >
+              {model}
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Menu>
+    </AppControls>
   );
 };
 
@@ -248,7 +227,7 @@ const Container = styled(Stack)({
   position: "relative",
   createdAt: Date.now(),
   width: "100%",
-  height: constants.EXTENSION_HEIGHT,
+  height: "100%",
 });
 
 export const ConversationsList = () => {
@@ -259,8 +238,6 @@ export const ConversationsList = () => {
 export const MessagesContainer = styled(Stack)<{ empty: boolean }>(
   ({ theme, empty }) => ({
     flex: 1,
-    height: constants.EXTENSION_HEIGHT,
-    overflow: "auto",
     gap: theme.spacing(2),
     padding: theme.spacing(0, 1, 1),
     justifyContent: empty ? "flex-end" : "initial",
@@ -288,7 +265,7 @@ export const MessageComposer = ({
   };
 
   return (
-    <Stack {...rest} direction="row" spacing={2} alignItems="center">
+    <Stack {...rest} direction="row" spacing={2} pb={1} alignItems="center">
       <TextField
         value={composerDraft}
         variant="filled"
@@ -371,7 +348,7 @@ export const Conversation = () => {
           textAlign={"center"}
           variant="h5"
           color={"GrayText"}
-          sx={{ flex: 1, paddingTop: "200px", opacity: 0.7 }}
+          sx={{ flex: 1, paddingTop: "140px", opacity: 0.7 }}
         >
           How can I help you today?
         </Typography>
@@ -447,6 +424,9 @@ export type Message = {
 
 export const MessageContainer = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(1, 2),
+  "& p": {
+    margin: 0,
+  },
 }));
 
 export const Message = ({ message }: { message: Message }) => {

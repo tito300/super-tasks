@@ -14,6 +14,7 @@ import { useScriptType } from "../Providers/ScriptTypeProvider";
 import { useCalendarState } from "../Providers/CalendarStateProvider";
 import { startTransition, useState } from "react";
 import { useCalendarEvents } from "@src/api/calendar.api";
+import { AppControls } from "../shared/AppControls";
 
 export function CalendarControls(props: StackProps & { isLoading?: boolean }) {
   const queryClient = useQueryClient();
@@ -26,56 +27,25 @@ export function CalendarControls(props: StackProps & { isLoading?: boolean }) {
   } = useCalendarState();
 
   return (
-    <Stack
-      direction="row"
-      alignItems={"center"}
-      justifyContent={"space-between"}
-      {...props}
-      sx={{
-        position: "sticky",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 400,
-        // boxShadow: `0px 3px 5px -2px rgb(0 0 0 / 11%), 0px 3px 4px 0px rgb(0 0 0 / 0%), 0px 1px 8px 0px rgb(0 0 0 / 4%)`,
-        backgroundColor: (theme) => theme.palette.background.paper,
-        borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-        ...(props.sx as {}),
+    <AppControls
+      reloading={refetching}
+      settingsOpen={false}
+      onSettingsClick={() => {}}
+      onReloadClick={() => {
+        setRefetching(true);
+        queryClient
+          .invalidateQueries({
+            queryKey: ["calendar", selectedCalendarId],
+          })
+          .then(() => {
+            startTransition(() => {
+              setRefetching(false);
+            });
+          });
       }}
     >
-      <LinearProgress
-        sx={{
-          position: "absolute",
-          bottom: -4,
-          left: 0,
-          right: 0,
-          zIndex: (theme) => theme.zIndex.appBar,
-          visibility: isLoading ? "visible" : "hidden",
-        }}
-      />
       <DateControl isLoading={props.isLoading && !selectedCalendarId} pl={1} />
-      <IconButton
-        size="small"
-        onClick={() => {
-          setRefetching(true);
-          queryClient
-            .invalidateQueries({
-              queryKey: ["calendar", selectedCalendarId],
-            })
-            .then(() => {
-              startTransition(() => {
-                setRefetching(false);
-              });
-            });
-        }}
-      >
-        {refetching ? (
-          <CircularProgress size="20px" />
-        ) : (
-          <Refresh fontSize="small" />
-        )}
-      </IconButton>
-    </Stack>
+    </AppControls>
   );
 }
 
