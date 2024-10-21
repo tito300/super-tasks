@@ -5,9 +5,11 @@ import React, {
   useCallback,
   forwardRef,
   useEffect,
+  useLayoutEffect,
 } from "react";
+import { useUserState } from "./Providers/UserStateProvider";
 
-const Container = styled("div")(({ theme }) => ({
+const Container = styled("div")(() => ({
   position: "fixed",
   transform: "translate(-100%, -100%)",
 }));
@@ -17,7 +19,7 @@ export const Draggable = forwardRef<
   {
     sx?: SxProps;
     id?: string;
-    defaultPosition?: { x: number; y: number };
+    defaultPosition?: { x: number | null; y: number | null };
     className?: string;
     children: React.ReactNode | (() => React.ReactNode);
   }
@@ -26,8 +28,8 @@ export const Draggable = forwardRef<
   ref
 ) {
   const [offsets, setOffsets] = useState<{
-    x?: number;
-    y?: number;
+    x?: number | null;
+    y?: number | null;
     width?: number;
     height?: number;
   }>(() => ({
@@ -35,8 +37,24 @@ export const Draggable = forwardRef<
     width: window.innerWidth,
     height: window.innerHeight,
   }));
+  const { data: userState, updateData, dataSyncing } = useUserState();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (
+      !dataSyncing &&
+      userState.position?.x != null &&
+      userState.position?.y != null
+    ) {
+      setOffsets({
+        x: userState.position.x,
+        y: userState.position.y,
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+  }, [dataSyncing]);
+
+  useLayoutEffect(() => {
     // observe window resizing and update the position
     const onResize = () => {
       setOffsets((prev) => {
@@ -50,38 +68,51 @@ export const Draggable = forwardRef<
         };
       });
     };
-    window.onresize = onResize;
+    window.addEventListener("resize", onResize);
 
     return () => {
       window.onresize = null;
     };
   }, []);
 
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    const startTime = Date.now();
-    const onMouseMove = (e: MouseEvent) => {
-      if (Date.now() - startTime < 200) return;
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!userState.buttonExpanded) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
 
-      const x = e.clientX;
-      const y = e.clientY;
+      const startTime = Date.now();
+      let x: number, y: number;
+      const onMouseMove = (e: MouseEvent) => {
+        if (Date.now() - startTime < 200) return;
 
-      setOffsets({ x, y });
-    };
+        x = e.clientX;
+        y = e.clientY;
 
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
+        setOffsets({ x, y });
+      };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-  }, []);
+      const onMouseUp = (e: MouseEvent) => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+
+        if (x && y) updateData({ position: { x, y } });
+      };
+
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    },
+    [userState.buttonExpanded]
+  );
 
   const sx: SxProps = {
-    left: offsets.x || 0,
-    top: offsets.y || 0,
+    left: offsets.x ?? 0,
+    top: offsets.y ?? 0,
     ...inSx,
   };
+
+  if (dataSyncing) return null;
 
   return (
     <Container

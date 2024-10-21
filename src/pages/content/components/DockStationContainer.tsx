@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren, useEffect, useRef, useState } from "react";
 import {
   Badge,
   Box,
@@ -21,6 +21,8 @@ import { useMessageEngine } from "@src/components/Providers/MessageEngineProvide
 import { CalendarIconBadge } from "./CalendarIconBadge";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { runtime } from "webextension-polyfill";
+import { useMountedRef } from "@src/hooks/useMountedRef";
+import { useLazyMounted } from "@src/hooks/useMounted";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -29,9 +31,10 @@ import { runtime } from "webextension-polyfill";
 // }));
 
 export function DockStationContainer({ children }: PropsWithChildren) {
+  const mounted = useLazyMounted();
   const queryClient = useQueryClient();
   const {
-    data: { buttonExpanded },
+    data: { buttonExpanded, position },
     updateData: updateUserState,
   } = useUserState();
 
@@ -40,11 +43,6 @@ export function DockStationContainer({ children }: PropsWithChildren) {
   if (removed) {
     return null;
   }
-
-  const defaultPositions = {
-    x: window.innerWidth - 38,
-    y: window.innerHeight - 32,
-  };
 
   const handleButtonClick = (app: "calendar" | "tasks" | "chatGpt") => {
     updateUserState({
@@ -64,10 +62,9 @@ export function DockStationContainer({ children }: PropsWithChildren) {
   return (
     <DraggablePopperStyled
       id={`${constants.EXTENSION_NAME}-expand-wrapper`}
-      defaultPosition={defaultPositions}
-      // sx={{ width: open ? 0 : 51, height: 51 }}
+      defaultPosition={position}
       popperProps={{
-        open: !!buttonExpanded,
+        open: mounted && !!buttonExpanded,
         placement: "right-end",
         keepMounted: true,
       }}
@@ -88,7 +85,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
                 updateUserState({ buttonExpanded: false });
               }}
             >
-              <Remove sx={{ fontSize: 14, color: "white" }} />
+              <Remove sx={{ fontSize: 16, color: "white" }} />
             </IconButton>
           }
         >
@@ -179,7 +176,7 @@ const BadgeStyled = styled(Badge)(() => {
   };
 });
 
-const DraggablePopperStyled = styled(DraggablePopper)(({ theme }) => ({
+const DraggablePopperStyled = styled(DraggablePopper)(() => ({
   [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
     display: "none",
   },

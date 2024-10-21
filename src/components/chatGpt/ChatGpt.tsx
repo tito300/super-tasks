@@ -20,7 +20,7 @@ import {
   llmModels,
   useChatGptState,
 } from "../Providers/ChatGptStateProvider";
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { Chip } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -28,130 +28,9 @@ import { Menu } from "@mui/material";
 import { MenuItem } from "@mui/material";
 import Markdown from "react-markdown";
 import { AppControls } from "../shared/AppControls";
-
-const messages = [
-  {
-    id: 1,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 2,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 3,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 4,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 5,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 6,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 7,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 8,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 9,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 10,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 11,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 12,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 13,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 14,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 15,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 16,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 17,
-    message: "message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 18,
-    message:
-      "message received message received message received message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 19,
-    message: "message sent message sent",
-    direction: "outbound",
-    createdAt: Date.now(),
-  },
-  {
-    id: 20,
-    message: "message received",
-    direction: "inbound",
-    createdAt: Date.now(),
-  },
-] as const;
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useRootElement } from "@src/hooks/useRootElement";
 
 export const ChatGpt = () => {
   return (
@@ -289,12 +168,27 @@ const ConversationFooter = styled(Stack)({
 });
 
 export const Conversation = () => {
+  const [mounted, setMounted] = useState(false);
+  const rootEl = useRootElement();
   const {
     data: { messages, pending, model },
     updateData,
     dataSyncing,
   } = useChatGptState();
   const { chatGpt } = useServicesContext();
+
+  const scrollToBottom = () => {
+    const scrollableEl = rootEl.querySelector(
+      `#${constants.EXTENSION_NAME}-scrollable-container`
+    );
+    if (scrollableEl) {
+      scrollableEl.scrollTop = scrollableEl.scrollHeight;
+    }
+  };
+
+  useLayoutEffect(() => {
+    scrollToBottom();
+  }, [rootEl]);
 
   const handleSubmit = (message: string) => {
     let messagesClone = [
@@ -311,12 +205,18 @@ export const Conversation = () => {
       composerDraft: "",
       pending: true,
     });
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
 
     chatGpt
       .getChatGptResponse(messagesClone, model)
       .then((response) => {
         messagesClone = [...messagesClone, response];
         updateData({ messages: messagesClone, pending: false });
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
       })
       .catch((error) => {
         console.error(error);
@@ -331,8 +231,9 @@ export const Conversation = () => {
     <MessagesContainer
       ref={(el) => {
         if (el) {
-          // scroll to bottom
-          el.scrollTop = el.scrollHeight;
+          setMounted(true);
+        } else {
+          setMounted(false);
         }
       }}
       flex={1}
@@ -435,7 +336,7 @@ export const Message = ({ message }: { message: Message }) => {
     <MessageContainer direction={inbound ? "row" : "row-reverse"} spacing={1}>
       <Avatar
         sx={{ width: 24, height: 24 }}
-        src={inbound ? chatGptIcon : undefined}
+        src={inbound ? chrome.runtime.getURL("chatgpt-icon.png") : undefined}
       >
         {message.direction[0].toUpperCase()}
       </Avatar>
@@ -443,7 +344,35 @@ export const Message = ({ message }: { message: Message }) => {
         elevation={inbound ? 0 : 2}
         sx={{ padding: inbound ? 0 : 1, borderRadius: 2 }}
       >
-        <Markdown>{message.message}</Markdown>
+        <Markdown
+          components={{
+            code({ node, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || "");
+              return match ? (
+                <SyntaxHighlighter
+                  children={String(children).replace(/\n$/, "")}
+                  // @ts-expect-error
+                  style={{
+                    ...tomorrow,
+                    'pre[class*="language-"]': {
+                      ...tomorrow['pre[class*="language-"]'],
+                      width: 330,
+                    },
+                  }}
+                  language={match[1]}
+                  PreTag="div"
+                  {...props}
+                />
+              ) : (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
+        >
+          {message.message}
+        </Markdown>
       </Paper>
     </MessageContainer>
   );

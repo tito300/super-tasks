@@ -18,6 +18,7 @@ import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
 import AddIcon from "@mui/icons-material/Add";
 import chatGptCalendarIcon from "@assets/img/chatgpt-icon.png";
 import { constants } from "@src/config/constants";
+import { Close } from "@mui/icons-material";
 
 const AppContainer = styled(Paper)({
   position: "relative",
@@ -43,10 +44,15 @@ export function TabsManager({
 } & StackProps) {
   const {
     data: { currentTab },
+    updateData,
   } = useUserState();
   const scriptType = useScriptType();
 
   useLogRender("TabsManager");
+
+  const handleExtensionClose = () => {
+    updateData({ buttonExpanded: false });
+  };
 
   return (
     <Stack
@@ -67,7 +73,7 @@ export function TabsManager({
       }}
     >
       <TabContext value={currentTab}>
-        {!hideTabs && <NavigationTabs />}
+        {!hideTabs && <NavigationTabs onClose={handleExtensionClose} />}
         <AppContainer
           elevation={2}
           id={`${constants.EXTENSION_NAME}-scrollable-container`}
@@ -117,7 +123,7 @@ export function TabsManager({
   );
 }
 
-function NavigationTabs() {
+function NavigationTabs({ onClose }: { onClose: () => void }) {
   const scriptType = useScriptType();
   const {
     data: { selectedApps },
@@ -136,6 +142,9 @@ function NavigationTabs() {
         {calendarAvailable && <TabOption tabName="calendar" />}
         {chatGptAvailable && <TabOption tabName="chatGpt" />}
         {canAddMore && scriptType === "Popup" && <TabOption tabName="add" />}
+        <IconButton sx={{ ml: "auto" }} size="small" onClick={onClose}>
+          <Close fontSize="small" />
+        </IconButton>
       </TabIconsContainer>
       {scriptType === "Popup" && (
         <Box
@@ -162,13 +171,18 @@ function TabOption({ tabName }: { tabName: TabName }) {
       <img
         src={chrome.runtime.getURL("google-tasks-icon.png")}
         alt="tasks"
-        width={20}
-        height={20}
+        width={18}
+        height={18}
       />
     ) : tabName === "calendar" ? (
       <img src={googleCalendarIcon} alt="calendar" width={18} height={18} />
     ) : tabName === "chatGpt" ? (
-      <img src={chatGptCalendarIcon} alt="calendar" width={18} height={18} />
+      <img
+        src={chrome.runtime.getURL("chatgpt-icon.png")}
+        alt="calendar"
+        width={18}
+        height={18}
+      />
     ) : (
       <AddIcon fontSize="small" />
     );
@@ -209,26 +223,25 @@ const TabIconStyled = styled(IconButton)<{
   // @ts-ignore
   border: `1px solid ${theme.palette.divider}`,
   borderBottom: "none",
-  borderTopRightRadius: scriptType === "Content" ? 4 : 2,
-  borderTopLeftRadius: scriptType === "Content" ? 4 : 2,
+  borderTopRightRadius: 2,
+  borderTopLeftRadius: 2,
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
   // @ts-ignore
-  padding: scriptType === "Content" ? "3px 14px" : "5px 14px",
+  padding: "5px 10px",
   ":hover": {
     backgroundColor: "#f1f1f1",
   },
 
   ...(selected
     ? {
-        backgroundColor: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.primary.main}`,
-        padding: "5px 14px",
+        backgroundColor: "#f1f1f1",
+        border: `1px solid #9e9e9e`,
         boxShadow:
           scriptType === "Content" ? "none" : "0px 0px 4px 2px #0000004a",
       }
     : {
-        marginLeft: "-4px",
+        // marginLeft: "-4px",
         zIndex: -1,
         // ":hover": {
         //   backgroundColor: #f1f1f1,

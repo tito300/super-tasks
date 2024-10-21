@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 import { useUserSettings } from "./UserSettingsProvider";
 import { TabName, UserSettings } from "@src/config/settingsDefaults";
 import { useSyncedState } from "@src/hooks/useSyncedState";
+import { useScriptType } from "./ScriptTypeProvider";
 
 export type UserState = {
   currentTab: TabName;
@@ -11,6 +12,7 @@ export type UserState = {
   darkMode: boolean;
   tokens: UserSettings["tokens"];
   selectedApps: UserSettings["selectedApps"];
+  position: { x: number | null; y: number | null };
 };
 
 export type UserStateContextType = {
@@ -21,6 +23,7 @@ export type UserStateContextType = {
 
 const UserStateContext = createContext<UserStateContextType>(null!);
 export function UserStateProvider({ children }: { children: React.ReactNode }) {
+  const scriptType = useScriptType();
   const { userSettings } = useUserSettings();
   const syncedState = useSyncedState<UserState>("userState", userSettings, {
     buttonExpanded: userSettings.buttonExpanded,
@@ -30,6 +33,10 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     darkMode: userSettings.darkMode,
     tokens: userSettings.tokens,
     selectedApps: userSettings.selectedApps,
+    position:
+      scriptType === "Content"
+        ? { x: window.innerWidth - 38, y: window.innerHeight - 32 }
+        : { x: null, y: null },
   });
 
   return (

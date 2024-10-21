@@ -17,11 +17,7 @@ export const userSettingsDefaults = {
   syncWindowNotifications: true,
   windowNotifications: true,
   syncSelectedTaskListId: true,
-  position: {
-    x: 0,
-    y: 0,
-  },
-  syncPosition: false,
+  syncPosition: true,
   syncSelectedApps: true,
   selectedApps: {
     gTasks: false,
