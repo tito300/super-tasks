@@ -6,6 +6,9 @@ import React, {
   forwardRef,
   useEffect,
   useLayoutEffect,
+  useMemo,
+  startTransition,
+  useRef,
 } from "react";
 import { useUserState } from "./Providers/UserStateProvider";
 
@@ -14,6 +17,30 @@ const Container = styled("div")(() => ({
   transform: "translate(-100%, -100%)",
 }));
 
+export const convertRelativeToAbsolutePosition = (
+  relativeFromRight: number,
+  relativeFromTop: number
+) => {
+  return {
+    x: (window.innerWidth * relativeFromRight) / 100,
+    y: (window.innerHeight * relativeFromTop) / 100,
+  };
+};
+
+const isDraggingContext = React.createContext<boolean>(null!);
+
+export const useIsDraggingContext = () => {
+  const context = React.useContext(isDraggingContext);
+
+  if (context === null) {
+    throw new Error(
+      "useIsDraggingContext must be used within a Draggable component"
+    );
+  }
+
+  return context;
+};
+
 export const Draggable = forwardRef<
   HTMLDivElement,
   {
@@ -21,35 +48,41 @@ export const Draggable = forwardRef<
     id?: string;
     defaultPosition?: { x: number | null; y: number | null };
     className?: string;
+    onDragStart?: () => void;
+    onDragEnd?: () => void;
     children: React.ReactNode | (() => React.ReactNode);
   }
 >(function Draggable(
-  { children, sx: inSx, id, defaultPosition, ...props },
+  { children, sx: inSx, id, defaultPosition, onDragEnd, onDragStart, ...props },
   ref
 ) {
+  const { data: userState, updateData, dataSyncing } = useUserState();
+  const [isDragging, setIsDragging] = useState(false);
   const [offsets, setOffsets] = useState<{
     x?: number | null;
     y?: number | null;
-    width?: number;
-    height?: number;
-  }>(() => ({
-    ...defaultPosition,
-    width: window.innerWidth,
-    height: window.innerHeight,
-  }));
-  const { data: userState, updateData, dataSyncing } = useUserState();
+  }>(() => {
+    return {
+      ...defaultPosition,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+  });
 
   useLayoutEffect(() => {
     if (
       !dataSyncing &&
-      userState.position?.x != null &&
-      userState.position?.y != null
+      userState.position?.distanceFromRight != null &&
+      userState.position?.distanceFromTop != null
     ) {
+      // assuming distanceFromRight and distanceFromTop are percentage values
+      const x =
+        (window.innerWidth * userState.position.distanceFromRight) / 100;
+      const y = (window.innerHeight * userState.position.distanceFromTop) / 100;
+
       setOffsets({
-        x: userState.position.x,
-        y: userState.position.y,
-        width: window.innerWidth,
-        height: window.innerHeight,
+        x: x,
+        y: y,
       });
     }
   }, [dataSyncing]);
@@ -58,22 +91,24 @@ export const Draggable = forwardRef<
     // observe window resizing and update the position
     const onResize = () => {
       setOffsets((prev) => {
-        const xDiff = prev.width! - prev.x!;
-        const yDiff = prev.height! - prev.y!;
+        const positions = convertRelativeToAbsolutePosition(
+          userState.position.distanceFromRight ?? 95,
+          userState.position.distanceFromTop ?? 95
+        );
         return {
-          x: window.innerWidth - xDiff,
-          y: window.innerHeight - yDiff,
-          width: window.innerWidth,
-          height: window.innerHeight,
+          ...positions,
         };
       });
     };
     window.addEventListener("resize", onResize);
 
     return () => {
-      window.onresize = null;
+      window.removeEventListener("resize", onResize);
     };
-  }, []);
+  }, [
+    userState.position.distanceFromRight,
+    userState.position.distanceFromTop,
+  ]);
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -86,6 +121,7 @@ export const Draggable = forwardRef<
       let x: number, y: number;
       const onMouseMove = (e: MouseEvent) => {
         if (Date.now() - startTime < 200) return;
+        onDragStart?.();
 
         x = e.clientX;
         y = e.clientY;
@@ -94,10 +130,21 @@ export const Draggable = forwardRef<
       };
 
       const onMouseUp = (e: MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setTimeout(() => {
+          onDragEnd?.();
+        }, 500);
+
         window.removeEventListener("mousemove", onMouseMove);
         window.removeEventListener("mouseup", onMouseUp);
 
-        if (x && y) updateData({ position: { x, y } });
+        if (x && y) {
+          const distanceFromRight = (x * 100) / window.innerWidth;
+          const distanceFromTop = (y * 100) / window.innerHeight;
+
+          updateData({ position: { distanceFromRight, distanceFromTop } });
+        }
       };
 
       window.addEventListener("mousemove", onMouseMove);
@@ -123,7 +170,9 @@ export const Draggable = forwardRef<
       sx={sx}
       {...props}
     >
-      {typeof children === "function" ? children() : children}
+      <isDraggingContext.Provider value={isDragging}>
+        {typeof children === "function" ? children() : children}
+      </isDraggingContext.Provider>
     </Container>
   );
 });

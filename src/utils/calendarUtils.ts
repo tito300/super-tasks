@@ -9,55 +9,109 @@ import timeZone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timeZone);
 
+// [main recurring events]
+// [modified recurring events]
+// [modified recurring exceptions]
+// [single events]
+
+function isSingleEvent(event: SavedCalendarEvent) {
+  return (
+    !event.recurringEventId && !event.originalStartTime && !event.recurrence
+  );
+}
+
+function findSingleEvents(calendarEvents: SavedCalendarEvent[]) {
+  return calendarEvents.filter(isSingleEvent);
+}
+
+function isRecurringEvent(event: SavedCalendarEvent) {
+  return (
+    !!event.recurrence && !event.recurringEventId && !event.id.includes("_")
+  );
+}
+function findRecurringEvents(calendarEvents: SavedCalendarEvent[]) {
+  return calendarEvents.filter(isRecurringEvent);
+}
+function isModifiedRecurringEvent(event: SavedCalendarEvent) {
+  return (
+    event.id.includes("_") && !event.recurringEventId && !!event.recurrence
+  );
+}
+function isRecurringEventException(event: SavedCalendarEvent) {
+  return !!event.recurringEventId;
+}
+
+function getLastModifiedRecurringEvent(
+  event: SavedCalendarEvent,
+  calendarEvents: SavedCalendarEvent[]
+) {
+  const modifiedEvents = calendarEvents.filter((e) => {
+    return isModifiedRecurringEvent(e) && e.id.split("_")[0] === event.id;
+  });
+
+  if (!modifiedEvents.length) return event;
+
+  // sort by modification date and return the last one
+  const lastModified = modifiedEvents.sort((a, b) => {
+    // date string example: 20220301T000000Z
+    return dayjs(b.id.split("_")[1], "YYYYMMDDThhmmss").diff(
+      dayjs(a.id.split("_")[1], "YYYYMMDDThhmmss")
+    );
+  })[0];
+
+  return lastModified;
+}
+
+function findEventTodaysException(
+  event: SavedCalendarEvent,
+  calendarEvents: SavedCalendarEvent[]
+) {
+  return calendarEvents.find((e) => {
+    return (
+      isRecurringEventException(e) &&
+      e.recurringEventId === event.id &&
+      getEventStartTime(e)?.isToday()
+    );
+  });
+}
+
+function validDisplayEvent(event: SavedCalendarEvent) {
+  return event.status !== "cancelled" && event.eventType === "default";
+}
+
+// Any exceptions to the recurring events are provided as separate events
+// There are two types of changes:
+//   1- recurring event change: change that affects all future occurrences
+//   2- single event change: change that affects only one occurrence
+// event level changes are identified by the presence of recurringEventId
+// while the single event changes are identified by by it's absence
+// in either cases the modified events are distinguished from  main event
+// by appending "<id>_<timeofmodification>" to id. example: "123456_20220301T000000Z"
 export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const flatEvents: SavedCalendarEvent[] = [];
-
-  const cancelledEvents = calendarEvents.reduce((acc, event) => {
-    if (event.status === "cancelled") {
-      acc[event.recurringEventId] =
-        event.start?.dateTime ||
-        event.start?.date ||
-        event.originalStartTime?.dateTime ||
-        event.originalStartTime?.date;
+  const singleEvents = findSingleEvents(calendarEvents);
+  const recurringModifiedEvents = findRecurringEvents(calendarEvents).map(
+    (event) => {
+      return getLastModifiedRecurringEvent(event, calendarEvents);
     }
-    return acc;
-  }, {} as Record<string, string>);
+  );
+  const recurringExceptions = calendarEvents.filter(isRecurringEventException);
 
-  const modifiedEvents = calendarEvents.reduce((acc, event) => {
-    if (event.status === "confirmed" && event.recurringEventId) {
-      acc[event.recurringEventId] = event;
-    }
-    return acc;
-  }, {} as Record<string, SavedCalendarEvent>);
+  singleEvents.forEach((event) => {
+    if (!validDisplayEvent(event)) return;
+    if (getEventStartTime(event)?.isToday()) flatEvents.push(event);
+  });
 
-  calendarEvents.forEach((event) => {
-    const startTime = getEventStartTime(event);
-    if (!startTime && event.start?.date) {
-      // event is all day
-      event.allDay = true;
+  recurringModifiedEvents.forEach((event) => {
+    if (!validDisplayEvent(event)) return;
+    const todaysException = findEventTodaysException(
+      event,
+      recurringExceptions
+    );
 
-      if (dayjs(event.start.date).isToday()) {
-        flatEvents.push(event);
-      } else {
-        return;
-      }
-    }
-
-    if (event.eventType !== "default") return;
-    if (event.status === "cancelled") return;
-    if (event.recurrence?.length) {
-      if (
-        cancelledEvents[event.id] &&
-        dayjs(cancelledEvents[event.id]).isToday()
-      )
-        return;
-      if (
-        modifiedEvents[event.id] &&
-        modifiedEvents[event.id].start?.dateTime &&
-        dayjs(modifiedEvents[event.id].originalStartTime.dateTime).isToday()
-      )
-        return;
-
+    if (todaysException && validDisplayEvent(todaysException)) {
+      flatEvents.push(todaysException);
+    } else {
       const todaysOccurrence = getTodaysOccurrences(event);
       todaysOccurrence.forEach((occurrence) => {
         event = {
@@ -67,21 +121,30 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
 
         flatEvents.push(event);
       });
-    } else if (dayjs(getEventStartTime(event)).isToday()) {
-      flatEvents.push(event);
     }
   });
 
   return flatEvents;
 }
 
-export function sortCalendarEvents(calendarEvents: SavedCalendarEvent[]) {
-  console.log("calendarEvents", calendarEvents);
+function getTodaysCancelledEvents(calendarEvents: SavedCalendarEvent[]) {
+  return calendarEvents.reduce((acc, event) => {
+    if (event.status === "cancelled") {
+      acc[event.recurringEventId] =
+        event.start?.dateTime ||
+        event.start?.date ||
+        event.originalStartTime?.dateTime ||
+        event.originalStartTime?.date;
+    }
+    return acc;
+  }, {} as Record<string, string>);
+}
+
+export function getTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const sortedEvents = flattenTodaysEvents(calendarEvents).sort((a, b) => {
     const aStart = getEventStartTime(a);
     const bStart = getEventStartTime(b);
 
-    // return aStart.diff(bStart);
     return aStart ? aStart.diff(bStart) : 0;
   });
 

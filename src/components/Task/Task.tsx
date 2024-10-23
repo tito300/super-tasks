@@ -166,6 +166,7 @@ export function Task({
     <FormProvider {...formFields}>
       <ClickAwayListener onClickAway={handleClickAway}>
         <StyledTask
+          pinned={data.pinned}
           ref={setNodeRef}
           style={style}
           id="supertasks-task"

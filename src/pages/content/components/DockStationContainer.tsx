@@ -23,6 +23,10 @@ import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { runtime } from "webextension-polyfill";
 import { useMountedRef } from "@src/hooks/useMountedRef";
 import { useLazyMounted } from "@src/hooks/useMounted";
+import {
+  convertRelativeToAbsolutePosition,
+  useIsDraggingContext,
+} from "@src/components/Draggable";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -31,6 +35,8 @@ import { useLazyMounted } from "@src/hooks/useMounted";
 // }));
 
 export function DockStationContainer({ children }: PropsWithChildren) {
+  const buttonsContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const mounted = useLazyMounted();
   const queryClient = useQueryClient();
   const {
@@ -45,6 +51,8 @@ export function DockStationContainer({ children }: PropsWithChildren) {
   }
 
   const handleButtonClick = (app: "calendar" | "tasks" | "chatGpt") => {
+    if (isDragging) return;
+
     updateUserState({
       currentTab: app,
       buttonExpanded: true,
@@ -59,13 +67,45 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     focusAddTaskInput();
   };
 
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const defaultDistanceFromRight = position.distanceFromRight ?? 95;
+  const defaultDistanceFromTop = position.distanceFromTop ?? 95;
+  const defaultPosition = convertRelativeToAbsolutePosition(
+    defaultDistanceFromRight,
+    defaultDistanceFromTop
+  );
+
+  const pagePosition =
+    defaultDistanceFromRight >= 50 && defaultDistanceFromTop >= 50
+      ? "bottom-right"
+      : defaultDistanceFromRight >= 50 && defaultDistanceFromTop < 50
+      ? "top-right"
+      : defaultDistanceFromRight < 50 && defaultDistanceFromTop >= 50
+      ? "bottom-left"
+      : "top-left";
+
   return (
     <DraggablePopperStyled
       id={`${constants.EXTENSION_NAME}-expand-wrapper`}
-      defaultPosition={position}
+      defaultPosition={defaultPosition}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       popperProps={{
         open: mounted && !!buttonExpanded,
-        placement: "right-end",
+        placement:
+          pagePosition === "bottom-right"
+            ? "bottom-end"
+            : pagePosition === "bottom-left"
+            ? "bottom-start"
+            : pagePosition === "top-right"
+            ? "top-end"
+            : "top-start",
         keepMounted: true,
       }}
       popperChildren={
@@ -77,30 +117,19 @@ export function DockStationContainer({ children }: PropsWithChildren) {
           }}
           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           color="default"
-          badgeContent={
-            <IconButton
-              sx={{ padding: 0 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                updateUserState({ buttonExpanded: false });
-              }}
-            >
-              <Remove sx={{ fontSize: 16, color: "white" }} />
-            </IconButton>
-          }
         >
-          {/* <Box
-            id="temp-container"
-            sx={{ display: buttonExpanded ? "block" : "none" }}
-          > */}
           {children}
-          {/* </Box> */}
         </BadgeStyled>
       }
     >
       {!buttonExpanded && (
-        <ButtonsContainer>
+        <ButtonsContainer
+          ref={buttonsContainerRef}
+          pagePosition={pagePosition}
+          isDragging={isDragging}
+        >
           <ExtensionAiButton
+            pagePosition={pagePosition}
             onClick={() => handleButtonClick("chatGpt")}
             id={`${constants.EXTENSION_NAME}-ai-button`}
           >
@@ -112,6 +141,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
             />
           </ExtensionAiButton>
           <ExtensionCalendarButton
+            pagePosition={pagePosition}
             onClick={() => handleButtonClick("calendar")}
             id={`${constants.EXTENSION_NAME}-calendar-btn`}
           >
@@ -125,8 +155,11 @@ export function DockStationContainer({ children }: PropsWithChildren) {
             </CalendarIconBadge>
           </ExtensionCalendarButton>
           <ExtensionTaskButton
+            pagePosition={pagePosition}
             id={`${constants.EXTENSION_NAME}-tasks-button`}
-            onClick={() => handleButtonClick("tasks")}
+            onClick={() => {
+              handleButtonClick("tasks");
+            }}
           >
             <TasksReminderBadge>
               <BadgeStyled
@@ -187,31 +220,36 @@ const DraggablePopperStyled = styled(DraggablePopper)(() => ({
   },
 }));
 
-const ExtensionTaskButton = styled(IconButton)(({ theme }) => {
-  return {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    boxShadow: theme.shadows[3],
-    backgroundColor: "#fff",
-    fontSize: 0,
-    cursor: "grab",
-    [":hover"]: {
+const ExtensionTaskButton = styled(IconButton)<{ pagePosition: PagePosition }>(
+  ({ theme }) => {
+    return {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      boxShadow: theme.shadows[3],
       backgroundColor: "#fff",
-    },
-  };
-});
+      transform: "translate(-50%, -50%)",
+      fontSize: 0,
+      cursor: "grab",
+      [":hover"]: {
+        backgroundColor: "#fff",
+      },
+    };
+  }
+);
 
-const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
+const ExtensionCalendarButton = styled(IconButton)<{
+  pagePosition: PagePosition;
+}>(({ pagePosition, theme, ref }) => {
   return {
     position: "absolute",
-    bottom: 0,
-    right: 0,
+    top: "50%",
+    left: "50%",
     boxShadow: theme.shadows[3],
     marginBottom: 2,
     backgroundColor: "#fff",
     color: "white",
-    transform: "translateY(6%)",
+    transform: "translate(-50%, -50%)",
     fontSize: 0,
     padding: "12px",
     cursor: "grab",
@@ -221,38 +259,58 @@ const ExtensionCalendarButton = styled(IconButton)(({ theme }) => {
   };
 });
 
-const ExtensionAiButton = styled(IconButton)(({ theme }) => {
-  return {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    boxShadow: theme.shadows[3],
-    marginBottom: 2,
-    backgroundColor: "#fff",
-    color: "white",
-    transform: "translateY(12%)",
-    fontSize: 0,
-    padding: "12px",
-    cursor: "grab",
-    ["&:hover"]: {
-      boxShadow: theme.shadows[6],
-    },
-  };
-});
+const ExtensionAiButton = styled(IconButton)<{ pagePosition: PagePosition }>(
+  ({ pagePosition, theme }) => {
+    return {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      boxShadow: theme.shadows[3],
+      marginBottom: 2,
+      backgroundColor: "#fff",
+      color: "white",
+      transform: "translate(-50%, -50%)",
+      fontSize: 0,
+      padding: "12px",
+      cursor: "grab",
+      ["&:hover"]: {
+        boxShadow: theme.shadows[6],
+      },
+    };
+  }
+);
 
-const ButtonsContainer = styled(Stack)(({ theme }) => {
+type PagePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+const ButtonsContainer = styled(Stack)<{
+  pagePosition: PagePosition;
+  isDragging: boolean;
+}>(({ pagePosition, isDragging }) => {
   return {
-    height: 51,
-    width: 51,
-    "&:hover": {
-      height: 120,
-      width: 120,
-    },
-    [`:hover& #${constants.EXTENSION_NAME}-calendar-btn`]: {
-      transform: "translateY(-108%)",
-    },
-    [`:hover& #${constants.EXTENSION_NAME}-ai-button`]: {
-      transform: "translateX(-116%)",
-    },
+    height: 50,
+    width: 50,
+    ...(isDragging
+      ? null
+      : {
+          "&:hover": {
+            height: 120,
+            width: 120,
+            transform: "translate(35px, 35px)",
+          },
+          [`:hover& #${constants.EXTENSION_NAME}-calendar-btn`]: {
+            transform:
+              pagePosition === "bottom-right" || pagePosition === "bottom-left"
+                ? "translate(-26px, -83px)"
+                : "translate(-26px, 32px)",
+            transition: "transform 0.1s",
+          },
+          [`:hover& #${constants.EXTENSION_NAME}-ai-button`]: {
+            transform:
+              pagePosition === "bottom-right" || pagePosition === "top-right"
+                ? "translate(-85px, -26px);"
+                : "translate(32px, -26px)",
+            transition: "transform 0.1s",
+          },
+        }),
   };
 });

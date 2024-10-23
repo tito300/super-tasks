@@ -51,7 +51,11 @@ export function TabsManager({
   useLogRender("TabsManager");
 
   const handleExtensionClose = () => {
-    updateData({ buttonExpanded: false });
+    if (scriptType === "Content") {
+      updateData({ buttonExpanded: false });
+    } else if (scriptType === "Popup") {
+      window.close();
+    }
   };
 
   return (
@@ -77,6 +81,7 @@ export function TabsManager({
         <AppContainer
           elevation={2}
           id={`${constants.EXTENSION_NAME}-scrollable-container`}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           <Stack
             flexGrow={1}

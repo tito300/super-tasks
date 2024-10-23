@@ -9,7 +9,7 @@ export const userSettingsDefaults = {
   darkMode: false,
   syncDarkMode: true,
   buttonExpanded: false,
-  syncButtonExpanded: true,
+  syncButtonExpanded: false,
   accordionExpanded: false,
   syncAccordionExpanded: false,
   blurText: false,

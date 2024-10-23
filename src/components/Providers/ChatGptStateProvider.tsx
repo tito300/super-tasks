@@ -4,7 +4,11 @@ import { ChatMessage } from "@src/chatGpt.types";
 import { useChatGptSettings } from "./ChatGptSettingsProvider";
 // import { useChatGptSettings } from "./ChatGptSettingsProvider";
 
-export const llmModels = ["gpt-3.5-turbo", "gpt-4o-mini"] as const;
+export const llmModels = [
+  "gpt-3.5-turbo",
+  "gpt-4o-mini",
+  "chatgpt-4o-latest",
+] as const;
 export type LlmModel = (typeof llmModels)[number];
 
 export type ChatGptState = {

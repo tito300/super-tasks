@@ -1,36 +1,40 @@
 import { styled } from "@mui/material";
 
-export const StyledTask = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "flex-start",
-  justifyContent: "space-between",
-  width: "100%",
-  cursor: "pointer",
-  paddingTop: theme.spacing(0),
-  paddingBottom: theme.spacing(0),
-  paddingLeft: theme.spacing(0.25),
-  backgroundColor: theme.palette.background.paper,
-  " #supertasks-options": {
-    visibility: "hidden",
-  },
-  " .supertasks-drag-icon": {
-    visibility: "hidden",
-  },
-  ":hover, :focus-within": {
-    backgroundColor: theme.palette.action.hover,
-
+export const StyledTask = styled("div")<{ pinned?: boolean }>(
+  ({ theme, pinned }) => ({
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    width: "100%",
+    cursor: "pointer",
+    paddingTop: theme.spacing(0),
+    paddingBottom: theme.spacing(0),
+    paddingLeft: theme.spacing(0.25),
+    backgroundColor: pinned
+      ? "rgb(182, 208, 225, 0.25)"
+      : theme.palette.background.paper,
     " #supertasks-options": {
-      visibility: "visible",
+      visibility: "hidden",
     },
     " .supertasks-drag-icon": {
-      visibility: "visible",
+      visibility: "hidden",
     },
+    ":hover, :focus-within": {
+      backgroundColor: theme.palette.action.hover,
 
-    " #axess-add-reminder-button, #axess-pin-task-button": {
-      visibility: "visible",
+      " #supertasks-options": {
+        visibility: "visible",
+      },
+      " .supertasks-drag-icon": {
+        visibility: "visible",
+      },
+
+      " #axess-add-reminder-button, #axess-pin-task-button": {
+        visibility: "visible",
+      },
     },
-  },
-}));
+  })
+);
 
 type ExpandedContainerProps = { expanded: boolean };
 export const ExpandContainer = styled("div")<ExpandedContainerProps>(

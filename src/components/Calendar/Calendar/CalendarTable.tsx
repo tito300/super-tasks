@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import isToday from "dayjs/plugin/isToday";
-import { sortCalendarEvents, stackEvents } from "@src/utils/calendarUtils";
+import { getTodaysEvents, stackEvents } from "@src/utils/calendarUtils";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { useRootElement } from "@src/hooks/useRootElement";
 import { constants } from "@src/config/constants";
@@ -27,7 +27,7 @@ export function CalendarTable({
   const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
 
   const { events, allDayEvents } = useMemo(() => {
-    const sortedEvents = sortCalendarEvents(calendarEvents);
+    const sortedEvents = getTodaysEvents(calendarEvents);
 
     // stacks overlapping events
     stackEvents(sortedEvents);

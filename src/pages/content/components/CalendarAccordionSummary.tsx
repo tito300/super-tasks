@@ -8,7 +8,7 @@ import { CalendarEvent } from "@src/calendar.types";
 import {
   filterFutureEvents,
   getEventStartTime,
-  sortCalendarEvents,
+  getTodaysEvents,
 } from "@src/utils/calendarUtils";
 import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
@@ -117,9 +117,7 @@ export function useNextEventTimer() {
     if (!calendarEvents?.length) return;
 
     // sort event by date
-    const filteredEvents = filterFutureEvents(
-      sortCalendarEvents(calendarEvents)
-    );
+    const filteredEvents = filterFutureEvents(getTodaysEvents(calendarEvents));
 
     const nextEvent = filteredEvents[0];
     setNextEvent(nextEvent);

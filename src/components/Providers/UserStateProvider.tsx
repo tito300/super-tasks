@@ -12,7 +12,10 @@ export type UserState = {
   darkMode: boolean;
   tokens: UserSettings["tokens"];
   selectedApps: UserSettings["selectedApps"];
-  position: { x: number | null; y: number | null };
+  position: {
+    distanceFromRight: number | null;
+    distanceFromTop: number | null;
+  };
 };
 
 export type UserStateContextType = {
@@ -33,10 +36,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     darkMode: userSettings.darkMode,
     tokens: userSettings.tokens,
     selectedApps: userSettings.selectedApps,
-    position:
-      scriptType === "Content"
-        ? { x: window.innerWidth - 38, y: window.innerHeight - 32 }
-        : { x: null, y: null },
+    position: { distanceFromRight: null, distanceFromTop: null },
   });
 
   return (

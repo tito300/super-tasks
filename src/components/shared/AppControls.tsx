@@ -1,9 +1,15 @@
-import { Refresh, Settings } from "@mui/icons-material";
+import {
+  Refresh,
+  Settings,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 import { LinearProgress } from "@mui/material";
 import { Stack, StackProps } from "@mui/material";
 import { CircularProgress, IconButton, styled } from "@mui/material";
 import { Box } from "@mui/material";
 import { cloneElement } from "react";
+import { useUserState } from "../Providers/UserStateProvider";
 
 const Container = styled(Stack)(({ theme }) => ({
   position: "sticky",
@@ -45,6 +51,11 @@ export function AppControls({
   onReloadClick: () => void;
   onSettingsClick: () => void;
 }) {
+  const {
+    data: { blurText },
+    updateData: updateUserState,
+  } = useUserState();
+
   const reloadIcon = inReloadIcon
     ? cloneElement(inReloadIcon, { fontSize: "small" })
     : null;
@@ -54,6 +65,27 @@ export function AppControls({
       <Wrapper>
         {children}
         <ControlsContainer>
+          {blurText ? (
+            <IconButton
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                updateUserState({ blurText: false });
+              }}
+            >
+              <Visibility color="action" fontSize="small" />
+            </IconButton>
+          ) : (
+            <IconButton
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                updateUserState({ blurText: true });
+              }}
+            >
+              <VisibilityOff color="action" fontSize="small" />
+            </IconButton>
+          )}
           <IconButton
             color={settingsOpen ? "primary" : "default"}
             onClick={onSettingsClick}

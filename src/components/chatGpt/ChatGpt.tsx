@@ -9,10 +9,8 @@ import {
   StackProps,
   styled,
   TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
-import chatGptIcon from "@assets/img/chatgpt-icon.png";
 import { constants } from "@src/config/constants";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import {
@@ -20,7 +18,7 @@ import {
   llmModels,
   useChatGptState,
 } from "../Providers/ChatGptStateProvider";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { Chip } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -31,6 +29,14 @@ import { AppControls } from "../shared/AppControls";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useRootElement } from "@src/hooks/useRootElement";
+import { useUserState } from "../Providers/UserStateProvider";
+import { useLogRender } from "@src/hooks/useLogRender";
+
+// prevents prism from automatically highlighting code blocks on page
+// @ts-expect-error
+window.Prism = window.Prism || {};
+// @ts-expect-error
+window.Prism.manual = true;
 
 export const ChatGpt = () => {
   return (
@@ -331,7 +337,13 @@ export const MessageContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export const Message = ({ message }: { message: Message }) => {
+  const {
+    data: { blurText },
+  } = useUserState();
   const inbound = message.direction === "inbound";
+
+  useLogRender("Message");
+
   return (
     <MessageContainer direction={inbound ? "row" : "row-reverse"} spacing={1}>
       <Avatar
@@ -342,7 +354,11 @@ export const Message = ({ message }: { message: Message }) => {
       </Avatar>
       <Paper
         elevation={inbound ? 0 : 2}
-        sx={{ padding: inbound ? 0 : 1, borderRadius: 2 }}
+        sx={{
+          padding: inbound ? 0 : 1,
+          borderRadius: 2,
+          filter: blurText ? "blur(7px)" : "none",
+        }}
       >
         <Markdown
           components={{
@@ -356,7 +372,7 @@ export const Message = ({ message }: { message: Message }) => {
                     ...tomorrow,
                     'pre[class*="language-"]': {
                       ...tomorrow['pre[class*="language-"]'],
-                      width: 330,
+                      width: 300,
                     },
                   }}
                   language={match[1]}

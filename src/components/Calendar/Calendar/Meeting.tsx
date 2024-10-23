@@ -2,7 +2,9 @@ import {
   CheckCircle,
   CheckCircleOutline,
   Close,
+  CloseOutlined,
   Help,
+  LocationCity,
   PeopleAltOutlined,
   Subject,
 } from "@mui/icons-material";
@@ -199,14 +201,14 @@ export function Meeting({ event }: { event: CalendarEvent }) {
           horizontal: "left",
         }}
       >
-        <Stack p={1} pb={2} width={345}>
+        <Stack p={0.5} pb={2} width={345}>
           {/* <Stack
             direction="row"
             alignItems="center"
             justifyContent="space-between"
-            p={1}
+            p={0.5}
           ></Stack> */}
-          <Stack direction="row" alignItems="flex-start" p={1} pl={1.5}>
+          <Stack direction="row" alignItems="flex-start" p={0.5} pl={1.5}>
             <Box
               borderRadius={1}
               sx={{
@@ -268,6 +270,11 @@ export function Meeting({ event }: { event: CalendarEvent }) {
                               />
                             ) : attendee.responseStatus === "tentative" ? (
                               <Help color="action" sx={{ fontSize: 18 }} />
+                            ) : attendee.responseStatus === "declined" ? (
+                              <CloseOutlined
+                                color="error"
+                                sx={{ fontSize: 18 }}
+                              />
                             ) : undefined
                           }
                         >
@@ -292,8 +299,27 @@ export function Meeting({ event }: { event: CalendarEvent }) {
               )}
             </Stack>
           </Stack>
+          {event.location && (
+            <Stack direction="row" alignItems="flex-start" p={0.5} pl={1.5}>
+              <LocationCity fontSize="small" color="action" sx={{ mt: 1 }} />
+              <Stack ml={1}>
+                {event.location.includes("http") ? (
+                  <Button
+                    href={event.location}
+                    size="small"
+                    target="_blank"
+                    variant="text"
+                  >
+                    {event.location}
+                  </Button>
+                ) : (
+                  <Typography variant="body2">{event.location}</Typography>
+                )}
+              </Stack>
+            </Stack>
+          )}
           {event.description && (
-            <Stack direction="row" alignItems="flex-start" p={1} pl={1.5}>
+            <Stack direction="row" alignItems="flex-start" p={0.5} pl={1.5}>
               <Subject fontSize="small" color="action" sx={{ mt: 1 }} />
               <Stack ml={1}>
                 <Box
