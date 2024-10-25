@@ -1,9 +1,19 @@
-import { Theme } from "@mui/material";
+import { createTheme, Theme } from "@mui/material";
 
-export const commonAxcessTheme: Theme = {
+export const commonTheme: Theme = createTheme({
   typography: {
-    body1: {
-      fontSize: "16px",
+    htmlFontSize: 16,
+  },
+  components: {
+    MuiButton: {
+      defaultProps: {
+        disableRipple: true,
+      },
+    },
+    MuiButtonBase: {
+      defaultProps: {
+        disableRipple: true,
+      },
     },
   },
-};
+});

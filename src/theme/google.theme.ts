@@ -1,26 +1,7 @@
-import { createTheme, Theme } from "@mui/material";
-import { blue, cyan } from "@mui/material/colors";
+import { Theme } from "@mui/material";
+import { blue } from "@mui/material/colors";
 import { deepmerge } from "@mui/utils";
-import { Button, ButtonProps } from "@mui/material";
-import { commonAxcessTheme } from "./common.theme";
-
-export const commonTheme: Theme = deepmerge(
-  commonAxcessTheme,
-  createTheme({
-    components: {
-      MuiButton: {
-        defaultProps: {
-          disableRipple: true,
-        },
-      },
-      MuiButtonBase: {
-        defaultProps: {
-          disableRipple: true,
-        },
-      },
-    },
-  })
-);
+import { commonTheme } from "./common.theme";
 
 export const calendarTheme = deepmerge(commonTheme, {
   palette: {

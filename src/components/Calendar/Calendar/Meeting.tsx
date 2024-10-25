@@ -60,17 +60,21 @@ export const MeetingStyled = styled(Stack, {
     position: allDay ? "relative" : "absolute",
     left: positions.left,
     right: positions.right,
+    textDecoration: declined ? "line-through" : "none",
     border: `1px solid ${
-      needsAction
+      needsAction || declined || maybe
         ? theme.palette.primary.main
         : theme.palette.primary.contrastText
     }`,
     backgroundColor: needsAction
       ? theme.palette.background.paper
+      : declined || maybe
+      ? "transparent"
       : theme.palette.primary.main,
-    color: needsAction
-      ? theme.palette.primary.main
-      : theme.palette.primary.contrastText,
+    color:
+      needsAction || declined || maybe
+        ? theme.palette.primary.main
+        : theme.palette.primary.contrastText,
     padding: theme.spacing(0.5, 1),
     borderRadius: 4,
     overflow: "hidden",

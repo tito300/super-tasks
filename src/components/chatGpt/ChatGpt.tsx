@@ -18,7 +18,7 @@ import {
   llmModels,
   useChatGptState,
 } from "../Providers/ChatGptStateProvider";
-import { useLayoutEffect, useState } from "react";
+import { useDebugValue, useEffect, useLayoutEffect, useState } from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { Chip } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -31,6 +31,8 @@ import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useRootElement } from "@src/hooks/useRootElement";
 import { useUserState } from "../Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
+import { useScrollableEl } from "@src/hooks/useScrollableEl";
+import { useDebouncedCallback } from "@src/hooks/useDebouncedCallback";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -139,9 +141,22 @@ export const MessageComposer = ({
     data: { composerDraft },
     updateData,
   } = useChatGptState();
+  const [value, setValue] = useState(composerDraft);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateData({ composerDraft: e.target.value });
+    setValue(e.target.value);
   };
+
+  useEffect(() => {
+    setValue(composerDraft);
+  }, [composerDraft]);
+
+  useDebouncedCallback(
+    value,
+    (debouncedValue) => {
+      updateData({ composerDraft: debouncedValue });
+    },
+    1000 // high number because if there are many tabs open this could be a performance issue
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -152,7 +167,7 @@ export const MessageComposer = ({
   return (
     <Stack {...rest} direction="row" spacing={2} pb={1} alignItems="center">
       <TextField
-        value={composerDraft}
+        value={value}
         variant="filled"
         placeholder="Type a message"
         fullWidth
@@ -168,33 +183,50 @@ export const MessageComposer = ({
   );
 };
 
-const ConversationFooter = styled(Stack)({
-  flexGrow: 1,
+const ConversationFooter = styled(Stack)(({ theme }) => ({
+  position: "sticky",
+  bottom: 0,
   justifyContent: "flex-end",
-});
+  flexGrow: 1,
+  backgroundColor: "white",
+  padding: theme.spacing(0.75, 0, 0),
+}));
 
 export const Conversation = () => {
   const [mounted, setMounted] = useState(false);
-  const rootEl = useRootElement();
+  const scrollableEl = useScrollableEl();
   const {
     data: { messages, pending, model },
     updateData,
     dataSyncing,
   } = useChatGptState();
+  const {
+    data: { currentTab, buttonExpanded },
+  } = useUserState();
   const { chatGpt } = useServicesContext();
 
   const scrollToBottom = () => {
-    const scrollableEl = rootEl.querySelector(
-      `#${constants.EXTENSION_NAME}-scrollable-container`
-    );
     if (scrollableEl) {
       scrollableEl.scrollTop = scrollableEl.scrollHeight;
     }
   };
 
+  const scrollToMsgTop = (id: number) => {
+    if (!scrollableEl) return;
+
+    const el = scrollableEl.querySelector(
+      `#${constants.EXTENSION_NAME}-message-${id}`
+    ) as HTMLDivElement | null;
+
+    if (el) {
+      scrollableEl.scrollTo({ behavior: "smooth", top: el.offsetTop - 150 });
+    }
+  };
+
   useLayoutEffect(() => {
+    if (currentTab !== "chatGpt" || !buttonExpanded) return;
     scrollToBottom();
-  }, [rootEl]);
+  }, [scrollableEl, currentTab, buttonExpanded]);
 
   const handleSubmit = (message: string) => {
     let messagesClone = [
@@ -221,7 +253,7 @@ export const Conversation = () => {
         messagesClone = [...messagesClone, response];
         updateData({ messages: messagesClone, pending: false });
         setTimeout(() => {
-          scrollToBottom();
+          scrollToMsgTop(response.id);
         }, 100);
       })
       .catch((error) => {
@@ -247,7 +279,13 @@ export const Conversation = () => {
     >
       {messages?.length ? (
         messages.map((message) => {
-          return <Message key={message.id} message={message} />;
+          return (
+            <Message
+              id={`${constants.EXTENSION_NAME}-message-${message.id}`}
+              key={message.id}
+              message={message}
+            />
+          );
         })
       ) : (
         <Typography
@@ -336,7 +374,10 @@ export const MessageContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-export const Message = ({ message }: { message: Message }) => {
+export const Message = ({
+  message,
+  ...rest
+}: { message: Message } & StackProps) => {
   const {
     data: { blurText },
   } = useUserState();
@@ -345,7 +386,11 @@ export const Message = ({ message }: { message: Message }) => {
   useLogRender("Message");
 
   return (
-    <MessageContainer direction={inbound ? "row" : "row-reverse"} spacing={1}>
+    <MessageContainer
+      direction={inbound ? "row" : "row-reverse"}
+      spacing={1}
+      {...rest}
+    >
       <Avatar
         sx={{ width: 24, height: 24 }}
         src={inbound ? chrome.runtime.getURL("chatgpt-icon.png") : undefined}
@@ -360,35 +405,40 @@ export const Message = ({ message }: { message: Message }) => {
           filter: blurText ? "blur(7px)" : "none",
         }}
       >
-        <Markdown
-          components={{
-            code({ node, className, children, ...props }) {
-              const match = /language-(\w+)/.exec(className || "");
-              return match ? (
-                <SyntaxHighlighter
-                  children={String(children).replace(/\n$/, "")}
-                  // @ts-expect-error
-                  style={{
-                    ...tomorrow,
-                    'pre[class*="language-"]': {
-                      ...tomorrow['pre[class*="language-"]'],
-                      width: 300,
-                    },
-                  }}
-                  language={match[1]}
-                  PreTag="div"
-                  {...props}
-                />
-              ) : (
-                <code className={className} {...props}>
-                  {children}
-                </code>
-              );
-            },
-          }}
-        >
-          {message.message}
-        </Markdown>
+        {" "}
+        {inbound ? (
+          <Markdown
+            components={{
+              code({ node, className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || "");
+                return match ? (
+                  <SyntaxHighlighter
+                    children={String(children).replace(/\n$/, "")}
+                    // @ts-expect-error
+                    style={{
+                      ...tomorrow,
+                      'pre[class*="language-"]': {
+                        ...tomorrow['pre[class*="language-"]'],
+                        width: 300,
+                      },
+                    }}
+                    language={match[1]}
+                    PreTag="div"
+                    {...props}
+                  />
+                ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                );
+              },
+            }}
+          >
+            {message.message}
+          </Markdown>
+        ) : (
+          <Typography>{message.message}</Typography>
+        )}
       </Paper>
     </MessageContainer>
   );
