@@ -21,8 +21,13 @@ export function OauthRequired({
     updateData: updateUserState,
     dataSyncing,
   } = useUserState();
+  const [loading, setLoading] = useState(true);
   const { user: userServices } = useServicesContext();
   const messageEngine = useMessageEngine();
+
+  console.log("dataSyncing", dataSyncing);
+  console.log("userState", userState.tokens);
+  console.log("loading", loading);
 
   function getGrantedScopes() {
     const scopes = [];
@@ -60,7 +65,15 @@ export function OauthRequired({
             },
           });
           tokenSetRef.current = true;
+        })
+        .catch((err) => {
+          console.error(err);
+        })
+        .finally(() => {
+          setLoading(false);
         });
+    } else if (!dataSyncing) {
+      setLoading(false);
     }
   }, [dataSyncing, userState?.tokens?.google]);
 
@@ -82,7 +95,7 @@ export function OauthRequired({
 
   return (
     <div {...rest}>
-      {dataSyncing ? (
+      {loading ? (
         <div>loading...</div>
       ) : !hasOneAppToken ? (
         <AppOauthPicker />

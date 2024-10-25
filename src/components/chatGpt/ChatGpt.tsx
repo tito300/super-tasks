@@ -33,6 +33,7 @@ import { useUserState } from "../Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
 import { useScrollableEl } from "@src/hooks/useScrollableEl";
 import { useDebouncedCallback } from "@src/hooks/useDebouncedCallback";
+import { AiRewriteActions } from "./AiRewriteActions";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -46,6 +47,7 @@ export const ChatGpt = () => {
       <ChatGptControls />
       <ConversationsList />
       <Conversation />
+      <AiRewriteActions />
     </Container>
   );
 };

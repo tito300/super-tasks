@@ -19,6 +19,8 @@ export const userSettingsDefaults = {
   syncSelectedTaskListId: true,
   syncPosition: true,
   syncSelectedApps: true,
+  syncAuthWarningDismissed: true,
+  syncAuthWarningDismissedAt: true,
   selectedApps: {
     gTasks: false,
     gCalendar: false,

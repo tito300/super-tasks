@@ -54,4 +54,12 @@ export const userService = {
       return { token: null, requiredScopesGranted: false };
     }
   },
+  openPopup() {
+    chrome.windows.create({
+      url: chrome.runtime.getURL("src/pages/popup/index.html"),
+      type: "popup",
+      width: 520,
+      height: 300,
+    });
+  },
 };

@@ -37,13 +37,18 @@ export default function AppOauthPicker(paperProps: PaperProps) {
     chatGpt: false,
   });
   const scriptType = useScriptType();
-  const { data: userState, dataSyncing } = useUserState();
+  const {
+    data: { selectedApps: userSelectedApps, tokens, authWarningDismissed },
+    dataSyncing,
+    updateData: updateUserState,
+  } = useUserState();
+  const { user: userService } = useServicesContext();
 
   useEffect(() => {
     if (!dataSyncing) {
-      const { gTasks, gCalendar } = userState.selectedApps;
+      const { gTasks, gCalendar } = userSelectedApps;
 
-      if (userState.tokens.google) {
+      if (tokens.google) {
         setSelectedApps((selectedApps) => {
           return {
             ...selectedApps,
@@ -72,10 +77,28 @@ export default function AppOauthPicker(paperProps: PaperProps) {
     return selectedScopes;
   };
 
+  const handleClose = () => {
+    updateUserState({
+      authWarningDismissed: true,
+      authWarningDismissedAt: Date.now(),
+      buttonExpanded: false,
+    });
+  };
+
+  const handleOpenPopup = () => {
+    userService.openPopup();
+  };
+
   const selectedScopes = getSelectedScopes();
 
+  if (authWarningDismissed && scriptType !== "Popup") return null;
+
   return (
-    <Paper {...paperProps} sx={{ px: 2, py: 2, ...paperProps.sx }}>
+    <Paper
+      elevation={scriptType === "Popup" ? 0 : undefined}
+      {...paperProps}
+      sx={{ px: 2, py: 2, ...paperProps.sx }}
+    >
       {scriptType === "Popup" ? (
         <Stack>
           <Typography variant="h6">Pick your Applications</Typography>
@@ -153,10 +176,16 @@ export default function AppOauthPicker(paperProps: PaperProps) {
             {constants.EXTENSION_NAME_CAPITALIZED}
           </Typography>
           <Typography variant="subtitle2" pb={1.5}>
-            To use {constants.EXTENSION_NAME_CAPITALIZED}, select your
-            applications by clicking on the extension icon in the browser
-            toolbar.
+            Sign in to get started!
           </Typography>
+          <Stack direction="row" justifyContent="flex-end" gap={0.5}>
+            <Button size="small" variant="contained" onClick={handleOpenPopup}>
+              Sign In
+            </Button>
+            <Button size="small" variant="contained" onClick={handleClose}>
+              Dismiss
+            </Button>
+          </Stack>
         </Stack>
       )}
     </Paper>
@@ -192,6 +221,8 @@ const GoogleOauthButton = (
             gTasks: selectedApps.gTasks,
             chatGpt: selectedApps.chatGpt,
           },
+          authWarningDismissed: false,
+          authWarningDismissedAt: null,
         });
       });
   };

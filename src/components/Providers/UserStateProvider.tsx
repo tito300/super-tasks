@@ -12,6 +12,8 @@ export type UserState = {
   darkMode: boolean;
   tokens: UserSettings["tokens"];
   selectedApps: UserSettings["selectedApps"];
+  authWarningDismissed: boolean;
+  authWarningDismissedAt: number | null;
   position: {
     distanceFromRight: number | null;
     distanceFromTop: number | null;
@@ -26,7 +28,6 @@ export type UserStateContextType = {
 
 const UserStateContext = createContext<UserStateContextType>(null!);
 export function UserStateProvider({ children }: { children: React.ReactNode }) {
-  const scriptType = useScriptType();
   const { userSettings } = useUserSettings();
   const syncedState = useSyncedState<UserState>("userState", userSettings, {
     buttonExpanded: userSettings.buttonExpanded,
@@ -37,6 +38,8 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     tokens: userSettings.tokens,
     selectedApps: userSettings.selectedApps,
     position: { distanceFromRight: null, distanceFromTop: null },
+    authWarningDismissed: false,
+    authWarningDismissedAt: null,
   });
 
   return (

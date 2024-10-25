@@ -40,7 +40,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
   const mounted = useLazyMounted();
   const queryClient = useQueryClient();
   const {
-    data: { buttonExpanded, position },
+    data: { buttonExpanded, position, authWarningDismissed },
     updateData: updateUserState,
   } = useUserState();
 
@@ -89,6 +89,8 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       : defaultDistanceFromRight < 50 && defaultDistanceFromTop >= 50
       ? "bottom-left"
       : "top-left";
+
+  if (authWarningDismissed) return null;
 
   return (
     <DraggablePopperStyled

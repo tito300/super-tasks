@@ -6,6 +6,7 @@ import { storageService } from "@src/storage/storage.service";
 import { ChatGptSettings } from "@src/components/Providers/ChatGptSettingsProvider";
 import { chatGptSettingsDefaults } from "@src/config/settingsDefaults";
 import { LlmModel } from "@src/components/Providers/ChatGptStateProvider";
+import { Tone } from "@src/components/chatGpt/AiRewriteActions";
 
 export const chatGptService = {
   getChatGptResponse: async (messages: ChatMessage[], model: LlmModel) => {
@@ -36,5 +37,16 @@ export const chatGptService = {
   },
   updateChatGptSettings: async (settings: ChatGptSettings) => {
     return storageService.set({ chatGptSettings: settings });
+  },
+  suggestRewrite: async (tones: Tone[], input: string) => {
+    return fetcher
+      .post(`${urls.BASE_URL}/ai/rewrite`, {
+        input,
+        tones,
+      })
+      .then((res) => res.json())
+      .then((res) => {
+        return res as { message: string };
+      });
   },
 };
