@@ -38,15 +38,64 @@ export const chatGptService = {
   updateChatGptSettings: async (settings: ChatGptSettings) => {
     return storageService.set({ chatGptSettings: settings });
   },
-  suggestRewrite: async (tones: Tone[], input: string) => {
+  suggestRewrite: async ({
+    improvements: improvements,
+    input,
+    checkInaccuracies,
+  }: {
+    improvements: Tone[];
+    input: string;
+    checkInaccuracies?: boolean;
+  }) => {
     return fetcher
       .post(`${urls.BASE_URL}/ai/rewrite`, {
         input,
-        tones,
+        improvements,
+        checkInaccuracies,
       })
       .then((res) => res.json())
       .then((res) => {
-        return res as { message: string };
+        return res as {
+          message: string;
+          inaccuracyMessage: string;
+          hasInaccuracies: boolean;
+        };
+      });
+  },
+  explain: async ({ text }: { text: string }) => {
+    return fetcher
+      .post(`${urls.BASE_URL}/ai/explain`, {
+        text,
+      })
+      .then((res) => res.json())
+      .then((res) => {
+        return res as {
+          message: string;
+        };
+      });
+  },
+  simplify: async ({ text }: { text: string }) => {
+    return fetcher
+      .post(`${urls.BASE_URL}/ai/simplify`, {
+        text,
+      })
+      .then((res) => res.json())
+      .then((res) => {
+        return res as {
+          message: string;
+        };
+      });
+  },
+  summarize: async ({ text }: { text: string }) => {
+    return fetcher
+      .post(`${urls.BASE_URL}/ai/summarize`, {
+        text,
+      })
+      .then((res) => res.json())
+      .then((res) => {
+        return res as {
+          message: string;
+        };
       });
   },
 };

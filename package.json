@@ -37,7 +37,7 @@
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
-    "@crxjs/vite-plugin": "^1.0.14",
+    "@crxjs/vite-plugin": "^2.0.0-beta.26",
     "@tanstack/eslint-plugin-query": "^5.18.1",
     "@types/chrome": "^0.0.253",
     "@types/node": "^18.17.1",

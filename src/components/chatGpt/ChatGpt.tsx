@@ -33,7 +33,7 @@ import { useUserState } from "../Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
 import { useScrollableEl } from "@src/hooks/useScrollableEl";
 import { useDebouncedCallback } from "@src/hooks/useDebouncedCallback";
-import { AiRewriteActions } from "./AiRewriteActions";
+import { AiRewriteActions, AiSelectedText } from "./AiRewriteActions";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -48,6 +48,7 @@ export const ChatGpt = () => {
       <ConversationsList />
       <Conversation />
       <AiRewriteActions />
+      <AiSelectedText />
     </Container>
   );
 };
@@ -162,7 +163,7 @@ export const MessageComposer = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      onSubmit(composerDraft);
+      onSubmit(value);
     }
   };
 
