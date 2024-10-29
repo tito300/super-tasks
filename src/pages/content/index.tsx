@@ -13,7 +13,7 @@ hook();
 function hook() {
   const rootContainer = document.createElement("div");
   rootContainer.id = `${constants.EXTENSION_NAME}-root`;
-  rootContainer.style.zIndex = "2147483647";
+  rootContainer.style.zIndex = "999";
   rootContainer.style.position = "absolute";
   rootContainer.style.opacity = "0";
 

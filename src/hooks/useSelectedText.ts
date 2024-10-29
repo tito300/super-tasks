@@ -1,3 +1,4 @@
+import { getCursorXY } from "@src/utils/getCurserXY";
 import { useState, useEffect } from "react";
 
 export function useSelectedText() {
@@ -8,33 +9,59 @@ export function useSelectedText() {
   } | null>(null);
 
   useEffect(() => {
-    const handleSelection = () => {
-      const selection = window.getSelection();
-      if (selection && selection.toString().length > 0) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getClientRects();
+    const handleEvent = () => {
+      setTimeout(() => {
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) {
+          const range = selection.getRangeAt(0);
 
-        const top = rect[rect.length - 1]?.top;
-        const left = rect[rect.length - 1]?.left;
+          let top = 0;
+          let left = 0;
 
-        if (top && left) {
-          setSelectedText(selection.toString());
-          setSelectedTextPositions({
-            position: "absolute",
-            transform: `translate(${window.scrollX + left}px, ${
-              window.scrollY + top + 27
-            }px)`,
-          });
+          if (
+            document.activeElement?.tagName === "TEXTAREA" ||
+            document.activeElement?.tagName === "INPUT"
+          ) {
+            // textarea or input element
+            const activeElement = document.activeElement as
+              | HTMLInputElement
+              | HTMLTextAreaElement;
+            const cursorXY = getCursorXY(
+              activeElement as HTMLInputElement | HTMLTextAreaElement,
+              activeElement.selectionEnd!
+            );
+
+            const inputOffsetTop = getOffsetTop(activeElement);
+            const inputOffsetLeft = getOffsetLeft(activeElement);
+            top = cursorXY.y + inputOffsetTop;
+            left = cursorXY.x + inputOffsetLeft;
+          } else {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+
+            top = rect.top + rect.height + window.scrollY;
+            left = rect.left + window.scrollX;
+          }
+
+          if (top && left) {
+            setSelectedText(selection.toString());
+            setSelectedTextPositions({
+              position: "absolute",
+              transform: `translate(${left}px, ${top}px)`,
+            });
+          }
+        } else {
+          setSelectedText(null);
         }
-      } else {
-        setSelectedText(null);
-      }
+      }, 0);
     };
 
-    document.addEventListener("mouseup", handleSelection);
+    document.addEventListener("mouseup", handleEvent);
+    document.addEventListener("click", handleEvent);
 
     return () => {
-      document.removeEventListener("mouseup", handleSelection);
+      document.removeEventListener("mouseup", handleEvent);
+      document.removeEventListener("click", handleEvent);
     };
   }, []);
 
@@ -51,4 +78,15 @@ export function useSelectedText() {
   }
 
   return { selectedText, updateSelectedText, selectedTextPositions };
+}
+
+function getOffsetTop(element: HTMLElement | null): number {
+  return element
+    ? element.offsetTop + getOffsetTop(element.offsetParent as HTMLElement)
+    : 0;
+}
+function getOffsetLeft(element: HTMLElement | null): number {
+  return element
+    ? element.offsetLeft + getOffsetLeft(element.offsetParent as HTMLElement)
+    : 0;
 }

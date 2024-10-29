@@ -19,9 +19,12 @@ export const useUserTypingInput = () => {
       if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA") {
         setTypingInput(target.value || "");
         setContainer(target);
-      } else if (closeParentIsContentEditable(target)) {
-        setTypingInput(target.innerText || "");
-        setContainer(target as HTMLElement);
+      } else {
+        const contentEditable = getCloseContentEditableParent(target);
+        if (contentEditable) {
+          setTypingInput(contentEditable.innerText || "");
+          setContainer(contentEditable as HTMLElement);
+        }
       }
     };
     const listener = (event: Event) => {
@@ -33,23 +36,28 @@ export const useUserTypingInput = () => {
 
     document.addEventListener("input", listener);
     document.addEventListener("click", listener);
-    document.addEventListener("mouseup", listener);
+    document.addEventListener("focus", listener);
 
     setTimeout(() => {
       if (document.activeElement) {
         const activeElement = document.activeElement as HTMLElement;
         if (
           isInputElement(activeElement) ||
-          closeParentIsContentEditable(activeElement)
+          getCloseContentEditableParent(activeElement)
         ) {
           handleInput(activeElement as HTMLInputElement | HTMLTextAreaElement);
         }
       }
     }, 1000);
 
+    onInputInserted((input) => {
+      handleInput(input);
+    });
+
     return () => {
       document.removeEventListener("input", listener);
       document.removeEventListener("click", listener);
+      document.removeEventListener("focus", listener);
     };
   }, []);
 
@@ -105,11 +113,34 @@ function isInputElement(target: HTMLElement) {
   return target.tagName === "INPUT" || target.tagName === "TEXTAREA";
 }
 
-function closeParentIsContentEditable(target: HTMLElement, depth = 0) {
-  if (target.contentEditable === "true") return true;
+function getCloseContentEditableParent(target: HTMLElement) {
+  if (target.contentEditable === "true") return target;
 
   if (!target.parentElement) return false;
-  if (depth > 10) return false;
-  if (target.parentElement.contentEditable === "true") return true;
-  return closeParentIsContentEditable(target.parentElement, depth + 1);
+  if (target.parentElement.contentEditable === "true")
+    return target.parentElement;
+  return getCloseContentEditableParent(target.parentElement);
+}
+
+// detect when a text input has been inserted to dom
+function onInputInserted(
+  callback: (input: HTMLInputElement | HTMLTextAreaElement) => void
+) {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (
+          node instanceof HTMLInputElement ||
+          node instanceof HTMLTextAreaElement
+        ) {
+          callback(node);
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 }

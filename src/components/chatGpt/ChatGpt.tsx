@@ -163,6 +163,7 @@ export const MessageComposer = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      setValue(value);
       onSubmit(value);
     }
   };

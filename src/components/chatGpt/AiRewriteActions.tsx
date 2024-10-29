@@ -1,33 +1,17 @@
-import { CacheProvider } from "@emotion/react";
 import { AutoFixHigh, Cancel } from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
   Button,
   Chip,
-  ClickAwayListener,
-  CssBaseline,
   Divider,
   IconButton,
-  Paper,
-  PaperProps,
-  Popover,
-  PopoverProps,
-  Popper,
-  Skeleton,
-  Snackbar,
   StackProps,
-  SxProps,
-  ThemeProvider,
   Typography,
 } from "@mui/material";
 import { useUserTypingInput } from "@src/hooks/useUserTypingInput";
-import { commonTheme } from "@src/theme/common.theme";
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import createCache from "@emotion/cache";
+import { ComponentProps, forwardRef, useEffect, useRef, useState } from "react";
 import { styled } from "@mui/material";
-import { PopperProps } from "@mui/base";
 import { constants } from "@src/config/constants";
 import { Stack } from "@mui/material";
 import { useServicesContext } from "../Providers/ServicesProvider";
@@ -35,9 +19,10 @@ import { FormControlLabel } from "@mui/material";
 import { Checkbox } from "@mui/material";
 import { useSelectedText } from "@src/hooks/useSelectedText";
 import { StyledPortal } from "../shared/StyledProtal";
-import Markdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { AiFormLayout } from "./Shared/AiFormLayout";
+import { CodeMarkdown } from "../shared/CodeMarkdown";
+import { StyledPopper } from "../shared/StyledPopper";
+import { StyledPopover } from "../shared/StyledPopover";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -64,7 +49,7 @@ export function AiRewriteActions() {
   const { typingInput, updateInput, container } = useUserTypingInput();
   const { selectedText } = useSelectedText();
 
-  const OpenRewriteModal = () => {
+  const handleOpenModal = () => {
     setOpenRewriteModal(!openRewriteModal);
     setOpenRewriteModal(true);
   };
@@ -102,44 +87,32 @@ export function AiRewriteActions() {
           },
         ]}
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-          sx={{
-            [`&:hover`]: {
-              borderRadius: 8,
-              backgroundColor: (theme) => theme.palette.grey[200],
-              [` #${constants.EXTENSION_NAME}-remove-suggestion-icon`]: {
-                display: "flex",
-                translate: "transformX(0)",
-                transition: "translate 0.2s",
-              },
-            },
-          }}
-        >
-          <IconButton
-            id={`${constants.EXTENSION_NAME}-remove-suggestion-icon`}
-            sx={{
-              display: "none",
-              translate: "transformX(100%)",
-            }}
-            size="small"
-            color="primary"
-            onClick={handleRemoveIcon}
-          >
-            <Cancel />
-          </IconButton>
-          <IconButton size="small" color="primary" onClick={OpenRewriteModal}>
-            <AutoFixHigh />
-          </IconButton>
-        </Stack>
+        <AiTooltipButtons
+          expandDirection="left"
+          onOpen={handleOpenModal}
+          handleRemoveIcon={handleRemoveIcon}
+        />
       </StyledPopper>
-
-      <AiReWriteModal
-        input={typingInput}
-        updateInput={updateInput}
+      <StyledPopover
+        open={openRewriteModal}
+        anchorEl={container}
+        disableScrollLock
         onClose={handleClose}
-      />
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+      >
+        <AiReWriteForm
+          input={typingInput}
+          updateInput={updateInput}
+          onClose={handleClose}
+        />
+      </StyledPopover>
     </>
   );
 }
@@ -148,11 +121,11 @@ const AiTooltipButtons = forwardRef<
   HTMLDivElement,
   {
     expandDirection: "left" | "right";
-    OpenRewriteModal: () => void;
+    onOpen: () => void;
     handleRemoveIcon: () => void;
   } & StackProps
 >(function _AiTooltipButtons(
-  { expandDirection, OpenRewriteModal, handleRemoveIcon, sx, ...rest },
+  { expandDirection, onOpen, handleRemoveIcon, sx, ...rest },
   ref
 ) {
   return (
@@ -161,11 +134,12 @@ const AiTooltipButtons = forwardRef<
       direction={expandDirection === "right" ? "row-reverse" : "row"}
       alignItems="center"
       sx={{
-        backgroundColor: (theme) => theme.palette.grey[200],
+        backgroundColor: (theme) => "#fffadb",
         borderRadius: "10px",
+        border: "1px solid #80808038",
         [`&:hover`]: {
           borderRadius: "10px",
-          backgroundColor: (theme) => theme.palette.grey[300],
+          backgroundColor: (theme) => "#f1eccc",
           [` #${constants.EXTENSION_NAME}-remove-suggestion-icon`]: {
             display: "flex",
             translate: "transformX(0)",
@@ -191,7 +165,7 @@ const AiTooltipButtons = forwardRef<
       >
         <Cancel />
       </IconButton>
-      <IconButton size="small" color="primary" onClick={OpenRewriteModal}>
+      <IconButton size="small" color="primary" onClick={onOpen}>
         <AutoFixHigh />
       </IconButton>
     </Stack>
@@ -208,43 +182,54 @@ const AiOptionButton = styled(Button)({
   },
 });
 
-export type AiTodo = "Explain" | "Rewrite" | "Summarize" | "Simplify";
+export type AiAction =
+  | "Explain"
+  | "Rewrite"
+  | "Summarize"
+  | "Simplify"
+  | "Ask"
+  | "PeerReview";
+
+export const AiActionMap = {
+  Explain: "Explain",
+  Rewrite: "Rewrite",
+  Summarize: "Summarize",
+  Simplify: "Simplify",
+  PeerReview: "Peer Review",
+  Ask: "Ask Question",
+};
 
 export function AiSelectedText() {
-  const { selectedText, selectedTextPositions } = useSelectedText();
-
-  if (!selectedText) return null;
-
-  return (
-    <InternalAiSelectedText
-      key={selectedText}
-      selectedText={selectedText}
-      selectedTextPositions={selectedTextPositions}
-    />
-  );
-}
-export function InternalAiSelectedText({
-  selectedText,
-  selectedTextPositions,
-}: {
-  selectedText: string;
-  selectedTextPositions: SxProps;
-}) {
+  const { selectedText: _selectedText, selectedTextPositions } =
+    useSelectedText();
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [hideAll, setHideAll] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [selectedTodo, setSelectedTodo] = useState<AiTodo | null>(null);
+  const [selectedAction, setSelectedAction] = useState<AiAction | null>(null);
   const { chatGpt } = useServicesContext();
+  const [selectedText, setSelectedText] = useState<string | null>(
+    _selectedText
+  );
+  const [aiOptions, setAiOptions] = useState<{
+    factCheck: boolean;
+    keepShort: boolean;
+  }>({ factCheck: false, keepShort: false });
+  const [factCheckMessage, setFactCheckMessage] = useState<string | null>(null);
+  const [hasInaccuracies, setHasInaccuracies] = useState(false);
+
+  useEffect(() => {
+    if (!open) setSelectedText(_selectedText);
+  }, [_selectedText, open]);
 
   const resetResults = () => {
     setErrorMessage("");
     setAiMessage(null);
   };
 
-  const handleSubmit = (todo: AiTodo) => {
+  const handleSubmit = (todo: AiAction) => {
     resetResults();
     setLoading(true);
 
@@ -253,37 +238,48 @@ export function InternalAiSelectedText({
         ? chatGpt.explain
         : todo === "Simplify"
         ? chatGpt.simplify
+        : todo === "PeerReview"
+        ? chatGpt.peerReview
         : chatGpt.summarize;
 
     service({
-      text: selectedText,
+      text: selectedText!,
+      aiOptions,
     })
       .then((res) => {
         setAiMessage(res.message);
+        if (aiOptions.factCheck) {
+          setHasInaccuracies(res.hasInaccuracies);
+          setFactCheckMessage(res.inaccuracyMessage);
+        }
       })
       .catch((error) => {
-        setErrorMessage("Sorry, failed to suggest rewrite.");
+        setErrorMessage("Sorry, something went wrong.");
       })
       .finally(() => setLoading(false));
   };
 
-  const handleTodoClick = (todo: AiTodo) => {
-    setSelectedTodo(todo);
-
-    switch (todo) {
-      case "Explain":
-      case "Simplify":
-      case "Summarize":
-        handleSubmit(todo);
-        break;
-      case "Rewrite":
-        break; // open rewrite modal
-      default:
-        break;
+  const handleTodoClick = (todo: AiAction) => {
+    if (todo === selectedAction) {
+      setSelectedAction(null);
+    } else {
+      setSelectedAction(todo);
     }
   };
 
-  if (!selectedText || hideAll) return null;
+  const handleOptionClick = (option: "factCheck" | "keepShort") => {
+    setAiOptions((options) => ({ ...options, [option]: !options[option] }));
+  };
+
+  const handleClose = () => {
+    resetResults();
+    setOpen(false);
+  };
+
+  if (!selectedText) return null;
+  if (hideAll) return null;
+
+  const showResults = !!aiMessage && selectedAction;
 
   return (
     <StyledPortal
@@ -294,114 +290,161 @@ export function InternalAiSelectedText({
         ref={containerRef}
         sx={selectedTextPositions}
         expandDirection="right"
-        OpenRewriteModal={() => setOpen(true)}
+        onOpen={() => setOpen(true)}
         handleRemoveIcon={() => setHideAll(true)}
       />
-      <AiModal
+      <StyledPopover
         open={open}
-        title={
-          loading
-            ? "Working on it.."
-            : selectedTodo && aiMessage
-            ? `${selectedTodo} Result`
-            : "What do you want to do?"
-        }
-        skeletonHeight={100}
-        errorMessage={errorMessage}
-        loading={loading}
         anchorEl={containerRef.current}
-        onClose={() => setOpen(false)}
-        buttons={
-          <>
-            {selectedTodo && (
-              <>
-                <Button
-                  variant="contained"
-                  color="info"
-                  size="small"
-                  onClick={() => setSelectedTodo(null)}
-                >
-                  Back
-                </Button>
+        disableScrollLock
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+      >
+        {selectedAction === "Rewrite" ? (
+          <AiReWriteForm
+            input={selectedText}
+            onClose={handleClose}
+            onBackClick={selectedAction && (() => setSelectedAction(null))}
+            updateInput={() => {}}
+          />
+        ) : (
+          <AiFormLayout
+            title={
+              loading
+                ? "Working on it.."
+                : selectedAction && aiMessage
+                ? `${AiActionMap[selectedAction]} Result`
+                : "What do you want to do?"
+            }
+            skeletonHeight={100}
+            errorMessage={errorMessage}
+            loading={loading}
+            onClose={handleClose}
+            onRetryClick={showResults && (() => handleSubmit(selectedAction!))}
+            onBackClick={showResults && resetResults}
+            buttons={
+              !showResults && (
                 <Button
                   variant="contained"
                   size="small"
                   color="primary"
-                  onClick={() => handleSubmit(selectedTodo)}
+                  disabled={!selectedAction}
+                  onClick={() => handleSubmit(selectedAction!)}
                 >
-                  Retry
+                  Run
                 </Button>
+              )
+            }
+          >
+            {!aiMessage ? (
+              <>
+                <Stack
+                  px={AiFormLayout.pxValue}
+                  py={AiFormLayout.pyValue}
+                  direction="row"
+                  flexWrap="wrap"
+                  gap={0.5}
+                >
+                  <ToneChip
+                    label="Explain"
+                    onClick={() => handleTodoClick("Explain")}
+                    selected={selectedAction === "Explain"}
+                    variant="outlined"
+                  />
+                  <ToneChip
+                    label="Summarize"
+                    onClick={() => handleTodoClick("Summarize")}
+                    selected={selectedAction === "Summarize"}
+                    variant="outlined"
+                  />
+                  <ToneChip
+                    label="Peer Review"
+                    onClick={() => handleTodoClick("PeerReview")}
+                    selected={selectedAction === "PeerReview"}
+                    variant="outlined"
+                  />
+                  <ToneChip
+                    label="Simplify"
+                    onClick={() => handleTodoClick("Simplify")}
+                    selected={selectedAction === "Simplify"}
+                    variant="outlined"
+                  />
+                  <ToneChip
+                    label="Rewrite"
+                    onClick={() => handleTodoClick("Rewrite")}
+                    variant={"outlined"}
+                  />
+                  <ToneChip
+                    label="Ask Question"
+                    onClick={() => handleTodoClick("Ask")}
+                    selected={selectedAction === "Ask"}
+                    variant={"outlined"}
+                  />
+                </Stack>
+
+                <Divider />
+                <Stack
+                  px={AiFormLayout.pxValue}
+                  py={AiFormLayout.pyValue}
+                  direction="row"
+                  gap={0.5}
+                >
+                  <AiLabel
+                    label="Fact Check"
+                    selected={aiOptions.factCheck}
+                    componentsProps={{
+                      typography: { variant: "body2" },
+                    }}
+                    control={
+                      <Checkbox
+                        sx={{ p: 0.5, pl: 1 }}
+                        size="small"
+                        checked={aiOptions.factCheck}
+                        onChange={() => handleOptionClick("factCheck")}
+                      />
+                    }
+                  />
+                  <AiLabel
+                    label="Keep Short"
+                    selected={aiOptions.keepShort}
+                    componentsProps={{
+                      typography: { variant: "body2" },
+                    }}
+                    control={
+                      <Checkbox
+                        sx={{ p: 0.5, pl: 1 }}
+                        size="small"
+                        checked={aiOptions.keepShort}
+                        onChange={() => handleOptionClick("keepShort")}
+                      />
+                    }
+                  />
+                </Stack>
               </>
+            ) : (
+              <Stack
+                px={AiFormLayout.pxValue}
+                py={AiFormLayout.pyValue}
+                gap={1}
+              >
+                <CodeMarkdown>{aiMessage!}</CodeMarkdown>
+                {aiOptions.factCheck && factCheckMessage && (
+                  <Alert
+                    severity={hasInaccuracies ? "warning" : "info"}
+                    sx={{ whiteSpace: "pre-line" }}
+                  >
+                    <AlertTitle>Fact Check Result</AlertTitle>
+                    {factCheckMessage}
+                  </Alert>
+                )}
+              </Stack>
             )}
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setOpen(false)}
-            >
-              Close
-            </Button>
-          </>
-        }
-      >
-        {!selectedTodo ? (
-          <Stack direction="row" gap={0.5}>
-            <ToneChip
-              label="Explain"
-              onClick={() => handleTodoClick("Explain")}
-              variant="outlined"
-            />
-            <ToneChip
-              label="Rewrite"
-              onClick={() => handleTodoClick("Rewrite")}
-              variant="outlined"
-            />
-            <ToneChip
-              label="Summarize"
-              onClick={() => handleTodoClick("Summarize")}
-              variant="outlined"
-            />
-            <ToneChip
-              label="Simplify"
-              onClick={() => handleTodoClick("Simplify")}
-              variant="outlined"
-            />
-          </Stack>
-        ) : selectedTodo === "Rewrite" ? (
-          <Stack gap={1}>Rewrite</Stack>
-        ) : (
-          <Stack gap={1}>
-            <Markdown
-              components={{
-                code({ node, className, children, ...props }) {
-                  const match = /language-(\w+)/.exec(className || "");
-                  return match ? (
-                    <SyntaxHighlighter
-                      children={String(children).replace(/\n$/, "")}
-                      // @ts-expect-error
-                      style={{
-                        ...tomorrow,
-                        'pre[class*="language-"]': {
-                          ...tomorrow['pre[class*="language-"]'],
-                          width: 300,
-                        },
-                      }}
-                      language={match[1]}
-                      PreTag="div"
-                      {...props}
-                    />
-                  ) : (
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                  );
-                },
-              }}
-            >
-              {aiMessage!}
-            </Markdown>
-          </Stack>
+          </AiFormLayout>
         )}
-      </AiModal>
+      </StyledPopover>
     </StyledPortal>
   );
 }
@@ -411,6 +454,7 @@ export const improvements = [
   "Professional",
   "Friendly",
   "concise",
+  "Clear",
   "Casual",
   "Positive",
   "Neutral",
@@ -423,15 +467,12 @@ export const containsHtml = (input: string) => {
   return /<[^>]*>/.test(input);
 };
 
-function AiReWriteModal({
-  input,
-  updateInput,
-  onClose,
-}: {
-  input: string;
-  updateInput: (input: string) => void;
-  onClose: () => void;
-}) {
+function AiReWriteForm(
+  props: {
+    input: string;
+    updateInput: (input: string) => void;
+  } & Omit<ComponentProps<typeof AiFormLayout>, "title">
+) {
   const [selectedImprovements, setSelectedImprovements] = useState<Array<Tone>>(
     []
   );
@@ -441,9 +482,11 @@ function AiReWriteModal({
   const { chatGpt } = useServicesContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [checkInaccuracies, setChecInaccuracies] = useState(false);
+  const [factCheck, setFactCheck] = useState(false);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const [skeletonHeight, setSkeletonHeight] = useState(150);
+
+  const { input, updateInput, onClose, onBackClick, ...rest } = props;
 
   useEffect(() => {
     if (contentContainerRef.current) {
@@ -458,7 +501,7 @@ function AiReWriteModal({
       .suggestRewrite({
         improvements: selectedImprovements,
         input,
-        checkInaccuracies,
+        checkInaccuracies: factCheck,
       })
       .then((res) => {
         setSuggestion(res.message);
@@ -466,7 +509,7 @@ function AiReWriteModal({
         setHasInaccuracies(res.hasInaccuracies);
       })
       .catch((error) => {
-        setError("Sorry, failed to suggest rewrite.");
+        setError("Sorry, something went wrong.");
       })
       .finally(() => setLoading(false));
   };
@@ -494,117 +537,44 @@ function AiReWriteModal({
     setSuggestion(null);
     onClose();
   };
-  const handleRejectSuggestion = () => {
-    setSuggestion(null);
-    onClose();
+
+  // const html = containsHtml(input);
+  const showResults = !!suggestion || loading || hasInaccuracies;
+  const showBackButton = showResults || onBackClick;
+
+  const handleBackClick = () => {
+    resetResults();
+    if (!showResults && onBackClick) {
+      onBackClick();
+    }
   };
 
-  const html = containsHtml(input);
-  const showResults = suggestion || loading || hasInaccuracies;
-
-  if (showResults)
-    return (
-      <AiModalContainer elevation={4}>
-        <Stack gap={3.5}>
-          <Stack gap={1}>
-            <Typography variant="h5">Suggestion</Typography>
-            <Divider />
-            <Stack gap={1} minHeight={skeletonHeight}>
-              {error && <Typography color="error">{error}</Typography>}
-              {loading ? (
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  height={skeletonHeight}
-                />
-              ) : html ? (
-                <div dangerouslySetInnerHTML={{ __html: suggestion! }}></div>
-              ) : (
-                <>
-                  <AiMessageTypography>{suggestion}</AiMessageTypography>
-                  {checkInaccuracies && inaccuracy && (
-                    <Alert
-                      severity={hasInaccuracies ? "warning" : "info"}
-                      sx={{ whiteSpace: "pre-line" }}
-                    >
-                      <AlertTitle>Fact Check Result</AlertTitle>
-                      {inaccuracy}
-                    </Alert>
-                  )}
-                </>
-              )}
-            </Stack>
-            <Stack direction="row" justifyContent="flex-end" gap={0.5}>
-              {!error && suggestion && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  disabled={loading}
-                  onClick={handleCopyClick}
-                >
-                  Copy Text
-                </Button>
-              )}
-
-              <Button
-                variant="contained"
-                size="small"
-                color="info"
-                disabled={loading}
-                onClick={resetResults}
-              >
-                Retry
-              </Button>
-
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleRejectSuggestion}
-              >
-                Close
-              </Button>
-            </Stack>
-          </Stack>
-        </Stack>
-      </AiModalContainer>
-    );
-
   return (
-    <ClickAwayListener onClickAway={onClose}>
-      <AiModalContainer elevation={4}>
-        <Stack gap={1}>
-          <Typography variant="h5">
-            {constants.EXTENSION_NAME_CAPITALIZED} Rewrite Suggestion
-          </Typography>
-          <Divider />
-          <Stack ref={contentContainerRef} gap={1}>
-            <Typography>Chose improvements desired</Typography>
-            <Stack gap={0.35} direction="row" flexWrap="wrap">
-              {improvements.map((tone) => (
-                <ToneChip
-                  onClick={() => handleToneClick(tone)}
-                  variant={
-                    selectedImprovements.includes(tone) ? "filled" : "outlined"
-                  }
-                  label={tone}
-                />
-              ))}
-            </Stack>
-            <Stack gap={1}>
-              <FormControlLabel
-                label="Fact Check"
-                control={
-                  <Checkbox
-                    sx={{ p: 0.5, pl: 1 }}
-                    size="small"
-                    checked={checkInaccuracies}
-                    onChange={(_, checked) => setChecInaccuracies(checked)}
-                  />
-                }
-              />
-            </Stack>
-          </Stack>
-          <Stack direction="row" justifyContent="flex-end" gap={0.5}>
+    <AiFormLayout
+      title={
+        showResults
+          ? "Rewrite Suggestion"
+          : `${constants.EXTENSION_NAME_CAPITALIZED} Rewrite`
+      }
+      skeletonHeight={skeletonHeight}
+      errorMessage={showResults ? error : ""}
+      loading={loading}
+      onClose={onClose}
+      onBackClick={showBackButton && handleBackClick}
+      onRetryClick={showResults && handleSubmit}
+      buttons={
+        <>
+          {showResults && suggestion && (
+            <Button
+              variant="contained"
+              size="small"
+              disabled={loading}
+              onClick={handleCopyClick}
+            >
+              Copy Text
+            </Button>
+          )}
+          {!showResults && (
             <Button
               variant="contained"
               size="small"
@@ -613,194 +583,105 @@ function AiReWriteModal({
             >
               Run
             </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              color="primary"
-              onClick={onClose}
-            >
-              Close
-            </Button>
-          </Stack>
+          )}
+        </>
+      }
+      {...rest}
+    >
+      {showResults ? (
+        <Stack
+          px={AiFormLayout.pxValue}
+          py={AiFormLayout.pyValue}
+          ref={contentContainerRef}
+          gap={1}
+        >
+          <>
+            <CodeMarkdown>{suggestion}</CodeMarkdown>
+            {factCheck && inaccuracy && (
+              <Alert
+                severity={hasInaccuracies ? "warning" : "info"}
+                sx={{ whiteSpace: "pre-line" }}
+              >
+                <AlertTitle>Fact Check Result</AlertTitle>
+                {inaccuracy}
+              </Alert>
+            )}
+          </>
         </Stack>
-      </AiModalContainer>
-    </ClickAwayListener>
+      ) : (
+        <>
+          <Stack
+            px={AiFormLayout.pxValue}
+            py={AiFormLayout.pyValue}
+            ref={contentContainerRef}
+            gap={1}
+          >
+            {/* <Typography lineHeight={1} variant="subtitle1">
+          Select Improvements
+        </Typography> */}
+            <Stack gap={0.5} direction="row" flexWrap="wrap">
+              {improvements.map((tone) => (
+                <ToneChip
+                  onClick={() => handleToneClick(tone)}
+                  selected={selectedImprovements.includes(tone)}
+                  variant={"outlined"}
+                  label={tone}
+                />
+              ))}
+            </Stack>
+          </Stack>
+          <Divider />
+          <Stack
+            px={AiFormLayout.pxValue}
+            py={AiFormLayout.pyValue}
+            direction="row"
+            gap={0.5}
+          >
+            <AiLabel
+              label="Fact Check"
+              selected={factCheck}
+              componentsProps={{
+                typography: { variant: "body2" },
+              }}
+              control={
+                <Checkbox
+                  sx={{ p: 0.5, pl: 1 }}
+                  size="small"
+                  checked={factCheck}
+                  onChange={(_, checked) => setFactCheck(checked)}
+                />
+              }
+            />
+          </Stack>
+        </>
+      )}
+    </AiFormLayout>
   );
 }
 
-const AiModalContainer = styled(Paper)(
-  ({ theme }) =>
-    ({
-      width: "375px",
-      maxHeight: "450px",
-      overflowY: "auto",
-      paddingTop: theme.spacing(1),
-    } as const)
+const AiLabel = styled(FormControlLabel)<{ selected: boolean }>(
+  ({ theme, selected }) => ({
+    borderRadius: 4,
+    border: `1px solid ${theme.palette.divider}`,
+    padding: "1px 8px 1px 0px",
+    margin: 0,
+    "&:hover": {
+      backgroundColor: "rgba(0,0,0,0.1)",
+    },
+    ...(selected && {
+      backgroundColor: "rgba(0,0,0,0.1)",
+    }),
+  })
 );
 
-const ToneChip = styled(Chip)({
+const ToneChip = styled(Chip)<{ selected?: boolean }>(({ selected }) => ({
   cursor: "pointer",
-  fontWeight: 600,
+  fontWeight: 500,
   "&:hover": {
     backgroundColor: "rgba(0,0,0,0.2)",
   },
-});
-
-const StyledPoPperContainer = styled("div")({});
-
-function StyledPopper({
-  children,
-  sx,
-  ...rest
-}: { children: React.ReactNode; sx?: SxProps } & PopperProps) {
-  const [containerEl, setOpenRewriteContainerEl] =
-    useState<HTMLDivElement | null>(null);
-
-  const cache = useMemo(() => {
-    if (!containerEl) return null;
-
-    return createCache({
-      key: `${constants.EXTENSION_NAME}-css`,
-      container: containerEl as HTMLElement,
-    });
-  }, [containerEl]);
-
-  return (
-    <Popper style={{ zIndex: 1000 }} {...rest}>
-      <StyledPoPperContainer
-        sx={sx}
-        ref={(el) => setOpenRewriteContainerEl(el)}
-      >
-        {cache && (
-          <CacheProvider value={cache!}>
-            <ThemeProvider theme={commonTheme}>{children}</ThemeProvider>
-          </CacheProvider>
-        )}
-      </StyledPoPperContainer>
-    </Popper>
-  );
-}
-
-function StyledPopover({
-  children,
-  sx,
-  ...rest
-}: { children: React.ReactNode; sx?: SxProps } & PopoverProps) {
-  const [containerEl, setOpenRewriteContainerEl] =
-    useState<HTMLDivElement | null>(null);
-
-  const cache = useMemo(() => {
-    if (!containerEl) return null;
-
-    return createCache({
-      key: `${constants.EXTENSION_NAME}-css`,
-      container: containerEl as HTMLElement,
-    });
-  }, [containerEl]);
-
-  return (
-    <Popover style={{ zIndex: 1000 }} {...rest}>
-      <StyledPoPperContainer
-        sx={sx}
-        ref={(el) => setOpenRewriteContainerEl(el)}
-      >
-        {cache && (
-          <CacheProvider value={cache!}>
-            <ThemeProvider theme={commonTheme}>
-              <CssBaseline />
-              {children}
-            </ThemeProvider>
-          </CacheProvider>
-        )}
-      </StyledPoPperContainer>
-    </Popover>
-  );
-}
-
-function AiModal({
-  title,
-  skeletonHeight,
-  errorMessage,
-  loading,
-  children,
-  buttons,
-  open,
-  anchorEl,
-  onClose,
-  ...rest
-}: {
-  title: string;
-  open: boolean;
-  onClose: () => void;
-  anchorEl: HTMLElement | null;
-  skeletonHeight?: number;
-  errorMessage?: string;
-  loading?: boolean;
-  buttons?: React.ReactNode;
-} & PaperProps) {
-  return (
-    <StyledPopover
-      open={open}
-      anchorEl={anchorEl}
-      onClose={onClose}
-      anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "left",
-      }}
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "left",
-      }}
-    >
-      <AiModalContainer elevation={4} {...rest}>
-        <Stack gap={3.5}>
-          <Stack gap={1}>
-            <Typography
-              variant="h6"
-              sx={{
-                textTransform: "none",
-                px: (theme) => theme.spacing(2.5),
-              }}
-            >
-              {title}
-            </Typography>
-            <Divider />
-            <AiModalContentContainer gap={1} minHeight={skeletonHeight ?? 0}>
-              {errorMessage && (
-                <Typography color="error">{errorMessage}</Typography>
-              )}
-              {loading ? (
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  height={skeletonHeight}
-                />
-              ) : (
-                children
-              )}
-            </AiModalContentContainer>
-          </Stack>
-          <AiModalFooterContainer
-            direction="row"
-            justifyContent="flex-end"
-            gap={0.5}
-          >
-            {buttons}
-          </AiModalFooterContainer>
-        </Stack>
-      </AiModalContainer>
-    </StyledPopover>
-  );
-}
-
-const AiModalContentContainer = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(1, 2.5, 2.5),
-}));
-
-const AiModalFooterContainer = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(1.5, 2),
-  position: "sticky",
-  bottom: 0,
-  borderTop: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.background.paper,
+  ...(selected && {
+    backgroundColor: "#ac90b44a",
+    borderColor: "#ac90b44a",
+  }),
 }));

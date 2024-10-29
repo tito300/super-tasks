@@ -8,6 +8,20 @@ import { chatGptSettingsDefaults } from "@src/config/settingsDefaults";
 import { LlmModel } from "@src/components/Providers/ChatGptStateProvider";
 import { Tone } from "@src/components/chatGpt/AiRewriteActions";
 
+export type AiQuickActionsBody = {
+  text: string;
+  aiOptions: {
+    factCheck: boolean;
+    keepShort: boolean;
+  };
+};
+
+export type AiQuickActionsResponse = {
+  message: string;
+  hasInaccuracies: boolean;
+  inaccuracyMessage: string;
+};
+
 export const chatGptService = {
   getChatGptResponse: async (messages: ChatMessage[], model: LlmModel) => {
     //   await wait(2000);
@@ -62,40 +76,42 @@ export const chatGptService = {
         };
       });
   },
-  explain: async ({ text }: { text: string }) => {
+  explain: async (body: AiQuickActionsBody) => {
     return fetcher
-      .post(`${urls.BASE_URL}/ai/explain`, {
-        text,
-      })
+      .post(`${urls.BASE_URL}/ai/quick-action`, { action: "Explain", ...body })
       .then((res) => res.json())
       .then((res) => {
-        return res as {
-          message: string;
-        };
+        return res as AiQuickActionsResponse;
       });
   },
-  simplify: async ({ text }: { text: string }) => {
+  simplify: async (body: AiQuickActionsBody) => {
     return fetcher
-      .post(`${urls.BASE_URL}/ai/simplify`, {
-        text,
-      })
+      .post(`${urls.BASE_URL}/ai/quick-action`, { action: "Simplify", ...body })
       .then((res) => res.json())
       .then((res) => {
-        return res as {
-          message: string;
-        };
+        return res as AiQuickActionsResponse;
       });
   },
-  summarize: async ({ text }: { text: string }) => {
+  summarize: async (body: AiQuickActionsBody) => {
     return fetcher
-      .post(`${urls.BASE_URL}/ai/summarize`, {
-        text,
+      .post(`${urls.BASE_URL}/ai/quick-action`, {
+        action: "Summarize",
+        ...body,
       })
       .then((res) => res.json())
       .then((res) => {
-        return res as {
-          message: string;
-        };
+        return res as AiQuickActionsResponse;
+      });
+  },
+  peerReview: async (body: AiQuickActionsBody) => {
+    return fetcher
+      .post(`${urls.BASE_URL}/ai/quick-action`, {
+        action: "PeerReview",
+        ...body,
+      })
+      .then((res) => res.json())
+      .then((res) => {
+        return res as AiQuickActionsResponse;
       });
   },
 };
