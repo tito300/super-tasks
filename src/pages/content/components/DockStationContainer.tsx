@@ -277,6 +277,7 @@ const ExtensionAiButton = styled(IconButton)<{ pagePosition: PagePosition }>(
       cursor: "grab",
       ["&:hover"]: {
         boxShadow: theme.shadows[6],
+        backgroundColor: "#fff",
       },
     };
   }

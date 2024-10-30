@@ -7,33 +7,41 @@ import { Paper } from "@mui/material";
 import { Box } from "@mui/material";
 import { Button } from "@mui/material";
 import { Close } from "@mui/icons-material";
+import React from "react";
 
 type falsyValue = false | null | undefined;
-export function AiFormLayout({
-  title,
-  skeletonHeight,
-  errorMessage,
-  loading,
-  children,
-  buttons,
-  onBackClick,
-  onRetryClick,
-  onClose,
-  ...rest
-}: {
-  title: string;
-  onClose: () => void;
-  skeletonHeight?: number;
-  errorMessage?: string | null;
-  loading?: boolean;
-  onBackClick?: (() => void) | falsyValue; // allows for booleanCondition && function syntax
-  onRetryClick?: (() => void) | falsyValue;
-  buttons?: React.ReactNode;
-} & PaperProps) {
+export const AiFormLayout = React.forwardRef<
+  HTMLDivElement,
+  {
+    title: string;
+    onClose: () => void;
+    skeletonHeight?: number;
+    errorMessage?: string | null;
+    loading?: boolean;
+    onBackClick?: (() => void) | falsyValue; // allows for booleanCondition && function syntax
+    onRetryClick?: (() => void) | falsyValue;
+    buttons?: React.ReactNode;
+  } & PaperProps
+>(function _AiFormLayout(
+  {
+    title,
+    skeletonHeight,
+    errorMessage,
+    loading,
+    children,
+    buttons,
+    onBackClick,
+    onRetryClick,
+    onClose,
+    ...rest
+  },
+  ref
+) {
+  const hasButtons = onBackClick || buttons || onRetryClick;
   return (
-    <AiModalContainer elevation={4} {...rest}>
-      <Stack>
-        <Stack>
+    <AiModalContainer ref={ref} elevation={4} {...rest}>
+      <Stack height="100%">
+        <Stack height="100%">
           <Stack
             direction="row"
             justifyContent="space-between"
@@ -55,14 +63,19 @@ export function AiFormLayout({
             </IconButton>
           </Stack>
           <Divider />
-          <AiModalContentContainer sx={{ minHeight: skeletonHeight ?? 0 }}>
+          <AiModalContentContainer
+            sx={{ minHeight: skeletonHeight ?? 0, height: "100%" }}
+          >
             {errorMessage && (
-              <Typography px={AiFormLayout.pxValue} color="error">
+              <Typography px={AiFormLayoutPaddings.pxValue} color="error">
                 {errorMessage}
               </Typography>
             )}
             {loading ? (
-              <Box px={AiFormLayout.pxValue} py={AiFormLayout.pyValue}>
+              <Box
+                px={AiFormLayoutPaddings.pxValue}
+                py={AiFormLayoutPaddings.pyValue}
+              >
                 <Skeleton
                   variant="rectangular"
                   width="100%"
@@ -75,46 +88,50 @@ export function AiFormLayout({
             )}
           </AiModalContentContainer>
         </Stack>
-        <AiModalFooterContainer
-          direction="row"
-          justifyContent="flex-end"
-          gap={0.5}
-        >
-          {onBackClick && (
-            <Button
-              disabled={loading}
-              variant="text"
-              color="primary"
-              size="small"
-              onClick={onBackClick}
-            >
-              Back
-            </Button>
-          )}
-          {buttons}
-          {onRetryClick && (
-            <Button
-              disabled={loading}
-              variant="contained"
-              size="small"
-              color="info"
-              onClick={onRetryClick}
-            >
-              Retry
-            </Button>
-          )}
+        {hasButtons && (
+          <AiModalFooterContainer
+            direction="row"
+            justifyContent="flex-end"
+            gap={0.5}
+          >
+            {onBackClick && (
+              <Button
+                disabled={loading}
+                variant="text"
+                color="primary"
+                size="small"
+                onClick={onBackClick}
+              >
+                Back
+              </Button>
+            )}
+            {buttons}
+            {onRetryClick && (
+              <Button
+                disabled={loading}
+                variant="contained"
+                size="small"
+                color="info"
+                onClick={onRetryClick}
+              >
+                Retry
+              </Button>
+            )}
 
-          {/* <Button variant="outlined" size="small" onClick={onClose}>
+            {/* <Button variant="outlined" size="small" onClick={onClose}>
             Close
           </Button> */}
-        </AiModalFooterContainer>
+          </AiModalFooterContainer>
+        )}
       </Stack>
     </AiModalContainer>
   );
-}
+});
 
-AiFormLayout.pxValue = 2;
-AiFormLayout.pyValue = 2;
+export const AiFormLayoutPaddings = {
+  pxValue: 2,
+  pyValue: 2,
+};
 
 const AiModalContentContainer = styled("div")(({ theme }) => ({}));
 
@@ -129,8 +146,9 @@ const AiModalFooterContainer = styled(Stack)(({ theme }) => ({
 const AiModalContainer = styled(Paper)(
   ({ theme }) =>
     ({
-      width: "375px",
+      width: "400px",
       maxHeight: "450px",
       overflowY: "auto",
+      overflowX: "clip",
     } as const)
 );

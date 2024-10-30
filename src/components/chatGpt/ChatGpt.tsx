@@ -18,7 +18,7 @@ import {
   llmModels,
   useChatGptState,
 } from "../Providers/ChatGptStateProvider";
-import { useDebugValue, useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { Chip } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -28,12 +28,12 @@ import Markdown from "react-markdown";
 import { AppControls } from "../shared/AppControls";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { useRootElement } from "@src/hooks/useRootElement";
 import { useUserState } from "../Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
 import { useScrollableEl } from "@src/hooks/useScrollableEl";
-import { useDebouncedCallback } from "@src/hooks/useDebouncedCallback";
-import { AiRewriteActions, AiSelectedText } from "./AiRewriteActions";
+import { useDebouncedValue } from "@src/hooks/useDebouncedValue";
+import { AiSelectedText } from "./AiRewriteActions";
+import { CodeMarkdown } from "../shared/CodeMarkdown";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -46,8 +46,8 @@ export const ChatGpt = () => {
     <Container>
       <ChatGptControls />
       <ConversationsList />
-      <Conversation />
-      <AiRewriteActions />
+      <AiConversation />
+      {/* <AiRewriteActions /> */}
       <AiSelectedText />
     </Container>
   );
@@ -56,7 +56,7 @@ export const ChatGpt = () => {
 export const ChatGptControls = (props: {}) => {
   const { data: chatGptState, updateData } = useChatGptState();
   const handleResetClick = () => {
-    updateData({ messages: [], composerDraft: "" });
+    updateData({ messages: [], composerDraft: "", pending: false });
   };
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -129,7 +129,7 @@ export const MessagesContainer = styled(Stack)<{ empty: boolean }>(
   ({ theme, empty }) => ({
     flex: 1,
     gap: theme.spacing(2),
-    padding: theme.spacing(0, 1, 1),
+    padding: theme.spacing(1, 1),
     justifyContent: empty ? "flex-end" : "initial",
   })
 );
@@ -153,19 +153,26 @@ export const MessageComposer = ({
     setValue(composerDraft);
   }, [composerDraft]);
 
-  useDebouncedCallback(
+  const debouncedValue = useDebouncedValue(
     value,
-    (debouncedValue) => {
-      updateData({ composerDraft: debouncedValue });
-    },
     1000 // high number because if there are many tabs open this could be a performance issue
   );
 
+  useEffect(() => {
+    if (debouncedValue === composerDraft) return;
+
+    updateData({ composerDraft: debouncedValue });
+  }, [debouncedValue]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      setValue(value);
-      onSubmit(value);
+      handleSubmit();
     }
+  };
+
+  const handleSubmit = () => {
+    setValue("");
+    onSubmit(value);
   };
 
   return (
@@ -180,7 +187,7 @@ export const MessageComposer = ({
         onKeyDown={handleKeyDown}
         onChange={handleChange}
       />
-      <IconButton color="primary" onClick={() => onSubmit(composerDraft)}>
+      <IconButton color="primary" onClick={handleSubmit}>
         <SendIcon />
       </IconButton>
     </Stack>
@@ -196,18 +203,57 @@ const ConversationFooter = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(0.75, 0, 0),
 }));
 
-export const Conversation = () => {
+export const AiConversation = ({
+  initialMessage,
+  scrollableContainer,
+  fullPage,
+  ...rest
+}: {
+  initialMessage?: string;
+  scrollableContainer?: HTMLElement | null;
+  fullPage?: boolean;
+} & StackProps) => {
   const [mounted, setMounted] = useState(false);
-  const scrollableEl = useScrollableEl();
+  const _scrollableEl = useScrollableEl();
+  const scrollableEl = scrollableContainer || _scrollableEl;
   const {
-    data: { messages, pending, model },
-    updateData,
-    dataSyncing,
+    data: { messages: _messages, pending: _pending, model },
+    updateData: _updateData,
   } = useChatGptState();
   const {
     data: { currentTab, buttonExpanded },
   } = useUserState();
   const { chatGpt } = useServicesContext();
+  const [localMessages, setLocalMessages] = useState<Message[]>([
+    {
+      id: 0,
+      message: `${fullPage ? "Full html page innerText" : "Selected Text"}: \n
+> ${initialMessage}\n\n
+**What would you like me to do with the selected text?**`,
+      direction: "inbound",
+      createdAt: Date.now(),
+    },
+  ]);
+  const [localPending, setLocalPending] = useState(_pending);
+
+  const disableStoreSync = !!initialMessage;
+  const messages = disableStoreSync ? localMessages : _messages;
+  const pending = disableStoreSync ? localPending : _pending;
+
+  const updateData = (
+    data: Partial<ReturnType<typeof useChatGptState>["data"]>
+  ) => {
+    if (!disableStoreSync) {
+      _updateData(data);
+    } else {
+      if (data.messages != null) {
+        setLocalMessages(data.messages);
+      }
+      if (data.pending != null) {
+        setLocalPending(data.pending);
+      }
+    }
+  };
 
   const scrollToBottom = () => {
     if (scrollableEl) {
@@ -280,13 +326,15 @@ export const Conversation = () => {
       }}
       flex={1}
       empty={!messages?.length}
+      {...rest}
     >
       {messages?.length ? (
-        messages.map((message) => {
+        messages.map((message, i) => {
           return (
             <Message
               id={`${constants.EXTENSION_NAME}-message-${message.id}`}
               key={message.id}
+              fullPage={!i && fullPage}
               message={message}
             />
           );
@@ -380,8 +428,9 @@ export const MessageContainer = styled(Stack)(({ theme }) => ({
 
 export const Message = ({
   message,
+  fullPage,
   ...rest
-}: { message: Message } & StackProps) => {
+}: { message: Message; fullPage?: boolean } & StackProps) => {
   const {
     data: { blurText },
   } = useUserState();
@@ -411,35 +460,16 @@ export const Message = ({
       >
         {" "}
         {inbound ? (
-          <Markdown
-            components={{
-              code({ node, className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || "");
-                return match ? (
-                  <SyntaxHighlighter
-                    children={String(children).replace(/\n$/, "")}
-                    // @ts-expect-error
-                    style={{
-                      ...tomorrow,
-                      'pre[class*="language-"]': {
-                        ...tomorrow['pre[class*="language-"]'],
-                        width: 300,
-                      },
-                    }}
-                    language={match[1]}
-                    PreTag="div"
-                    {...props}
-                  />
-                ) : (
-                  <code className={className} {...props}>
-                    {children}
-                  </code>
-                );
-              },
-            }}
-          >
-            {message.message}
-          </Markdown>
+          fullPage ? (
+            <>
+              <Typography>{`Full page is loaded.`}</Typography>
+              <Typography
+                fontWeight={600}
+              >{`What would you like me to do with it?`}</Typography>
+            </>
+          ) : (
+            <CodeMarkdown>{message.message}</CodeMarkdown>
+          )
         ) : (
           <Typography>{message.message}</Typography>
         )}

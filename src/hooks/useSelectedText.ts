@@ -7,14 +7,15 @@ export function useSelectedText() {
     transform: string;
     position: "absolute";
   } | null>(null);
+  const [textType, setTextType] = useState<"input" | "default" | null>(null);
 
   useEffect(() => {
+    let timeout: NodeJS.Timeout;
     const handleEvent = () => {
-      setTimeout(() => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) {
-          const range = selection.getRangeAt(0);
-
           let top = 0;
           let left = 0;
 
@@ -35,12 +36,21 @@ export function useSelectedText() {
             const inputOffsetLeft = getOffsetLeft(activeElement);
             top = cursorXY.y + inputOffsetTop;
             left = cursorXY.x + inputOffsetLeft;
+            setTextType("input");
           } else {
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
+            if (document.activeElement?.hasAttribute("contenteditable")) {
+              setTextType("input");
+            } else {
+              setTextType("default");
+            }
 
-            top = rect.top + rect.height + window.scrollY;
-            left = rect.left + window.scrollX;
+            const range = selection.getRangeAt(0);
+            // const rect = range.getBoundingClientRect();
+            const rects = range.getClientRects();
+            const rect = rects[rects.length - 1];
+
+            top = rect.top + rect.height + window.scrollY + 6;
+            left = rect.left + rect.width + window.scrollX + 6;
           }
 
           if (top && left) {
@@ -53,15 +63,15 @@ export function useSelectedText() {
         } else {
           setSelectedText(null);
         }
-      }, 0);
+      }, 10);
     };
 
     document.addEventListener("mouseup", handleEvent);
-    document.addEventListener("click", handleEvent);
+    // document.addEventListener("click", handleEvent);
 
     return () => {
       document.removeEventListener("mouseup", handleEvent);
-      document.removeEventListener("click", handleEvent);
+      // document.removeEventListener("click", handleEvent);
     };
   }, []);
 
@@ -77,7 +87,7 @@ export function useSelectedText() {
     }
   }
 
-  return { selectedText, updateSelectedText, selectedTextPositions };
+  return { selectedText, updateSelectedText, selectedTextPositions, textType };
 }
 
 function getOffsetTop(element: HTMLElement | null): number {

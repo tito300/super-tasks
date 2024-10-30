@@ -1,9 +1,16 @@
-import { AutoFixHigh, Cancel } from "@mui/icons-material";
+import {
+  AutoFixHigh,
+  Cancel,
+  CheckBox,
+  CheckBoxOutlineBlank,
+  CheckBoxOutlined,
+} from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
   Button,
   Chip,
+  ChipProps,
   Divider,
   IconButton,
   StackProps,
@@ -19,10 +26,11 @@ import { FormControlLabel } from "@mui/material";
 import { Checkbox } from "@mui/material";
 import { useSelectedText } from "@src/hooks/useSelectedText";
 import { StyledPortal } from "../shared/StyledProtal";
-import { AiFormLayout } from "./Shared/AiFormLayout";
+import { AiFormLayout, AiFormLayoutPaddings } from "./Shared/AiFormLayout";
 import { CodeMarkdown } from "../shared/CodeMarkdown";
 import { StyledPopper } from "../shared/StyledPopper";
 import { StyledPopover } from "../shared/StyledPopover";
+import { AiConversation } from "./ChatGpt";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -35,10 +43,8 @@ const AiMessageTypography = styled(Typography)({
 });
 
 function validRewriteInput(input: string) {
-  if (!input) return false;
-
   // at least 3 words
-  if (input.split(" ").length < 3) return false;
+  if (!input.length) return false;
 
   return true;
 }
@@ -48,6 +54,7 @@ export function AiRewriteActions() {
   const [openRewriteModal, setOpenRewriteModal] = useState(false);
   const { typingInput, updateInput, container } = useUserTypingInput();
   const { selectedText } = useSelectedText();
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const handleOpenModal = () => {
     setOpenRewriteModal(!openRewriteModal);
@@ -68,14 +75,14 @@ export function AiRewriteActions() {
   if (!validRewriteInput(typingInput)) return null;
 
   const containerStyles = window.getComputedStyle(container);
-  const topOffset = -27 - (parseInt(containerStyles.paddingTop) || 0);
+  const topOffset = -32 - (parseInt(containerStyles.paddingTop) || 0);
   const rightOffset = -(parseInt(containerStyles.paddingRight) || 0);
 
   return (
     <>
       <StyledPopper
         open
-        anchorEl={container}
+        anchorEl={document.body}
         placement="top-end"
         modifiers={[
           {
@@ -88,6 +95,7 @@ export function AiRewriteActions() {
         ]}
       >
         <AiTooltipButtons
+          ref={tooltipRef}
           expandDirection="left"
           onOpen={handleOpenModal}
           handleRemoveIcon={handleRemoveIcon}
@@ -131,15 +139,16 @@ const AiTooltipButtons = forwardRef<
   return (
     <Stack
       ref={ref}
+      id={`${constants.EXTENSION_NAME}-ai-tooltip-buttons`}
       direction={expandDirection === "right" ? "row-reverse" : "row"}
       alignItems="center"
       sx={{
-        backgroundColor: (theme) => "#fffadb",
+        backgroundColor: "#fff6bf",
         borderRadius: "10px",
-        border: "1px solid #80808038",
+        border: "1px solid #66625a38",
         [`&:hover`]: {
           borderRadius: "10px",
-          backgroundColor: (theme) => "#f1eccc",
+          backgroundColor: "#ffedd7",
           [` #${constants.EXTENSION_NAME}-remove-suggestion-icon`]: {
             display: "flex",
             translate: "transformX(0)",
@@ -187,8 +196,9 @@ export type AiAction =
   | "Rewrite"
   | "Summarize"
   | "Simplify"
-  | "Ask"
-  | "PeerReview";
+  | "Answer"
+  | "PeerReview"
+  | "Chat";
 
 export const AiActionMap = {
   Explain: "Explain",
@@ -196,12 +206,16 @@ export const AiActionMap = {
   Summarize: "Summarize",
   Simplify: "Simplify",
   PeerReview: "Peer Review",
-  Ask: "Ask Question",
+  Answer: "Answer",
+  Chat: "Chat",
 };
 
 export function AiSelectedText() {
-  const { selectedText: _selectedText, selectedTextPositions } =
-    useSelectedText();
+  const {
+    selectedText: inSelectedText,
+    selectedTextPositions,
+    textType,
+  } = useSelectedText();
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [hideAll, setHideAll] = useState(false);
@@ -210,28 +224,41 @@ export function AiSelectedText() {
   const [loading, setLoading] = useState(false);
   const [selectedAction, setSelectedAction] = useState<AiAction | null>(null);
   const { chatGpt } = useServicesContext();
-  const [selectedText, setSelectedText] = useState<string | null>(
-    _selectedText
+  const [_selectedText, setSelectedText] = useState<string | null>(
+    inSelectedText
   );
   const [aiOptions, setAiOptions] = useState<{
     factCheck: boolean;
     keepShort: boolean;
-  }>({ factCheck: false, keepShort: false });
+    fullPage: boolean;
+  }>({ factCheck: false, keepShort: false, fullPage: false });
   const [factCheckMessage, setFactCheckMessage] = useState<string | null>(null);
   const [hasInaccuracies, setHasInaccuracies] = useState(false);
+  const formLayoutRef = useRef<HTMLDivElement>(null);
+
+  const selectedText = aiOptions.fullPage ? getFullPageText() : _selectedText;
 
   useEffect(() => {
-    if (!open) setSelectedText(_selectedText);
-  }, [_selectedText, open]);
+    if (!open) setSelectedText(inSelectedText);
+  }, [inSelectedText, open]);
 
-  const resetResults = () => {
+  const resetResults = ({
+    keepSelectedAction,
+  }: {
+    keepSelectedAction?: boolean;
+  } = {}) => {
+    if (!keepSelectedAction) setSelectedAction(null);
     setErrorMessage("");
     setAiMessage(null);
+    setFactCheckMessage(null);
+    setHasInaccuracies(false);
   };
 
   const handleSubmit = (todo: AiAction) => {
-    resetResults();
+    resetResults({ keepSelectedAction: true });
     setLoading(true);
+
+    const { fullPage, ...restAiOptions } = aiOptions;
 
     const service =
       todo === "Explain"
@@ -240,10 +267,14 @@ export function AiSelectedText() {
         ? chatGpt.simplify
         : todo === "PeerReview"
         ? chatGpt.peerReview
+        : todo === "Answer"
+        ? chatGpt.answer
         : chatGpt.summarize;
 
+    let text = selectedText!;
+
     service({
-      text: selectedText!,
+      text,
       aiOptions,
     })
       .then((res) => {
@@ -260,14 +291,15 @@ export function AiSelectedText() {
   };
 
   const handleTodoClick = (todo: AiAction) => {
-    if (todo === selectedAction) {
+    if (selectedAction === todo) {
       setSelectedAction(null);
     } else {
       setSelectedAction(todo);
+      handleSubmit(todo);
     }
   };
 
-  const handleOptionClick = (option: "factCheck" | "keepShort") => {
+  const handleOptionClick = (option: keyof typeof aiOptions) => {
     setAiOptions((options) => ({ ...options, [option]: !options[option] }));
   };
 
@@ -279,11 +311,16 @@ export function AiSelectedText() {
   if (!selectedText) return null;
   if (hideAll) return null;
 
-  const showResults = !!aiMessage && selectedAction;
+  const showResults = selectedAction || loading;
 
   return (
     <StyledPortal
-      style={{ position: "absolute", top: 0, left: 0 }}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        zIndex: 1000,
+      }}
       container={document.body}
     >
       <AiTooltipButtons
@@ -298,16 +335,31 @@ export function AiSelectedText() {
         anchorEl={containerRef.current}
         disableScrollLock
         onClose={handleClose}
+        sx={{ zIndex: 1001 }}
         anchorOrigin={{
           vertical: "top",
           horizontal: "left",
         }}
       >
-        {selectedAction === "Rewrite" ? (
+        {selectedAction === "Chat" ? (
+          <AiFormLayout
+            ref={formLayoutRef}
+            onClose={handleClose}
+            title="Ai Chat"
+            sx={{ height: "60vh", maxHeight: "unset" }}
+          >
+            <AiConversation
+              sx={{ height: "100%" }}
+              fullPage={aiOptions.fullPage}
+              initialMessage={selectedText}
+              scrollableContainer={formLayoutRef.current}
+            />
+          </AiFormLayout>
+        ) : selectedAction === "Rewrite" ? (
           <AiReWriteForm
             input={selectedText}
             onClose={handleClose}
-            onBackClick={selectedAction && (() => setSelectedAction(null))}
+            onBackClick={selectedAction && resetResults}
             updateInput={() => {}}
           />
         ) : (
@@ -325,109 +377,90 @@ export function AiSelectedText() {
             onClose={handleClose}
             onRetryClick={showResults && (() => handleSubmit(selectedAction!))}
             onBackClick={showResults && resetResults}
-            buttons={
-              !showResults && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  color="primary"
-                  disabled={!selectedAction}
-                  onClick={() => handleSubmit(selectedAction!)}
-                >
-                  Run
-                </Button>
-              )
-            }
           >
             {!aiMessage ? (
               <>
                 <Stack
-                  px={AiFormLayout.pxValue}
-                  py={AiFormLayout.pyValue}
+                  px={AiFormLayoutPaddings.pxValue}
+                  py={AiFormLayoutPaddings.pyValue}
                   direction="row"
                   flexWrap="wrap"
                   gap={0.5}
                 >
                   <ToneChip
-                    label="Explain"
+                    label={AiActionMap.Rewrite}
+                    disabled={aiOptions.fullPage}
+                    onClick={() => handleTodoClick("Rewrite")}
+                    variant={"outlined"}
+                  />
+                  <ToneChip
+                    label={AiActionMap.Explain}
                     onClick={() => handleTodoClick("Explain")}
                     selected={selectedAction === "Explain"}
                     variant="outlined"
                   />
                   <ToneChip
-                    label="Summarize"
+                    label={AiActionMap.Summarize}
                     onClick={() => handleTodoClick("Summarize")}
                     selected={selectedAction === "Summarize"}
                     variant="outlined"
                   />
                   <ToneChip
-                    label="Peer Review"
+                    label={AiActionMap.PeerReview}
                     onClick={() => handleTodoClick("PeerReview")}
                     selected={selectedAction === "PeerReview"}
                     variant="outlined"
                   />
                   <ToneChip
-                    label="Simplify"
+                    label={AiActionMap.Simplify}
                     onClick={() => handleTodoClick("Simplify")}
                     selected={selectedAction === "Simplify"}
                     variant="outlined"
                   />
                   <ToneChip
-                    label="Rewrite"
-                    onClick={() => handleTodoClick("Rewrite")}
+                    label={AiActionMap.Answer}
+                    onClick={() => handleTodoClick("Answer")}
+                    selected={selectedAction === "Answer"}
                     variant={"outlined"}
                   />
                   <ToneChip
-                    label="Ask Question"
-                    onClick={() => handleTodoClick("Ask")}
-                    selected={selectedAction === "Ask"}
+                    label={AiActionMap.Chat}
+                    onClick={() => handleTodoClick("Chat")}
                     variant={"outlined"}
                   />
                 </Stack>
 
                 <Divider />
                 <Stack
-                  px={AiFormLayout.pxValue}
-                  py={AiFormLayout.pyValue}
+                  px={AiFormLayoutPaddings.pxValue}
+                  py={AiFormLayoutPaddings.pyValue}
                   direction="row"
                   gap={0.5}
                 >
-                  <AiLabel
+                  <AiOption
                     label="Fact Check"
+                    variant="outlined"
                     selected={aiOptions.factCheck}
-                    componentsProps={{
-                      typography: { variant: "body2" },
-                    }}
-                    control={
-                      <Checkbox
-                        sx={{ p: 0.5, pl: 1 }}
-                        size="small"
-                        checked={aiOptions.factCheck}
-                        onChange={() => handleOptionClick("factCheck")}
-                      />
-                    }
+                    onClick={() => handleOptionClick("factCheck")}
                   />
-                  <AiLabel
+                  <AiOption
+                    label="Full Page"
+                    variant="outlined"
+                    selected={aiOptions.fullPage}
+                    onClick={() => handleOptionClick("fullPage")}
+                  />
+                  <AiOption
                     label="Keep Short"
+                    variant="outlined"
                     selected={aiOptions.keepShort}
-                    componentsProps={{
-                      typography: { variant: "body2" },
-                    }}
-                    control={
-                      <Checkbox
-                        sx={{ p: 0.5, pl: 1 }}
-                        size="small"
-                        checked={aiOptions.keepShort}
-                        onChange={() => handleOptionClick("keepShort")}
-                      />
-                    }
+                    onClick={() => handleOptionClick("keepShort")}
                   />
                 </Stack>
               </>
             ) : (
               <Stack
-                px={AiFormLayout.pxValue}
-                py={AiFormLayout.pyValue}
+                px={AiFormLayoutPaddings.pxValue}
+                py={AiFormLayoutPaddings.pyValue}
                 gap={1}
               >
                 <CodeMarkdown>{aiMessage!}</CodeMarkdown>
@@ -447,6 +480,45 @@ export function AiSelectedText() {
       </StyledPopover>
     </StyledPortal>
   );
+}
+
+export function AiOption({
+  selected,
+  ...rest
+}: { selected: boolean } & ChipProps) {
+  return (
+    <AiOptionStyled
+      selected={selected}
+      size="small"
+      icon={
+        selected ? (
+          <CheckBox fontSize="small" />
+        ) : (
+          <CheckBoxOutlineBlank fontSize="small" />
+        )
+      }
+      variant="outlined"
+      {...rest}
+    ></AiOptionStyled>
+  );
+}
+export const AiOptionStyled = styled(Chip)<{
+  selected: boolean;
+}>(({ selected }) => ({
+  cursor: "pointer",
+  fontWeight: 500,
+  borderRadius: 6,
+  "&:hover": {
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  ...(selected && {
+    backgroundColor: "#ac90b44a",
+    borderColor: "#ac90b44a",
+  }),
+}));
+
+export function getFullPageText() {
+  return document.body.innerText;
 }
 
 export const improvements = [
@@ -482,7 +554,10 @@ function AiReWriteForm(
   const { chatGpt } = useServicesContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [factCheck, setFactCheck] = useState(false);
+  const [aiOptions, setAiOptions] = useState<{
+    factCheck: boolean;
+    keepShort: boolean;
+  }>({ factCheck: false, keepShort: false });
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const [skeletonHeight, setSkeletonHeight] = useState(150);
 
@@ -501,7 +576,8 @@ function AiReWriteForm(
       .suggestRewrite({
         improvements: selectedImprovements,
         input,
-        checkInaccuracies: factCheck,
+        checkInaccuracies: aiOptions.factCheck,
+        keepShort: aiOptions.keepShort,
       })
       .then((res) => {
         setSuggestion(res.message);
@@ -549,6 +625,10 @@ function AiReWriteForm(
     }
   };
 
+  const handleAiOptionClick = (option: keyof typeof aiOptions) => {
+    setAiOptions((options) => ({ ...options, [option]: !options[option] }));
+  };
+
   return (
     <AiFormLayout
       title={
@@ -590,14 +670,14 @@ function AiReWriteForm(
     >
       {showResults ? (
         <Stack
-          px={AiFormLayout.pxValue}
-          py={AiFormLayout.pyValue}
+          px={AiFormLayoutPaddings.pxValue}
+          py={AiFormLayoutPaddings.pyValue}
           ref={contentContainerRef}
           gap={1}
         >
           <>
             <CodeMarkdown>{suggestion}</CodeMarkdown>
-            {factCheck && inaccuracy && (
+            {aiOptions.factCheck && inaccuracy && (
               <Alert
                 severity={hasInaccuracies ? "warning" : "info"}
                 sx={{ whiteSpace: "pre-line" }}
@@ -611,8 +691,8 @@ function AiReWriteForm(
       ) : (
         <>
           <Stack
-            px={AiFormLayout.pxValue}
-            py={AiFormLayout.pyValue}
+            px={AiFormLayoutPaddings.pxValue}
+            py={AiFormLayoutPaddings.pyValue}
             ref={contentContainerRef}
             gap={1}
           >
@@ -632,25 +712,22 @@ function AiReWriteForm(
           </Stack>
           <Divider />
           <Stack
-            px={AiFormLayout.pxValue}
-            py={AiFormLayout.pyValue}
+            px={AiFormLayoutPaddings.pxValue}
+            py={AiFormLayoutPaddings.pyValue}
             direction="row"
             gap={0.5}
           >
-            <AiLabel
+            <AiOption
               label="Fact Check"
-              selected={factCheck}
-              componentsProps={{
-                typography: { variant: "body2" },
-              }}
-              control={
-                <Checkbox
-                  sx={{ p: 0.5, pl: 1 }}
-                  size="small"
-                  checked={factCheck}
-                  onChange={(_, checked) => setFactCheck(checked)}
-                />
-              }
+              variant="outlined"
+              selected={aiOptions.factCheck}
+              onClick={() => handleAiOptionClick("factCheck")}
+            />
+            <AiOption
+              label="Keep Short"
+              variant="outlined"
+              selected={aiOptions.keepShort}
+              onClick={() => handleAiOptionClick("keepShort")}
             />
           </Stack>
         </>
@@ -662,8 +739,8 @@ function AiReWriteForm(
 const AiLabel = styled(FormControlLabel)<{ selected: boolean }>(
   ({ theme, selected }) => ({
     borderRadius: 4,
-    border: `1px solid ${theme.palette.divider}`,
-    padding: "1px 8px 1px 0px",
+    // border: `1px solid ${theme.palette.divider}`,
+    padding: "0px 8px 0px 0px",
     margin: 0,
     "&:hover": {
       backgroundColor: "rgba(0,0,0,0.1)",
@@ -678,7 +755,7 @@ const ToneChip = styled(Chip)<{ selected?: boolean }>(({ selected }) => ({
   cursor: "pointer",
   fontWeight: 500,
   "&:hover": {
-    backgroundColor: "rgba(0,0,0,0.2)",
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
   ...(selected && {
     backgroundColor: "#ac90b44a",

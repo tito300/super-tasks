@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import { styled } from "@mui/material";
 import { ComponentProps } from "react";
 import _Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -10,14 +10,23 @@ window.Prism = window.Prism || {};
 // @ts-expect-error
 window.Prism.manual = true;
 
-const Markdown = styled(_Markdown)({
+const Markdown = styled(_Markdown)(({ theme }) => ({
   p: {
     margin: "8px 0",
+    whiteSpace: "break-spaces",
   },
   "ol, ul": {
     paddingLeft: 14,
   },
-});
+  blockquote: {
+    borderLeft: `4px solid ${theme.palette.text.disabled}`,
+    paddingLeft: "16px",
+    margin: "16px 0",
+  },
+  "blockquote p": {
+    color: theme.palette.text.disabled,
+  },
+}));
 
 export function CodeMarkdown({
   children,
@@ -37,7 +46,7 @@ export function CodeMarkdown({
                 ...tomorrow,
                 'pre[class*="language-"]': {
                   ...tomorrow['pre[class*="language-"]'],
-                  width: 300,
+                  width: 290,
                 },
               }}
               language={match[1]}

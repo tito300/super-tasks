@@ -56,16 +56,19 @@ export const chatGptService = {
     improvements: improvements,
     input,
     checkInaccuracies,
+    keepShort,
   }: {
     improvements: Tone[];
     input: string;
     checkInaccuracies?: boolean;
+    keepShort?: boolean;
   }) => {
     return fetcher
       .post(`${urls.BASE_URL}/ai/rewrite`, {
         input,
         improvements,
         checkInaccuracies,
+        keepShort,
       })
       .then((res) => res.json())
       .then((res) => {
@@ -109,6 +112,14 @@ export const chatGptService = {
         action: "PeerReview",
         ...body,
       })
+      .then((res) => res.json())
+      .then((res) => {
+        return res as AiQuickActionsResponse;
+      });
+  },
+  answer: async (body: AiQuickActionsBody) => {
+    return fetcher
+      .post(`${urls.BASE_URL}/ai/quick-action`, { action: "Answer", ...body })
       .then((res) => res.json())
       .then((res) => {
         return res as AiQuickActionsResponse;
