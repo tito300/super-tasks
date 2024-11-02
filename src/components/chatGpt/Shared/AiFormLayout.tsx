@@ -1,5 +1,4 @@
 import { Divider, IconButton, PaperProps, Typography } from "@mui/material";
-import { StyledPopover } from "../../shared/StyledPopover";
 import { Stack } from "@mui/material";
 import { Skeleton } from "@mui/material";
 import { styled } from "@mui/material";
@@ -8,6 +7,7 @@ import { Box } from "@mui/material";
 import { Button } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import React from "react";
+import { constants } from "@src/config/constants";
 
 type falsyValue = false | null | undefined;
 export const AiFormLayout = React.forwardRef<
@@ -24,6 +24,7 @@ export const AiFormLayout = React.forwardRef<
     hidden?: boolean;
     footer?: React.ReactNode;
     headerButtons?: React.ReactNode;
+    contentContainerRef?: React.RefObject<HTMLDivElement>;
   } & PaperProps
 >(function _AiFormLayout(
   {
@@ -38,6 +39,7 @@ export const AiFormLayout = React.forwardRef<
     hidden,
     footer,
     headerButtons,
+    contentContainerRef,
     onClose,
     ...rest
   },
@@ -61,40 +63,43 @@ export const AiFormLayout = React.forwardRef<
         >
           {title}
         </Typography>
-        <Stack direction="row" alignItems="center" gap={0.25}>
+        <Stack direction="row" alignItems="center" gap={0.25} px={1}>
           {headerButtons}
           <IconButton size="small" onClick={onClose}>
             <Close fontSize="small" />
           </IconButton>
         </Stack>
       </HeaderContainer>
-      <Stack height="100%">
-        <Stack height="100%">
-          <AiModalContentContainer
-            sx={{ minHeight: skeletonHeight ?? 0, height: "100%" }}
-          >
-            {errorMessage && (
-              <Typography px={AiFormLayoutPaddings.pxValue} color="error">
-                {errorMessage}
-              </Typography>
-            )}
-            {loading ? (
-              <Box
-                px={AiFormLayoutPaddings.pxValue}
-                py={AiFormLayoutPaddings.pyValue}
-              >
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  height={skeletonHeight}
-                />
-              </Box>
-            ) : (
-              // prettier-ignore
-              children
-            )}
-          </AiModalContentContainer>
-        </Stack>
+      <Stack height="100%" flexGrow={1} overflow={"hidden"}>
+        <AiModalContentContainer
+          id={`${constants.EXTENSION_NAME}-modal-content-container`}
+          sx={{
+            minHeight: skeletonHeight ?? 0,
+            height: "100%",
+            overflow: "auto",
+          }}
+        >
+          {errorMessage && (
+            <Typography px={AiFormLayoutPaddings.pxValue} color="error">
+              {errorMessage}
+            </Typography>
+          )}
+          {loading ? (
+            <Box
+              px={AiFormLayoutPaddings.pxValue}
+              py={AiFormLayoutPaddings.pyValue}
+            >
+              <Skeleton
+                variant="rectangular"
+                width="100%"
+                height={skeletonHeight}
+              />
+            </Box>
+          ) : (
+            // prettier-ignore
+            children
+          )}
+        </AiModalContentContainer>
         {hasButtons && (
           <AiModalFooterContainer
             direction="row"
@@ -156,9 +161,10 @@ const AiModalContainer = styled(Paper)<{ hidden?: boolean }>(
     ({
       width: "400px",
       maxHeight: "450px",
-      overflowY: "auto",
-      overflowX: "clip",
-      display: hidden ? "none" : "block",
+      display: hidden ? "none" : "flex",
+      flexDirection: "column",
+      // overflowY: "auto",
+      // overflowX: "clip",
     } as const)
 );
 

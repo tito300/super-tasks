@@ -18,9 +18,9 @@ function hook() {
   rootContainer.style.opacity = "0";
 
   const headElement = document.createElement("head");
-  const htmlFontSize = parseFloat(
-    window.getComputedStyle(document.body).fontSize
-  );
+  headElement.innerHTML = `
+  <style>:host{all: initial;box-sizing: border-box;}</style>
+  `;
 
   // if (htmlFontSize < 16) {
   //   const style = document.createElement("style");

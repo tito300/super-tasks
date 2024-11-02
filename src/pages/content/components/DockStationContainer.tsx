@@ -130,18 +130,6 @@ export function DockStationContainer({ children }: PropsWithChildren) {
           pagePosition={pagePosition}
           isDragging={isDragging}
         >
-          <ExtensionAiButton
-            pagePosition={pagePosition}
-            onClick={() => handleButtonClick("chatGpt")}
-            id={`${constants.EXTENSION_NAME}-ai-button`}
-          >
-            <img
-              src={runtime.getURL("chatgpt-icon.png")}
-              alt="calendar"
-              width={28}
-              height={28}
-            />
-          </ExtensionAiButton>
           <ExtensionCalendarButton
             pagePosition={pagePosition}
             onClick={() => handleButtonClick("calendar")}
@@ -164,35 +152,47 @@ export function DockStationContainer({ children }: PropsWithChildren) {
             }}
           >
             <TasksReminderBadge>
-              <BadgeStyled
-                slotProps={{
-                  badge: {
-                    id: `${constants.EXTENSION_NAME}-remove-button`,
-                  },
-                }}
-                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-                color="default"
-                badgeContent={
-                  <IconButton
-                    sx={{ padding: 0 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRemoved(true);
-                    }}
-                  >
-                    <Close sx={{ fontSize: 14, color: "white" }} />
-                  </IconButton>
-                }
-              >
-                <img
-                  src={runtime.getURL("google-tasks-icon.png")}
-                  alt="tasks"
-                  width={35}
-                  height={35}
-                />
-              </BadgeStyled>
+              <img
+                src={runtime.getURL("google-tasks-icon.png")}
+                alt="tasks"
+                width={28}
+                height={28}
+              />
             </TasksReminderBadge>
           </ExtensionTaskButton>
+          <ExtensionAiButton
+            pagePosition={pagePosition}
+            onClick={() => handleButtonClick("chatGpt")}
+            id={`${constants.EXTENSION_NAME}-ai-button`}
+          >
+            <BadgeStyled
+              slotProps={{
+                badge: {
+                  id: `${constants.EXTENSION_NAME}-remove-button`,
+                },
+              }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              color="default"
+              badgeContent={
+                <IconButton
+                  sx={{ padding: 0 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRemoved(true);
+                  }}
+                >
+                  <Close sx={{ fontSize: 14, color: "white" }} />
+                </IconButton>
+              }
+            >
+              <img
+                src={runtime.getURL("chatgpt-icon.png")}
+                alt="calendar"
+                width={28}
+                height={28}
+              />
+            </BadgeStyled>
+          </ExtensionAiButton>
         </ButtonsContainer>
       )}
     </DraggablePopperStyled>
@@ -229,11 +229,15 @@ const ExtensionTaskButton = styled(IconButton)<{ pagePosition: PagePosition }>(
       top: "50%",
       left: "50%",
       boxShadow: theme.shadows[3],
+      marginBottom: 2,
       backgroundColor: "#fff",
+      color: "white",
       transform: "translate(-50%, -50%)",
       fontSize: 0,
+      padding: "12px",
       cursor: "grab",
-      [":hover"]: {
+      ["&:hover"]: {
+        boxShadow: theme.shadows[6],
         backgroundColor: "#fff",
       },
     };
@@ -257,6 +261,7 @@ const ExtensionCalendarButton = styled(IconButton)<{
     cursor: "grab",
     ["&:hover"]: {
       boxShadow: theme.shadows[6],
+      backgroundColor: "#fff",
     },
   };
 });
@@ -268,15 +273,12 @@ const ExtensionAiButton = styled(IconButton)<{ pagePosition: PagePosition }>(
       top: "50%",
       left: "50%",
       boxShadow: theme.shadows[3],
-      marginBottom: 2,
       backgroundColor: "#fff",
-      color: "white",
       transform: "translate(-50%, -50%)",
       fontSize: 0,
-      padding: "12px",
       cursor: "grab",
-      ["&:hover"]: {
-        boxShadow: theme.shadows[6],
+      padding: "12px",
+      [":hover"]: {
         backgroundColor: "#fff",
       },
     };
@@ -307,7 +309,7 @@ const ButtonsContainer = styled(Stack)<{
                 : "translate(-26px, 32px)",
             transition: "transform 0.1s",
           },
-          [`:hover& #${constants.EXTENSION_NAME}-ai-button`]: {
+          [`:hover& #${constants.EXTENSION_NAME}-tasks-button`]: {
             transform:
               pagePosition === "bottom-right" || pagePosition === "top-right"
                 ? "translate(-85px, -26px);"

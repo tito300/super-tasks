@@ -367,13 +367,20 @@ export function AiSelectedText() {
         disablePortal
         onClose={handleClose}
         sx={{ zIndex: Number.MAX_SAFE_INTEGER - 9 }}
+        slotProps={{
+          paper: {
+            sx: {
+              overflowY: "unset",
+              overflowX: "unset",
+            },
+          },
+        }}
         anchorOrigin={{
           vertical: "top",
           horizontal: "left",
         }}
       >
         <AiFormLayout
-          ref={formLayoutRef}
           onClose={handleClose}
           title="Ai Chat"
           hidden={selectedAction !== "Chat"}
@@ -388,7 +395,6 @@ export function AiSelectedText() {
             fullPage={aiOptions.fullPage}
             hidden={selectedAction !== "Chat"}
             initialMessage={currentSelectedText || "No text selected"}
-            scrollableContainer={formLayoutRef.current}
           />
         </AiFormLayout>
 
@@ -422,6 +428,8 @@ export function AiSelectedText() {
             py={1}
             direction="row"
             gap={0.5}
+            borderBottom={1}
+            borderColor={"divider"}
           >
             <AiOption
               label="Keep Short"

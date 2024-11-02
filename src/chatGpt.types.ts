@@ -5,6 +5,8 @@ export type ChatGptMessage = {
   createdAt: number;
   fullPage?: boolean;
   fullPageUrl?: string;
+  fullPageTitle?: string;
+  fullPageDomain?: string;
   error?: boolean;
 };
 

@@ -24,8 +24,8 @@ const AppContainer = styled(Paper)({
   position: "relative",
   display: "flex",
   flexDirection: "column",
-  overflow: "auto",
-  overflowX: "clip",
+  overflowX: "hidden",
+  overflowY: "auto",
   height: "450px",
   backgroundColor: "white",
 });
@@ -80,10 +80,10 @@ export function TabsManager({
         {!hideTabs && <NavigationTabs onClose={handleExtensionClose} />}
         <AppContainer
           elevation={2}
-          id={`${constants.EXTENSION_NAME}-scrollable-container`}
           onMouseDown={(e) => e.stopPropagation()}
+          id={`${constants.EXTENSION_NAME}-scrollable-container`}
         >
-          <Stack
+          <TabContainer
             flexGrow={1}
             sx={{
               display:
@@ -91,42 +91,46 @@ export function TabsManager({
             }}
           >
             {tabs["tasks"]}
-          </Stack>
+          </TabContainer>
           {tabs["calendar"] && (
-            <Stack
+            <TabContainer
               flexGrow={1}
               sx={{
                 display: currentTab === "calendar" ? "block" : "none",
               }}
             >
               {tabs["calendar"]}
-            </Stack>
+            </TabContainer>
           )}
           {tabs["chatGpt"] && (
-            <Stack
+            <TabContainer
               flexGrow={1}
               sx={{
                 display: currentTab === "chatGpt" ? "block" : "none",
               }}
             >
               {tabs["chatGpt"]}
-            </Stack>
+            </TabContainer>
           )}
           {tabs["add"] && (
-            <Stack
+            <TabContainer
               flexGrow={1}
               sx={{
                 display: currentTab === "add" ? "block" : "none",
               }}
             >
               {tabs["add"]}
-            </Stack>
+            </TabContainer>
           )}
         </AppContainer>
       </TabContext>
     </Stack>
   );
 }
+
+const TabContainer = styled(Stack)({
+  height: "100%",
+});
 
 function NavigationTabs({ onClose }: { onClose: () => void }) {
   const scriptType = useScriptType();
@@ -143,10 +147,12 @@ function NavigationTabs({ onClose }: { onClose: () => void }) {
   return (
     <>
       <TabIconsContainer scriptType={scriptType} id="summary-tabs-container">
-        {tasksAvailable && <TabOption tabName="tasks" />}
-        {calendarAvailable && <TabOption tabName="calendar" />}
-        {chatGptAvailable && <TabOption tabName="chatGpt" />}
-        {canAddMore && scriptType === "Popup" && <TabOption tabName="add" />}
+        <Stack direction={"row"} alignItems={"center"} mb={-1}>
+          {tasksAvailable && <TabOption tabName="tasks" />}
+          {calendarAvailable && <TabOption tabName="calendar" />}
+          {chatGptAvailable && <TabOption tabName="chatGpt" />}
+          {canAddMore && scriptType === "Popup" && <TabOption tabName="add" />}
+        </Stack>
         <IconButton sx={{ ml: "auto" }} size="small" onClick={onClose}>
           <Close fontSize="small" />
         </IconButton>
@@ -208,13 +214,14 @@ const TabIconsContainer = styled(Stack)<{
   scriptType: ScriptType;
 }>(({ theme, scriptType }) => ({
   flexDirection: "row",
-  alignItems: "flex-end",
+  alignItems: "center",
+  justifyContent: "space-between",
   position: "fixed",
   backgroundColor: "#98a2b9",
   borderTopLeftRadius: 4,
   borderTopRightRadius: 4,
   zIndex: 50,
-  width: "100%",
+  padding: "2px 8px",
   borderBottom: `1px solid ${theme.palette.divider}`,
   ...(scriptType === "Content" && { position: "initial" }),
 }));
@@ -240,19 +247,11 @@ const TabIconStyled = styled(IconButton)<{
     backgroundColor: "#f1f1f1",
   },
 
-  ...(selected
-    ? {
-        backgroundColor: "#f1f1f1",
-        border: `1px solid #9e9e9e`,
-        borderBottom: "none",
-        boxShadow:
-          scriptType === "Content" ? "none" : "0px 0px 4px 2px #0000004a",
-      }
-    : {
-        // marginLeft: "-4px",
-        zIndex: -1,
-        // ":hover": {
-        //   backgroundColor: #f1f1f1,
-        // },
-      }),
+  ...(selected && {
+    backgroundColor: "#d0d0d0",
+    border: `1px solid #9e9e9e`,
+    borderBottomColor: "transparent",
+    boxShadow: scriptType === "Content" ? "none" : "0px 0px 4px 2px #0000004a",
+    transform: "scale(1.15)",
+  }),
 }));

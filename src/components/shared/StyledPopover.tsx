@@ -32,8 +32,9 @@ export function StyledPopover({
   }, [containerEl]);
 
   return (
-    <Popover style={{ zIndex: 1000 }} {...rest}>
+    <Popover sx={{ zIndex: 1000 }} {...rest}>
       <StyledPopoverContainer
+        id={`${constants.EXTENSION_NAME}-popover-container`}
         sx={sx}
         ref={(el) => setOpenRewriteContainerEl(el)}
       >

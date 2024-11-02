@@ -18,7 +18,7 @@ import {
   llmModels,
   useChatGptState,
 } from "../Providers/ChatGptStateProvider";
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { Chip } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -35,6 +35,7 @@ import { useDebouncedValue } from "@src/hooks/useDebouncedValue";
 import { AiSelectedText } from "./AiRewriteActions";
 import { CodeMarkdown } from "../shared/CodeMarkdown";
 import { ChatGptMessage } from "@src/chatGpt.types";
+import { useScriptType } from "../Providers/ScriptTypeProvider";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -127,9 +128,10 @@ export const ConversationsList = () => {
 export const MessagesContainer = styled(Stack)<{ empty: boolean }>(
   ({ theme, empty }) => ({
     flex: 1,
-    gap: theme.spacing(2),
     padding: theme.spacing(1, 1),
+    height: "100%",
     justifyContent: empty ? "flex-end" : "initial",
+    overflow: "hidden",
   })
 );
 
@@ -185,7 +187,7 @@ export const MessageComposer = ({
       {...rest}
       sx={{ backgroundColor: "white", ...rest.sx }}
       direction="row"
-      spacing={2}
+      gap={1.5}
       pb={1}
       alignItems="center"
     >
@@ -218,6 +220,9 @@ const ConversationFooter = styled(Stack)(({ theme }) => ({
 const MessagesWrapper = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(1),
   flex: 1,
+  overflowY: "auto",
+  overflowX: "clip",
+  paddingBottom: theme.spacing(3.5),
 }));
 
 const generateInitialMessage = (
@@ -240,6 +245,8 @@ const generateInitialMessage = (
     direction: "inbound",
     fullPage: options.fullPage,
     fullPageUrl: location.href,
+    fullPageDomain: location.hostname,
+    fullPageTitle: document.title,
     createdAt: Date.now(),
   } as const;
 };
@@ -257,8 +264,7 @@ export const AiConversation = ({
   hidden?: boolean;
 } & StackProps) => {
   const [mounted, setMounted] = useState(false);
-  const _scrollableEl = useScrollableEl();
-  const scrollableEl = scrollableContainer || _scrollableEl;
+  const messagesWrapperRef = useRef<HTMLDivElement | null>(null);
   const {
     data: {
       messages: _messages,
@@ -275,10 +281,13 @@ export const AiConversation = ({
   const [localMessages, setLocalMessages] = useState<ChatGptMessage[]>([
     generateInitialMessage(initialMessage, { fullPage }),
   ]);
+  const scriptType = useScriptType();
   const [localPending, setLocalPending] = useState(_pending);
   const [localAiOptions, setLocalAiOptions] = useState({
     ..._aiOptions,
   });
+
+  const scrollableEl = scrollableContainer || messagesWrapperRef.current;
 
   const disableStoreSync = !!initialMessage;
   const messages = disableStoreSync ? localMessages : _messages;
@@ -371,9 +380,6 @@ export const AiConversation = ({
       composerDraft: "",
       pending: true,
     });
-    setTimeout(() => {
-      scrollToBottom();
-    }, 100);
 
     chatGpt
       .getChatGptResponse(messagesClone, model, aiOptions)
@@ -455,7 +461,7 @@ export const AiConversation = ({
       empty={!messages?.length}
       {...rest}
     >
-      <MessagesWrapper>
+      <MessagesWrapper ref={messagesWrapperRef}>
         {messages?.length ? (
           messages.map((message, i) => {
             return (
@@ -478,18 +484,25 @@ export const AiConversation = ({
           </Typography>
         )}
       </MessagesWrapper>
-      <ConversationFooter gap={1}>
+      <ConversationFooter gap={pending ? 2 : 1}>
         {pending ? (
           <TypingIndicator />
         ) : (
-          <Stack direction="row" gap={0.5}>
+          <Stack
+            sx={{
+              position: "absolute",
+              bottom: "100%",
+            }}
+            direction="row"
+            gap={0.5}
+          >
             <ChatActionChip
               onClick={() => handleActionClick("shortAnswers")}
               label="Short Answers"
               selected={aiOptions.keepShort}
               size="small"
             />
-            {!fullPageSelected && (
+            {!fullPageSelected && scriptType !== "Popup" && (
               <ChatActionChip
                 onClick={() => handleActionClick("fullPage")}
                 label="Read Page"
@@ -518,7 +531,7 @@ const ChatActionChip = styled(Chip)<{ selected?: boolean }>(
     cursor: "pointer",
     color: theme.palette.text.secondary,
     backgroundColor: "white",
-    border: `1px solid ${theme.palette.grey[400]}`,
+    border: `1px solid ${theme.palette.grey[300]}`,
     boxShadow: "0px 1px 4px #00000025",
     ...(selected && {
       backgroundColor: theme.palette.grey[500],
@@ -546,6 +559,10 @@ export const TypingIndicator = () => {
       gap={0.5}
       paddingLeft={2}
       alignItems="center"
+      sx={{
+        position: "absolute",
+        bottom: "100%",
+      }}
     >
       <Box
         sx={{
@@ -652,13 +669,21 @@ export const Message = ({
               <Chip
                 label={
                   message.fullPageUrl === location.href
-                    ? `Page Read Successfully`
-                    : `A Previous Page was Read`
+                    ? `Current Page is Read`
+                    : `Page "${truncateText(
+                        message.fullPageTitle!,
+                        15
+                      )}" was Read`
                 }
-                sx={{ mb: 1 }}
+                sx={{
+                  mb: 1,
+                  backgroundColor: "#4662a5",
+                  color: "white",
+                  boxShadow: "0 2px 4px #00000036",
+                }}
               />
               <Typography
-                fontWeight={600}
+                fontWeight={500}
               >{`What would you like me to do with it?`}</Typography>
             </>
           ) : (
@@ -671,3 +696,7 @@ export const Message = ({
     </MessageContainer>
   );
 };
+
+function truncateText(text: string, maxLength: number) {
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
