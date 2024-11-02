@@ -25,10 +25,6 @@ export function OauthRequired({
   const { user: userServices } = useServicesContext();
   const messageEngine = useMessageEngine();
 
-  console.log("dataSyncing", dataSyncing);
-  console.log("userState", userState.tokens);
-  console.log("loading", loading);
-
   function getGrantedScopes() {
     const scopes = [];
     if (userState.selectedApps.gCalendar)
@@ -46,32 +42,7 @@ export function OauthRequired({
 
   useEffect(() => {
     if (!dataSyncing && !userState.tokens.google) {
-      userServices
-        .getGoogleAuthToken({ interactive: false, scopes: getGrantedScopes() })
-        .then((tokenRes) => {
-          if (!tokenRes.token) return;
-
-          updateUserState({
-            tokens: {
-              ...userState.tokens,
-              google: tokenRes.token,
-            },
-            selectedApps: {
-              ...userState.selectedApps,
-              gCalendar: !!tokenRes?.grantedScopes?.includes(
-                scopes.google.calendar
-              ),
-              gTasks: !!tokenRes?.grantedScopes?.includes(scopes.google.tasks),
-            },
-          });
-          tokenSetRef.current = true;
-        })
-        .catch((err) => {
-          console.error(err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      getAuthToken();
     } else if (!dataSyncing) {
       setLoading(false);
     }
@@ -79,29 +50,67 @@ export function OauthRequired({
 
   useEffect(() => {
     messageEngine.onMessage("ReAuthenticate", async () => {
-      updateUserState({
-        tokens: {
-          ...userState.tokens,
-          google: "",
-        },
-      });
+      getAuthToken({ retries: 1, resetToken: true });
     });
   }, []);
+
+  function getAuthToken({
+    retries = 0,
+    resetToken = false,
+  }: {
+    retries?: number;
+    resetToken?: boolean;
+  } = {}) {
+    userServices
+      .getGoogleAuthToken({ interactive: false, scopes: getGrantedScopes() })
+      .then((tokenRes) => {
+        if (!tokenRes.token) {
+          if (retries) {
+            getAuthToken({ retries: retries - 1, resetToken });
+            return;
+          } else {
+            if (resetToken) {
+              updateUserState({
+                tokens: {
+                  ...userState.tokens,
+                  google: "",
+                },
+              });
+            }
+            console.error("Failed to get google token");
+            return;
+          }
+        }
+
+        updateUserState({
+          tokens: {
+            ...userState.tokens,
+            google: tokenRes.token,
+          },
+          selectedApps: {
+            ...userState.selectedApps,
+            gCalendar: !!tokenRes?.grantedScopes?.includes(
+              scopes.google.calendar
+            ),
+            gTasks: !!tokenRes?.grantedScopes?.includes(scopes.google.tasks),
+          },
+        });
+        tokenSetRef.current = true;
+      })
+      .catch((err) => {
+        console.error(err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }
 
   if (document.location.href.includes("accounts.google.com/signin/oauth"))
     return null;
 
   const hasOneAppToken = !!userState.tokens.google;
 
-  return (
-    <div {...rest}>
-      {loading ? (
-        <div>loading...</div>
-      ) : !hasOneAppToken ? (
-        <AppOauthPicker />
-      ) : (
-        children
-      )}
-    </div>
-  );
+  if (loading) return null;
+
+  return <div {...rest}>{!hasOneAppToken ? <AppOauthPicker /> : children}</div>;
 }

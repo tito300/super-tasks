@@ -19,6 +19,7 @@ const services = {
 let messageEngine: ReturnType<typeof getMessageEngine>;
 
 export type ServiceName = keyof typeof services;
+export type ServiceObject = Record<string, (...arg: any[]) => Promise<any>>;
 
 export const getService = (serviceName: ServiceName) => {
   if (!initiated) {
@@ -36,18 +37,22 @@ export const initializeServices = (scriptType: ScriptType) => {
       messageEngine.onMessage("ServiceCall", async (message) => {
         const service = services[message.payload.serviceName];
         try {
-          // @ts-expect-error
           const response = await service[message.payload.method](
             ...message.payload.args
           );
 
           return response;
-        } catch (error) {
-          const response = await handle401Errors(error, () =>
-            // @ts-expect-error
-            service[message.payload.method](...message.payload.args)
-          );
-          if (response) return response;
+        } catch (error: any) {
+          if (error.status === 401) {
+            messageEngine.broadcastMessage(
+              "ReAuthenticate",
+              null,
+              "Background",
+              {
+                activeTabOnly: true,
+              }
+            );
+          }
 
           throw error;
         }
@@ -65,20 +70,3 @@ export const initializeServices = (scriptType: ScriptType) => {
   }
   return services;
 };
-
-async function handle401Errors(error: unknown, retry: () => Promise<any>) {
-  if (error && typeof error === "object" && "status" in error) {
-    if (error.status !== 401) return;
-
-    console.log("Handling 401 error");
-    const res = await services.user.getGoogleAuthToken();
-
-    if (res.token) {
-      return retry();
-    }
-
-    messageEngine.broadcastMessage("ReAuthenticate", null, "Background", {
-      activeTabOnly: true,
-    });
-  }
-}

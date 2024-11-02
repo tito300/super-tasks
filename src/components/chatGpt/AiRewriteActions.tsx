@@ -1,9 +1,11 @@
 import {
   AutoFixHigh,
+  BorderColor,
   Cancel,
   CheckBox,
   CheckBoxOutlineBlank,
   CheckBoxOutlined,
+  DeleteForever,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -133,52 +135,60 @@ const AiTooltipButtons = forwardRef<
     handleRemoveIcon: () => void;
   } & StackProps
 >(function _AiTooltipButtons(
-  { expandDirection, onOpen, handleRemoveIcon, sx, ...rest },
+  { expandDirection, onOpen, handleRemoveIcon, ...rest },
   ref
 ) {
   return (
-    <Stack
-      ref={ref}
-      id={`${constants.EXTENSION_NAME}-ai-tooltip-buttons`}
-      direction={expandDirection === "right" ? "row-reverse" : "row"}
-      alignItems="center"
-      sx={{
-        backgroundColor: "#fff6bf",
-        borderRadius: "10px",
-        border: "1px solid #66625a38",
-        [`&:hover`]: {
-          borderRadius: "10px",
-          backgroundColor: "#ffedd7",
-          [` #${constants.EXTENSION_NAME}-remove-suggestion-icon`]: {
-            display: "flex",
-            translate: "transformX(0)",
-            transition: "translate 0.2s",
-          },
-        },
-        ...sx,
-      }}
-      {...rest}
-    >
-      <IconButton
-        id={`${constants.EXTENSION_NAME}-remove-suggestion-icon`}
-        sx={{
-          display: "none",
-          translate:
-            expandDirection === "right"
-              ? "transformX(-100%)"
-              : "transformX(100%)",
-        }}
-        size="small"
-        color="primary"
-        onClick={handleRemoveIcon}
+    <IconsTooltipContainer ref={ref} {...rest}>
+      <IconsTooltipWrapper
+        id={`${constants.EXTENSION_NAME}-ai-tooltip-buttons`}
+        direction={expandDirection === "right" ? "row-reverse" : "row"}
+        alignItems="center"
       >
-        <Cancel />
-      </IconButton>
-      <IconButton size="small" color="primary" onClick={onOpen}>
-        <AutoFixHigh />
-      </IconButton>
-    </Stack>
+        <IconButton
+          id={`${constants.EXTENSION_NAME}-remove-suggestion-icon`}
+          sx={{
+            display: "none",
+            translate:
+              expandDirection === "right"
+                ? "transformX(-100%)"
+                : "transformX(100%)",
+          }}
+          size="small"
+          color="primary"
+          onClick={handleRemoveIcon}
+        >
+          <Cancel />
+        </IconButton>
+        <IconButton size="small" color="primary" onClick={onOpen}>
+          <AutoFixHigh />
+        </IconButton>
+      </IconsTooltipWrapper>
+    </IconsTooltipContainer>
   );
+});
+
+export const IconsTooltipContainer = styled(Stack)({
+  [`&:hover #${constants.EXTENSION_NAME}-ai-tooltip-buttons`]: {
+    transform: "scale(1)",
+    transition: "transform 0.2s",
+  },
+});
+export const IconsTooltipWrapper = styled(Stack)({
+  backgroundColor: "#ffdd00",
+  borderRadius: "10px",
+  border: "1px solid #66625a38",
+  transform: "scale(0.4)",
+  [`&:hover`]: {
+    borderRadius: "10px",
+    backgroundColor: "#ffe694",
+    BorderColor: "#66625a38",
+    [` #${constants.EXTENSION_NAME}-remove-suggestion-icon`]: {
+      display: "flex",
+      translate: "transformX(0)",
+      transition: "translate 0.2s",
+    },
+  },
 });
 
 const AiOptionButton = styled(Button)({
@@ -198,7 +208,8 @@ export type AiAction =
   | "Simplify"
   | "Answer"
   | "PeerReview"
-  | "Chat";
+  | "Chat"
+  | "factCheck";
 
 export const AiActionMap = {
   Explain: "Explain",
@@ -208,14 +219,12 @@ export const AiActionMap = {
   PeerReview: "Peer Review",
   Answer: "Answer",
   Chat: "Chat",
+  factCheck: "Fact Check",
 };
 
 export function AiSelectedText() {
-  const {
-    selectedText: inSelectedText,
-    selectedTextPositions,
-    textType,
-  } = useSelectedText();
+  const { selectedText: inSelectedText, selectedTextPositions } =
+    useSelectedText();
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [hideAll, setHideAll] = useState(false);
@@ -234,9 +243,16 @@ export function AiSelectedText() {
   }>({ factCheck: false, keepShort: false, fullPage: false });
   const [factCheckMessage, setFactCheckMessage] = useState<string | null>(null);
   const [hasInaccuracies, setHasInaccuracies] = useState(false);
+  const [currentSelectedText, setCurrentSelectedText] = useState<string | null>(
+    null
+  );
+  const [conversationKey, setConversationKey] = useState(0);
+
   const formLayoutRef = useRef<HTMLDivElement>(null);
 
-  const selectedText = aiOptions.fullPage ? getFullPageText() : _selectedText;
+  const selectedText = aiOptions.fullPage
+    ? getFullPageText()
+    : _selectedText?.trim() || null;
 
   useEffect(() => {
     if (!open) setSelectedText(inSelectedText);
@@ -258,8 +274,6 @@ export function AiSelectedText() {
     resetResults({ keepSelectedAction: true });
     setLoading(true);
 
-    const { fullPage, ...restAiOptions } = aiOptions;
-
     const service =
       todo === "Explain"
         ? chatGpt.explain
@@ -269,7 +283,13 @@ export function AiSelectedText() {
         ? chatGpt.peerReview
         : todo === "Answer"
         ? chatGpt.answer
-        : chatGpt.summarize;
+        : todo === "Summarize"
+        ? chatGpt.summarize
+        : todo === "factCheck"
+        ? chatGpt.factCheck
+        : null;
+
+    if (!service) return;
 
     let text = selectedText!;
 
@@ -295,6 +315,8 @@ export function AiSelectedText() {
       setSelectedAction(null);
     } else {
       setSelectedAction(todo);
+
+      if (todo === "Chat" || todo === "Rewrite") return;
       handleSubmit(todo);
     }
   };
@@ -308,7 +330,10 @@ export function AiSelectedText() {
     setOpen(false);
   };
 
-  if (!selectedText) return null;
+  const handleResetConversation = () => {
+    setConversationKey((key) => key + 1);
+  };
+
   if (hideAll) return null;
 
   const showResults = selectedAction || loading;
@@ -319,164 +344,186 @@ export function AiSelectedText() {
         position: "absolute",
         top: 0,
         left: 0,
-        zIndex: 1000,
+        zIndex: Number.MAX_SAFE_INTEGER - 10,
+        display: selectedText ? "block" : "none",
       }}
       container={document.body}
     >
       <AiTooltipButtons
         ref={containerRef}
-        sx={selectedTextPositions}
+        sx={{ ...selectedTextPositions }}
         expandDirection="right"
-        onOpen={() => setOpen(true)}
+        onOpen={() => {
+          setOpen(true);
+          setCurrentSelectedText(selectedText);
+        }}
         handleRemoveIcon={() => setHideAll(true)}
       />
       <StyledPopover
         open={open}
         anchorEl={containerRef.current}
+        keepMounted
         disableScrollLock
+        disablePortal
         onClose={handleClose}
-        sx={{ zIndex: 1001 }}
+        sx={{ zIndex: Number.MAX_SAFE_INTEGER - 9 }}
         anchorOrigin={{
           vertical: "top",
           horizontal: "left",
         }}
       >
-        {selectedAction === "Chat" ? (
-          <AiFormLayout
-            ref={formLayoutRef}
-            onClose={handleClose}
-            title="Ai Chat"
-            sx={{ height: "60vh", maxHeight: "unset" }}
-          >
-            <AiConversation
-              sx={{ height: "100%" }}
-              fullPage={aiOptions.fullPage}
-              initialMessage={selectedText}
-              scrollableContainer={formLayoutRef.current}
-            />
-          </AiFormLayout>
-        ) : selectedAction === "Rewrite" ? (
-          <AiReWriteForm
-            input={selectedText}
-            onClose={handleClose}
-            onBackClick={selectedAction && resetResults}
-            updateInput={() => {}}
+        <AiFormLayout
+          ref={formLayoutRef}
+          onClose={handleClose}
+          title="Ai Chat"
+          hidden={selectedAction !== "Chat"}
+          sx={{
+            height: "60vh",
+            maxHeight: "unset",
+          }}
+        >
+          <AiConversation
+            key={conversationKey}
+            sx={{ height: "100%" }}
+            fullPage={aiOptions.fullPage}
+            hidden={selectedAction !== "Chat"}
+            initialMessage={currentSelectedText || "No text selected"}
+            scrollableContainer={formLayoutRef.current}
           />
-        ) : (
-          <AiFormLayout
-            title={
-              loading
-                ? "Working on it.."
-                : selectedAction && aiMessage
-                ? `${AiActionMap[selectedAction]} Result`
-                : "What do you want to do?"
-            }
-            skeletonHeight={100}
-            errorMessage={errorMessage}
-            loading={loading}
-            onClose={handleClose}
-            onRetryClick={showResults && (() => handleSubmit(selectedAction!))}
-            onBackClick={showResults && resetResults}
-          >
-            {!aiMessage ? (
-              <>
-                <Stack
-                  px={AiFormLayoutPaddings.pxValue}
-                  py={AiFormLayoutPaddings.pyValue}
-                  direction="row"
-                  flexWrap="wrap"
-                  gap={0.5}
-                >
-                  <ToneChip
-                    label={AiActionMap.Rewrite}
-                    disabled={aiOptions.fullPage}
-                    onClick={() => handleTodoClick("Rewrite")}
-                    variant={"outlined"}
-                  />
-                  <ToneChip
-                    label={AiActionMap.Explain}
-                    onClick={() => handleTodoClick("Explain")}
-                    selected={selectedAction === "Explain"}
-                    variant="outlined"
-                  />
-                  <ToneChip
-                    label={AiActionMap.Summarize}
-                    onClick={() => handleTodoClick("Summarize")}
-                    selected={selectedAction === "Summarize"}
-                    variant="outlined"
-                  />
-                  <ToneChip
-                    label={AiActionMap.PeerReview}
-                    onClick={() => handleTodoClick("PeerReview")}
-                    selected={selectedAction === "PeerReview"}
-                    variant="outlined"
-                  />
-                  <ToneChip
-                    label={AiActionMap.Simplify}
-                    onClick={() => handleTodoClick("Simplify")}
-                    selected={selectedAction === "Simplify"}
-                    variant="outlined"
-                  />
-                  <ToneChip
-                    label={AiActionMap.Answer}
-                    onClick={() => handleTodoClick("Answer")}
-                    selected={selectedAction === "Answer"}
-                    variant={"outlined"}
-                  />
-                  <ToneChip
-                    label={AiActionMap.Chat}
-                    onClick={() => handleTodoClick("Chat")}
-                    variant={"outlined"}
-                  />
-                </Stack>
+        </AiFormLayout>
 
-                <Divider />
-                <Stack
-                  px={AiFormLayoutPaddings.pxValue}
-                  py={AiFormLayoutPaddings.pyValue}
-                  direction="row"
-                  gap={0.5}
-                >
-                  <AiOption
-                    label="Fact Check"
-                    variant="outlined"
-                    selected={aiOptions.factCheck}
-                    onClick={() => handleOptionClick("factCheck")}
-                  />
-                  <AiOption
-                    label="Full Page"
-                    variant="outlined"
-                    selected={aiOptions.fullPage}
-                    onClick={() => handleOptionClick("fullPage")}
-                  />
-                  <AiOption
-                    label="Keep Short"
-                    variant="outlined"
-                    selected={aiOptions.keepShort}
-                    onClick={() => handleOptionClick("keepShort")}
-                  />
-                </Stack>
-              </>
-            ) : (
+        <AiReWriteForm
+          input={selectedText}
+          keepShort={aiOptions.keepShort}
+          factCheck={aiOptions.factCheck}
+          onClose={handleClose}
+          onBackClick={selectedAction && resetResults}
+          updateInput={() => {}}
+          hidden={selectedAction !== "Rewrite"}
+        />
+        <AiFormLayout
+          hidden={selectedAction === "Chat" || selectedAction === "Rewrite"}
+          title={
+            loading
+              ? "Working on it.."
+              : selectedAction && aiMessage
+              ? `${AiActionMap[selectedAction]} Result`
+              : "What do you want to do?"
+          }
+          skeletonHeight={100}
+          errorMessage={errorMessage}
+          loading={loading}
+          onClose={handleClose}
+          onRetryClick={showResults && (() => handleSubmit(selectedAction!))}
+          onBackClick={showResults && resetResults}
+        >
+          <Stack
+            px={AiFormLayoutPaddings.pxValue}
+            py={1}
+            direction="row"
+            gap={0.5}
+          >
+            <AiOption
+              label="Keep Short"
+              variant="outlined"
+              selected={aiOptions.keepShort}
+              onClick={() => handleOptionClick("keepShort")}
+            />
+            <AiOption
+              label="Full Page"
+              variant="outlined"
+              selected={aiOptions.fullPage}
+              onClick={() => handleOptionClick("fullPage")}
+            />
+            <AiOption
+              label="Fact Check"
+              variant="outlined"
+              disabled={selectedAction === "factCheck"}
+              selected={aiOptions.factCheck}
+              onClick={() => handleOptionClick("factCheck")}
+            />
+          </Stack>
+          <Divider />
+          {!aiMessage ? (
+            <>
               <Stack
                 px={AiFormLayoutPaddings.pxValue}
-                py={AiFormLayoutPaddings.pyValue}
-                gap={1}
+                pt={1}
+                pb={2}
+                direction="row"
+                flexWrap="wrap"
+                gap={0.5}
               >
-                <CodeMarkdown>{aiMessage!}</CodeMarkdown>
-                {aiOptions.factCheck && factCheckMessage && (
-                  <Alert
-                    severity={hasInaccuracies ? "warning" : "info"}
-                    sx={{ whiteSpace: "pre-line" }}
-                  >
-                    <AlertTitle>Fact Check Result</AlertTitle>
-                    {factCheckMessage}
-                  </Alert>
-                )}
+                <ToneChip
+                  label={AiActionMap.Rewrite}
+                  disabled={aiOptions.fullPage}
+                  onClick={() => handleTodoClick("Rewrite")}
+                  variant={"outlined"}
+                />
+                <ToneChip
+                  label={AiActionMap.Explain}
+                  onClick={() => handleTodoClick("Explain")}
+                  selected={selectedAction === "Explain"}
+                  variant="outlined"
+                />
+                <ToneChip
+                  label={AiActionMap.Summarize}
+                  onClick={() => handleTodoClick("Summarize")}
+                  selected={selectedAction === "Summarize"}
+                  variant="outlined"
+                />
+                <ToneChip
+                  label={AiActionMap.PeerReview}
+                  onClick={() => handleTodoClick("PeerReview")}
+                  selected={selectedAction === "PeerReview"}
+                  variant="outlined"
+                />
+                <ToneChip
+                  label={AiActionMap.Simplify}
+                  onClick={() => handleTodoClick("Simplify")}
+                  selected={selectedAction === "Simplify"}
+                  variant="outlined"
+                />
+                <ToneChip
+                  label={AiActionMap.Answer}
+                  disabled={aiOptions.fullPage}
+                  onClick={() => handleTodoClick("Answer")}
+                  selected={selectedAction === "Answer"}
+                  variant={"outlined"}
+                />
+                <ToneChip
+                  label={AiActionMap.factCheck}
+                  disabled={aiOptions.factCheck}
+                  onClick={() => handleTodoClick("factCheck")}
+                  variant={"outlined"}
+                />
+                <ToneChip
+                  label={AiActionMap.Chat}
+                  onClick={() => handleTodoClick("Chat")}
+                  variant={"outlined"}
+                />
               </Stack>
-            )}
-          </AiFormLayout>
-        )}
+            </>
+          ) : (
+            <Stack
+              px={AiFormLayoutPaddings.pxValue}
+              py={AiFormLayoutPaddings.pyValue}
+              gap={1}
+            >
+              <CodeMarkdown>{aiMessage!}</CodeMarkdown>
+              {aiOptions.factCheck && factCheckMessage && (
+                <Alert
+                  severity={hasInaccuracies ? "warning" : "info"}
+                  sx={{ whiteSpace: "pre-line" }}
+                >
+                  <AlertTitle>Fact Check Result</AlertTitle>
+                  {factCheckMessage}
+                </Alert>
+              )}
+            </Stack>
+          )}
+        </AiFormLayout>
+        <Divider />
       </StyledPopover>
     </StyledPortal>
   );
@@ -541,8 +588,10 @@ export const containsHtml = (input: string) => {
 
 function AiReWriteForm(
   props: {
-    input: string;
+    input: string | null;
     updateInput: (input: string) => void;
+    keepShort?: boolean;
+    factCheck?: boolean;
   } & Omit<ComponentProps<typeof AiFormLayout>, "title">
 ) {
   const [selectedImprovements, setSelectedImprovements] = useState<Array<Tone>>(
@@ -557,17 +606,31 @@ function AiReWriteForm(
   const [aiOptions, setAiOptions] = useState<{
     factCheck: boolean;
     keepShort: boolean;
-  }>({ factCheck: false, keepShort: false });
+  }>({
+    factCheck: props.keepShort || false,
+    keepShort: props.factCheck || false,
+  });
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const [skeletonHeight, setSkeletonHeight] = useState(150);
 
   const { input, updateInput, onClose, onBackClick, ...rest } = props;
 
   useEffect(() => {
-    if (contentContainerRef.current) {
+    if (
+      contentContainerRef.current &&
+      contentContainerRef.current.clientHeight
+    ) {
       setSkeletonHeight(contentContainerRef.current.clientHeight);
     }
-  }, []);
+  }, [props.hidden]);
+
+  useEffect(() => {
+    setAiOptions((aiOptions) => ({
+      ...aiOptions,
+      ...(props.keepShort !== undefined && { keepShort: props.keepShort }),
+      ...(props.factCheck !== undefined && { factCheck: props.factCheck }),
+    }));
+  }, [props.keepShort, props.factCheck]);
 
   const handleSubmit = () => {
     resetResults();
@@ -668,6 +731,21 @@ function AiReWriteForm(
       }
       {...rest}
     >
+      <Stack px={AiFormLayoutPaddings.pxValue} py={1} direction="row" gap={0.5}>
+        <AiOption
+          label="Fact Check"
+          variant="outlined"
+          selected={aiOptions.factCheck}
+          onClick={() => handleAiOptionClick("factCheck")}
+        />
+        <AiOption
+          label="Short Response"
+          variant="outlined"
+          selected={aiOptions.keepShort}
+          onClick={() => handleAiOptionClick("keepShort")}
+        />
+      </Stack>
+      <Divider />
       {showResults ? (
         <Stack
           px={AiFormLayoutPaddings.pxValue}
@@ -709,26 +787,6 @@ function AiReWriteForm(
                 />
               ))}
             </Stack>
-          </Stack>
-          <Divider />
-          <Stack
-            px={AiFormLayoutPaddings.pxValue}
-            py={AiFormLayoutPaddings.pyValue}
-            direction="row"
-            gap={0.5}
-          >
-            <AiOption
-              label="Fact Check"
-              variant="outlined"
-              selected={aiOptions.factCheck}
-              onClick={() => handleAiOptionClick("factCheck")}
-            />
-            <AiOption
-              label="Keep Short"
-              variant="outlined"
-              selected={aiOptions.keepShort}
-              onClick={() => handleAiOptionClick("keepShort")}
-            />
           </Stack>
         </>
       )}

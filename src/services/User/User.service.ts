@@ -7,9 +7,10 @@ import {
 } from "@src/config/settingsDefaults";
 import { storageService } from "@src/storage/storage.service";
 import { setupToken } from "../fetcher";
+import { ServiceObject } from "..";
 
 export type UserServiceMethodName = keyof typeof userService;
-export const userService = {
+export const userService: ServiceObject = {
   async getUserSettings(): Promise<UserSettings> {
     // for now, just store settings in local storage until we have user endpoints
     const settings = await storageService.get("userSettings");
@@ -23,7 +24,7 @@ export const userService = {
     });
   },
 
-  setGoogleTokenHeader(token?: string) {
+  async setGoogleTokenHeader(token?: string) {
     setupToken(token);
   },
 
@@ -54,7 +55,7 @@ export const userService = {
       return { token: null, requiredScopesGranted: false };
     }
   },
-  openPopup() {
+  async openPopup() {
     chrome.windows.create({
       url: chrome.runtime.getURL("src/pages/popup/index.html"),
       type: "popup",

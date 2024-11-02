@@ -16,6 +16,9 @@ export type ChatGptState = {
   composerDraft: string;
   pending: boolean;
   model: LlmModel;
+  aiOptions: {
+    keepShort: boolean;
+  };
 };
 
 export type ChatGptStateContextType = ReturnType<
@@ -27,6 +30,9 @@ export const chatGptStateDefaults = {
   composerDraft: "",
   pending: false,
   model: "gpt-4o-mini" as const,
+  aiOptions: {
+    keepShort: false,
+  },
 };
 
 const ChatGptStateContext = createContext<ChatGptStateContextType>(null!);

@@ -43,8 +43,10 @@ function getProxy(config: Config) {
                 serviceName: config.serviceName!,
               })
               .then((res) => {
-                if (res.error)
-                  throw new Error(res.error, { cause: res.payload });
+                if (res.error) {
+                  throw new Error(res.payload.message, { cause: res.payload });
+                }
+
                 const response = res.payload;
 
                 // todo: broadcast new resources to all active tabs

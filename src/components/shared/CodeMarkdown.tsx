@@ -10,10 +10,15 @@ window.Prism = window.Prism || {};
 // @ts-expect-error
 window.Prism.manual = true;
 
+export const documentFontSize = parseFloat(
+  window.getComputedStyle(document.body).fontSize
+);
+
 const Markdown = styled(_Markdown)(({ theme }) => ({
   p: {
     margin: "8px 0",
     whiteSpace: "break-spaces",
+    ...(documentFontSize < 16 && { fontSize: "14px" }),
   },
   "ol, ul": {
     paddingLeft: 14,

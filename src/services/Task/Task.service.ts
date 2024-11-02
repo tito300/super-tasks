@@ -11,6 +11,7 @@ import {
   tasksSettingsDefaults,
 } from "@src/config/settingsDefaults";
 import { storageService } from "@src/storage/storage.service";
+import { ServiceObject } from "..";
 
 export type ServiceMethodName = keyof typeof TaskServices;
 const messageEngine = getMessageEngine("Background");
@@ -18,7 +19,7 @@ const messageEngine = getMessageEngine("Background");
 /**
  * only use services from within api hooks
  */
-export const TaskServices = {
+export const TaskServices: ServiceObject = {
   updateTasksState: async (newState: Partial<TasksState>) => {
     storageService.set({
       tasksState: newState,
@@ -191,7 +192,8 @@ export const TaskServices = {
 };
 
 function filterEnhancedProperties(
-  task: SavedTask | TaskEnhanced | TaskType, options: { deleteUndefined?: boolean} = {}
+  task: SavedTask | TaskEnhanced | TaskType,
+  options: { deleteUndefined?: boolean } = {}
 ): Record<Exclude<keyof TaskEnhanced, "id">, any> {
   const { alert, alertOn, alertSeen, listId, pinned } = task;
 
@@ -199,13 +201,12 @@ function filterEnhancedProperties(
   if (options.deleteUndefined) {
     Object.keys(properties).forEach((key) => {
       if (properties[key as keyof typeof properties] === undefined) {
-        delete properties[key  as keyof typeof properties];
+        delete properties[key as keyof typeof properties];
       }
     });
   }
 
   return properties;
-    
 }
 
 async function getReminderTopLeftPosition() {

@@ -21,6 +21,9 @@ export const AiFormLayout = React.forwardRef<
     onBackClick?: (() => void) | falsyValue; // allows for booleanCondition && function syntax
     onRetryClick?: (() => void) | falsyValue;
     buttons?: React.ReactNode;
+    hidden?: boolean;
+    footer?: React.ReactNode;
+    headerButtons?: React.ReactNode;
   } & PaperProps
 >(function _AiFormLayout(
   {
@@ -32,6 +35,9 @@ export const AiFormLayout = React.forwardRef<
     buttons,
     onBackClick,
     onRetryClick,
+    hidden,
+    footer,
+    headerButtons,
     onClose,
     ...rest
   },
@@ -39,30 +45,31 @@ export const AiFormLayout = React.forwardRef<
 ) {
   const hasButtons = onBackClick || buttons || onRetryClick;
   return (
-    <AiModalContainer ref={ref} elevation={4} {...rest}>
+    <AiModalContainer ref={ref} elevation={4} hidden={hidden} {...rest}>
+      <HeaderContainer
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            textTransform: "none",
+            px: (theme) => theme.spacing(2.5),
+            py: (theme) => theme.spacing(1),
+          }}
+        >
+          {title}
+        </Typography>
+        <Stack direction="row" alignItems="center" gap={0.25}>
+          {headerButtons}
+          <IconButton size="small" onClick={onClose}>
+            <Close fontSize="small" />
+          </IconButton>
+        </Stack>
+      </HeaderContainer>
       <Stack height="100%">
         <Stack height="100%">
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ backgroundColor: "#ecececb0" }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                textTransform: "none",
-                px: (theme) => theme.spacing(2.5),
-                py: (theme) => theme.spacing(1),
-              }}
-            >
-              {title}
-            </Typography>
-            <IconButton onClick={onClose}>
-              <Close />
-            </IconButton>
-          </Stack>
-          <Divider />
           <AiModalContentContainer
             sx={{ minHeight: skeletonHeight ?? 0, height: "100%" }}
           >
@@ -123,6 +130,7 @@ export const AiFormLayout = React.forwardRef<
           </Button> */}
           </AiModalFooterContainer>
         )}
+        {footer && <AiModalContainer>{footer}</AiModalContainer>}
       </Stack>
     </AiModalContainer>
   );
@@ -143,12 +151,21 @@ const AiModalFooterContainer = styled(Stack)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
 }));
 
-const AiModalContainer = styled(Paper)(
-  ({ theme }) =>
+const AiModalContainer = styled(Paper)<{ hidden?: boolean }>(
+  ({ hidden }) =>
     ({
       width: "400px",
       maxHeight: "450px",
       overflowY: "auto",
       overflowX: "clip",
+      display: hidden ? "none" : "block",
     } as const)
 );
+
+const HeaderContainer = styled(Stack)(({ theme }) => ({
+  backgroundColor: theme.palette.grey[200],
+  position: "sticky",
+  top: 0,
+  zIndex: 1,
+  boxShadow: "1px 0px 4px #00000036",
+}));

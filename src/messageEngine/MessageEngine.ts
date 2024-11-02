@@ -69,7 +69,7 @@ export class MessageEngine {
             this.sendMessageToTab(tab.id!, action, payload, sourceScript);
           });
       });
-      this.sendMessage(action, payload, sourceScript)
+      this.sendMessage(action, payload, sourceScript);
     }
   }
 
@@ -105,8 +105,11 @@ export class MessageEngine {
           .catch((err) => {
             console.error(err);
             sendResponse({
-              payload: err.message,
-              error: err.status || err.message,
+              payload: {
+                message: err.message || err.statusText || "An error occurred",
+                status: err.status || 500,
+              },
+              error: true,
             });
           });
         return true;

@@ -7,6 +7,7 @@ import { ChatGptSettings } from "@src/components/Providers/ChatGptSettingsProvid
 import { chatGptSettingsDefaults } from "@src/config/settingsDefaults";
 import { LlmModel } from "@src/components/Providers/ChatGptStateProvider";
 import { Tone } from "@src/components/chatGpt/AiRewriteActions";
+import { ServiceObject } from "..";
 
 export type AiQuickActionsBody = {
   text: string;
@@ -22,8 +23,14 @@ export type AiQuickActionsResponse = {
   inaccuracyMessage: string;
 };
 
-export const chatGptService = {
-  getChatGptResponse: async (messages: ChatMessage[], model: LlmModel) => {
+export const chatGptService: ServiceObject = {
+  getChatGptResponse: async (
+    messages: ChatMessage[],
+    model: LlmModel,
+    aiOptions: {
+      keepShort?: boolean;
+    }
+  ) => {
     //   await wait(2000);
     //   return {
     //     id: 1,
@@ -37,6 +44,7 @@ export const chatGptService = {
       .post(`${urls.BASE_URL}/ai/chat`, {
         messages,
         model,
+        aiOptions,
       })
       .then((res) => res.json())
       .then((res) => {
@@ -120,6 +128,17 @@ export const chatGptService = {
   answer: async (body: AiQuickActionsBody) => {
     return fetcher
       .post(`${urls.BASE_URL}/ai/quick-action`, { action: "Answer", ...body })
+      .then((res) => res.json())
+      .then((res) => {
+        return res as AiQuickActionsResponse;
+      });
+  },
+  factCheck: async (body: AiQuickActionsBody) => {
+    return fetcher
+      .post(`${urls.BASE_URL}/ai/quick-action`, {
+        action: "FactCheck",
+        ...body,
+      })
       .then((res) => res.json())
       .then((res) => {
         return res as AiQuickActionsResponse;

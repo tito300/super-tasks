@@ -16,13 +16,14 @@ import {
 import { DeepPartial } from "react-hook-form";
 import { createMockCalendarEvent } from "./calendar.mock";
 import { storageService } from "@src/storage/storage.service";
+import { ServiceObject } from "..";
 
 export type ServiceMethodName = keyof typeof calendarServices;
 
 /**
  * only use services from within api hooks
  */
-export const calendarServices = {
+export const calendarServices: ServiceObject = {
   // updateCalendarEventsState: async (newState: Partial<CalendarEventsGlobalState>) => {
   //   chrome.storage.local.get("calendarState").then((data) => {
   //     chrome.storage.local.set({

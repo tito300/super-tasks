@@ -210,7 +210,7 @@ const TabIconsContainer = styled(Stack)<{
   flexDirection: "row",
   alignItems: "flex-end",
   position: "fixed",
-  backgroundColor: "#d1d5de",
+  backgroundColor: "#98a2b9",
   borderTopLeftRadius: 4,
   borderTopRightRadius: 4,
   zIndex: 50,
@@ -227,7 +227,9 @@ const TabIconStyled = styled(IconButton)<{
   backgroundColor: theme.palette.background.paper,
   // @ts-ignore
   border: `1px solid ${theme.palette.divider}`,
+  // @ts-ignore
   borderBottom: "none",
+  borderLeft: "none",
   borderTopRightRadius: 2,
   borderTopLeftRadius: 2,
   borderBottomLeftRadius: 0,
@@ -242,6 +244,7 @@ const TabIconStyled = styled(IconButton)<{
     ? {
         backgroundColor: "#f1f1f1",
         border: `1px solid #9e9e9e`,
+        borderBottom: "none",
         boxShadow:
           scriptType === "Content" ? "none" : "0px 0px 4px 2px #0000004a",
       }

@@ -48,7 +48,7 @@ export function AppControls({
   reloading: boolean;
   reloadIcon?: React.ReactElement;
   settingsOpen: boolean;
-  onReloadClick: () => void;
+  onReloadClick?: () => void;
   onSettingsClick: () => void;
 }) {
   const {
@@ -93,13 +93,19 @@ export function AppControls({
           >
             <Settings fontSize="small" />
           </IconButton>
-          <IconButton size="small" disabled={reloading} onClick={onReloadClick}>
-            {reloading ? (
-              <CircularProgress size="20px" />
-            ) : (
-              reloadIcon || <Refresh fontSize="small" />
-            )}
-          </IconButton>
+          {onReloadClick && (
+            <IconButton
+              size="small"
+              disabled={reloading}
+              onClick={onReloadClick}
+            >
+              {reloading ? (
+                <CircularProgress size="20px" />
+              ) : (
+                reloadIcon || <Refresh fontSize="small" />
+              )}
+            </IconButton>
+          )}
         </ControlsContainer>
       </Wrapper>
       <LinearProgress

@@ -18,7 +18,7 @@ import {
   llmModels,
   useChatGptState,
 } from "../Providers/ChatGptStateProvider";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { Chip } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -34,6 +34,7 @@ import { useScrollableEl } from "@src/hooks/useScrollableEl";
 import { useDebouncedValue } from "@src/hooks/useDebouncedValue";
 import { AiSelectedText } from "./AiRewriteActions";
 import { CodeMarkdown } from "../shared/CodeMarkdown";
+import { ChatGptMessage } from "@src/chatGpt.types";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -77,8 +78,6 @@ export const ChatGptControls = (props: {}) => {
       settingsOpen={false}
       onSettingsClick={() => {}}
       reloading={false}
-      onReloadClick={handleResetClick}
-      reloadIcon={<DeleteForeverIcon />}
     >
       <Chip
         variant="outlined"
@@ -136,15 +135,17 @@ export const MessagesContainer = styled(Stack)<{ empty: boolean }>(
 
 export const MessageComposer = ({
   onSubmit,
+  disableStoreSync,
   ...rest
 }: Omit<StackProps, "onSubmit"> & {
   onSubmit: (message: string) => void;
+  disableStoreSync?: boolean;
 }) => {
   const {
     data: { composerDraft },
     updateData,
   } = useChatGptState();
-  const [value, setValue] = useState(composerDraft);
+  const [value, setValue] = useState(composerDraft?.trim() || "");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
   };
@@ -159,13 +160,17 @@ export const MessageComposer = ({
   );
 
   useEffect(() => {
+    if (disableStoreSync) return;
     if (debouncedValue === composerDraft) return;
 
     updateData({ composerDraft: debouncedValue });
   }, [debouncedValue]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    // enter pressed without shift
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.stopPropagation();
+      e.preventDefault();
       handleSubmit();
     }
   };
@@ -176,14 +181,23 @@ export const MessageComposer = ({
   };
 
   return (
-    <Stack {...rest} direction="row" spacing={2} pb={1} alignItems="center">
+    <Stack
+      {...rest}
+      sx={{ backgroundColor: "white", ...rest.sx }}
+      direction="row"
+      spacing={2}
+      pb={1}
+      alignItems="center"
+    >
       <TextField
         value={value}
         variant="filled"
+        multiline
         placeholder="Type a message"
         fullWidth
         size="small"
         hiddenLabel
+        focused
         onKeyDown={handleKeyDown}
         onChange={handleChange}
       />
@@ -198,47 +212,108 @@ const ConversationFooter = styled(Stack)(({ theme }) => ({
   position: "sticky",
   bottom: 0,
   justifyContent: "flex-end",
-  flexGrow: 1,
-  backgroundColor: "white",
   padding: theme.spacing(0.75, 0, 0),
 }));
+
+const MessagesWrapper = styled(Stack)(({ theme }) => ({
+  gap: theme.spacing(1),
+  flex: 1,
+}));
+
+const generateInitialMessage = (
+  initialMessage: string | null | undefined,
+  options: { fullPage?: boolean; isAdditionalText?: boolean } = {}
+): ChatGptMessage => {
+  return {
+    id: 0,
+    message: `${
+      options.fullPage
+        ? "Full html page innerText"
+        : `${
+            options.isAdditionalText
+              ? "Additional Selected Text "
+              : "Selected Text"
+          }`
+    }: \n
+> ${initialMessage?.split("\n").join("\n> ")}\n\n
+**What would you like me to do with the selected text?**`,
+    direction: "inbound",
+    fullPage: options.fullPage,
+    fullPageUrl: location.href,
+    createdAt: Date.now(),
+  } as const;
+};
 
 export const AiConversation = ({
   initialMessage,
   scrollableContainer,
   fullPage,
+  hidden,
   ...rest
 }: {
-  initialMessage?: string;
+  initialMessage?: string | null;
   scrollableContainer?: HTMLElement | null;
   fullPage?: boolean;
+  hidden?: boolean;
 } & StackProps) => {
   const [mounted, setMounted] = useState(false);
   const _scrollableEl = useScrollableEl();
   const scrollableEl = scrollableContainer || _scrollableEl;
   const {
-    data: { messages: _messages, pending: _pending, model },
+    data: {
+      messages: _messages,
+      pending: _pending,
+      model,
+      aiOptions: _aiOptions,
+    },
     updateData: _updateData,
   } = useChatGptState();
   const {
     data: { currentTab, buttonExpanded },
   } = useUserState();
   const { chatGpt } = useServicesContext();
-  const [localMessages, setLocalMessages] = useState<Message[]>([
-    {
-      id: 0,
-      message: `${fullPage ? "Full html page innerText" : "Selected Text"}: \n
-> ${initialMessage}\n\n
-**What would you like me to do with the selected text?**`,
-      direction: "inbound",
-      createdAt: Date.now(),
-    },
+  const [localMessages, setLocalMessages] = useState<ChatGptMessage[]>([
+    generateInitialMessage(initialMessage, { fullPage }),
   ]);
   const [localPending, setLocalPending] = useState(_pending);
+  const [localAiOptions, setLocalAiOptions] = useState({
+    ..._aiOptions,
+  });
 
   const disableStoreSync = !!initialMessage;
   const messages = disableStoreSync ? localMessages : _messages;
   const pending = disableStoreSync ? localPending : _pending;
+  const aiOptions = disableStoreSync ? localAiOptions : _aiOptions;
+
+  const fullPageSelected = useMemo(
+    () => !!messages.find((m) => m.fullPage && m.fullPageUrl === location.href),
+    [messages]
+  );
+
+  useEffect(() => {
+    if (!disableStoreSync) return;
+
+    if (messages.length <= 1) {
+      setLocalMessages([generateInitialMessage(initialMessage, { fullPage })]);
+    } else if (messages.length >= 2) {
+      setLocalMessages((messages) => {
+        return [
+          ...messages,
+          generateInitialMessage(initialMessage, {
+            fullPage,
+            isAdditionalText: true,
+          }),
+        ];
+      });
+      scrollToBottom();
+    }
+  }, [initialMessage]);
+
+  useEffect(() => {
+    if (!hidden && messages.length > 1) {
+      scrollToBottom();
+    }
+  }, [hidden]);
 
   const updateData = (
     data: Partial<ReturnType<typeof useChatGptState>["data"]>
@@ -251,6 +326,9 @@ export const AiConversation = ({
       }
       if (data.pending != null) {
         setLocalPending(data.pending);
+      }
+      if (data.aiOptions != null) {
+        setLocalAiOptions(data.aiOptions);
       }
     }
   };
@@ -298,7 +376,7 @@ export const AiConversation = ({
     }, 100);
 
     chatGpt
-      .getChatGptResponse(messagesClone, model)
+      .getChatGptResponse(messagesClone, model, aiOptions)
       .then((response) => {
         messagesClone = [...messagesClone, response];
         updateData({ messages: messagesClone, pending: false });
@@ -309,11 +387,60 @@ export const AiConversation = ({
       .catch((error) => {
         console.error(error);
         updateData({
+          messages: [
+            ...messagesClone,
+            {
+              message: "Something went wrong. Please try again.",
+              direction: "inbound",
+              createdAt: Date.now(),
+              error: true,
+              id: Date.now(),
+            },
+          ],
           composerDraft: message,
           pending: false,
         });
       });
   };
+
+  const handleActionClick = (action: "clear" | "fullPage" | "shortAnswers") => {
+    if (action === "clear") {
+      updateData({
+        messages: [],
+        composerDraft: "",
+        pending: false,
+      });
+    } else if (action === "fullPage") {
+      if (fullPageSelected) {
+        updateData({
+          messages: messages.slice(0, -1),
+          composerDraft: "",
+          pending: false,
+        });
+      } else {
+        updateData({
+          messages: [
+            ...messages,
+            generateInitialMessage(document.body.innerText, { fullPage: true }),
+          ],
+          composerDraft: "",
+          pending: false,
+        });
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+      }
+    } else if (action === "shortAnswers") {
+      updateData({
+        aiOptions: {
+          ...aiOptions,
+          keepShort: !aiOptions.keepShort,
+        },
+      });
+    }
+  };
+
+  if (hidden) return null;
 
   return (
     <MessagesContainer
@@ -328,35 +455,87 @@ export const AiConversation = ({
       empty={!messages?.length}
       {...rest}
     >
-      {messages?.length ? (
-        messages.map((message, i) => {
-          return (
-            <Message
-              id={`${constants.EXTENSION_NAME}-message-${message.id}`}
-              key={message.id}
-              fullPage={!i && fullPage}
-              message={message}
+      <MessagesWrapper>
+        {messages?.length ? (
+          messages.map((message, i) => {
+            return (
+              <Message
+                id={`${constants.EXTENSION_NAME}-message-${message.id}`}
+                key={message.id}
+                message={message}
+              />
+            );
+          })
+        ) : (
+          <Typography
+            alignSelf={"center"}
+            textAlign={"center"}
+            variant="h5"
+            color={"GrayText"}
+            sx={{ flex: 1, paddingTop: "140px", opacity: 0.7 }}
+          >
+            How can I help you today?
+          </Typography>
+        )}
+      </MessagesWrapper>
+      <ConversationFooter gap={1}>
+        {pending ? (
+          <TypingIndicator />
+        ) : (
+          <Stack direction="row" gap={0.5}>
+            <ChatActionChip
+              onClick={() => handleActionClick("shortAnswers")}
+              label="Short Answers"
+              selected={aiOptions.keepShort}
+              size="small"
             />
-          );
-        })
-      ) : (
-        <Typography
-          alignSelf={"center"}
-          textAlign={"center"}
-          variant="h5"
-          color={"GrayText"}
-          sx={{ flex: 1, paddingTop: "140px", opacity: 0.7 }}
-        >
-          How can I help you today?
-        </Typography>
-      )}
-      <ConversationFooter gap={2}>
-        {pending && <TypingIndicator />}
-        <MessageComposer onSubmit={handleSubmit} />
+            {!fullPageSelected && (
+              <ChatActionChip
+                onClick={() => handleActionClick("fullPage")}
+                label="Read Page"
+                selected={fullPageSelected}
+                size="small"
+              />
+            )}
+            <ChatActionChip
+              onClick={() => handleActionClick("clear")}
+              label="Clear"
+              size="small"
+            />
+          </Stack>
+        )}
+        <MessageComposer
+          disableStoreSync={disableStoreSync}
+          onSubmit={handleSubmit}
+        />
       </ConversationFooter>
     </MessagesContainer>
   );
 };
+
+const ChatActionChip = styled(Chip)<{ selected?: boolean }>(
+  ({ theme, selected }) => ({
+    cursor: "pointer",
+    color: theme.palette.text.secondary,
+    backgroundColor: "white",
+    border: `1px solid ${theme.palette.grey[400]}`,
+    boxShadow: "0px 1px 4px #00000025",
+    ...(selected && {
+      backgroundColor: theme.palette.grey[500],
+      boxShadow: "none",
+      border: "none",
+      color: "white",
+    }),
+    ["&:hover"]: {
+      backgroundColor: theme.palette.grey[200],
+      boxShadow: "0px 1px 4px #00000035",
+      ...(selected && {
+        backgroundColor: theme.palette.grey[500],
+        boxShadow: "none",
+      }),
+    },
+  })
+);
 
 // three dots jumping animation
 export const TypingIndicator = () => {
@@ -417,9 +596,15 @@ export type Message = {
   message: string;
   direction: "inbound" | "outbound";
   createdAt: number;
+  fullPage?: boolean;
 };
 
-export const MessageContainer = styled(Stack)(({ theme }) => ({
+export const MessageContainer = styled(Stack)<{
+  messageDirection: "inbound" | "outbound";
+}>(({ theme, messageDirection }) => ({
+  maxWidth: 360,
+  alignSelf: messageDirection === "outbound" ? "flex-end" : "flex-start",
+  wordBreak: "break-word",
   padding: theme.spacing(1, 2),
   "& p": {
     margin: 0,
@@ -428,9 +613,8 @@ export const MessageContainer = styled(Stack)(({ theme }) => ({
 
 export const Message = ({
   message,
-  fullPage,
   ...rest
-}: { message: Message; fullPage?: boolean } & StackProps) => {
+}: { message: ChatGptMessage } & StackProps) => {
   const {
     data: { blurText },
   } = useUserState();
@@ -441,6 +625,7 @@ export const Message = ({
   return (
     <MessageContainer
       direction={inbound ? "row" : "row-reverse"}
+      messageDirection={message.direction}
       spacing={1}
       {...rest}
     >
@@ -453,16 +638,25 @@ export const Message = ({
       <Paper
         elevation={inbound ? 0 : 2}
         sx={{
-          padding: inbound ? 0 : 1,
-          borderRadius: 2,
+          paddingY: inbound ? 0 : 1,
+          paddingX: 1,
+          borderRadius: 3,
           filter: blurText ? "blur(7px)" : "none",
+          backgroundColor: message.error ? "#ffb4b4" : "white",
         }}
       >
         {" "}
         {inbound ? (
-          fullPage ? (
+          message.fullPage ? (
             <>
-              <Typography>{`Full page is loaded.`}</Typography>
+              <Chip
+                label={
+                  message.fullPageUrl === location.href
+                    ? `Page Read Successfully`
+                    : `A Previous Page was Read`
+                }
+                sx={{ mb: 1 }}
+              />
               <Typography
                 fontWeight={600}
               >{`What would you like me to do with it?`}</Typography>

@@ -18,6 +18,15 @@ function hook() {
   rootContainer.style.opacity = "0";
 
   const headElement = document.createElement("head");
+  const htmlFontSize = parseFloat(
+    window.getComputedStyle(document.body).fontSize
+  );
+
+  // if (htmlFontSize < 16) {
+  //   const style = document.createElement("style");
+  //   style.innerHTML = `html { font-size: 16px !important; } p { font-size: 14px; } span { font-size: 14px; }`;
+  //   headElement.appendChild(style);
+  // }
 
   const shadowRootEl = document.createElement("div");
   shadowRootEl.id = `${constants.EXTENSION_NAME}-shadow-root`;

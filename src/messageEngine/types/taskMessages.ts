@@ -115,5 +115,5 @@ export const isValidTaskMessage = (
 
 export type MessageResponse = {
   payload: any;
-  error?: string;
+  error?: boolean;
 };
