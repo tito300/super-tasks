@@ -22,20 +22,11 @@ export const useCalendarEvents = ({
 
   return useQuery<SavedCalendarEvent[]>({
     queryKey: ["calendar", selectedCalendarId],
-    placeholderData: [] as SavedCalendarEvent[],
     queryFn: async () => {
       if (!selectedCalendarId) return [];
 
-      try {
-        const data = await calendarService.getCalendarEvents(
-          selectedCalendarId
-        );
-        return data;
-      } catch (err) {
-        console.error("error fetching calendar");
-        console.error(err);
-        return [];
-      }
+      const data = await calendarService.getCalendarEvents(selectedCalendarId);
+      return data;
     },
     enabled: !!selectedCalendarId,
     // stale time prevents refetching for things like when user focuses on page
@@ -50,14 +41,9 @@ export function useCalendarLists() {
   return useQuery<ListCalendar[]>({
     queryKey: ["calendarLists"],
     queryFn: async () => {
-      try {
-        const data = await calendarService.getCalendars();
-        return data;
-      } catch (err) {
-        console.log("error fetching calendar lists");
-        console.error(err);
-        return [];
-      }
+      const data = await calendarService.getCalendars();
+      console.log("Calendar Lists triggered", data);
+      return data;
     },
     // stale time prevents refetching for things like when user focuses on page
     // If you need to force a refetch, use queryClient.invalidateQueries

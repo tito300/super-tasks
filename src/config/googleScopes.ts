@@ -1,6 +1,6 @@
-export const requiredScopes = [
-  "https://www.googleapis.com/auth/userinfo.email",
-  "https://www.googleapis.com/auth/tasks",
-  "https://www.googleapis.com/auth/calendar",
-  "https://www.googleapis.com/auth/calendar.events",
-];
+export const googleScopes = {
+  email: "https://www.googleapis.com/auth/userinfo.email",
+  tasks: "https://www.googleapis.com/auth/tasks",
+  calendars: "https://www.googleapis.com/auth/calendar",
+  events: "https://www.googleapis.com/auth/calendar.events",
+};

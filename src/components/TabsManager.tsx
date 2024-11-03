@@ -43,7 +43,7 @@ export function TabsManager({
   tabs: Record<TabName, React.ReactNode>;
 } & StackProps) {
   const {
-    data: { currentTab },
+    data: { currentTab, selectedApps },
     updateData,
   } = useUserState();
   const scriptType = useScriptType();
@@ -83,16 +83,18 @@ export function TabsManager({
           onMouseDown={(e) => e.stopPropagation()}
           id={`${constants.EXTENSION_NAME}-scrollable-container`}
         >
-          <TabContainer
-            flexGrow={1}
-            sx={{
-              display:
-                currentTab === "tasks" || !tabs[currentTab] ? "flex" : "none",
-            }}
-          >
-            {tabs["tasks"]}
-          </TabContainer>
-          {tabs["calendar"] && (
+          {selectedApps.gTasks && (
+            <TabContainer
+              flexGrow={1}
+              sx={{
+                display:
+                  currentTab === "tasks" || !tabs[currentTab] ? "flex" : "none",
+              }}
+            >
+              {tabs["tasks"]}
+            </TabContainer>
+          )}
+          {selectedApps.gCalendar && tabs["calendar"] && (
             <TabContainer
               flexGrow={1}
               sx={{
@@ -102,7 +104,7 @@ export function TabsManager({
               {tabs["calendar"]}
             </TabContainer>
           )}
-          {tabs["chatGpt"] && (
+          {selectedApps.chatGpt && tabs["chatGpt"] && (
             <TabContainer
               flexGrow={1}
               sx={{
@@ -223,6 +225,7 @@ const TabIconsContainer = styled(Stack)<{
   zIndex: 50,
   padding: "2px 8px",
   borderBottom: `1px solid ${theme.palette.divider}`,
+  width: scriptType === "Popup" ? "100%" : "auto",
   ...(scriptType === "Content" && { position: "initial" }),
 }));
 
@@ -231,7 +234,7 @@ const TabIconStyled = styled(IconButton)<{
   scriptType: ScriptType;
 }>(({ theme, selected, scriptType }) => ({
   // @ts-ignore
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: "#d0d0d0",
   // @ts-ignore
   border: `1px solid ${theme.palette.divider}`,
   // @ts-ignore
@@ -248,10 +251,10 @@ const TabIconStyled = styled(IconButton)<{
   },
 
   ...(selected && {
-    backgroundColor: "#d0d0d0",
+    backgroundColor: theme.palette.background.paper,
     border: `1px solid #9e9e9e`,
     borderBottomColor: "transparent",
-    boxShadow: scriptType === "Content" ? "none" : "0px 0px 4px 2px #0000004a",
     transform: "scale(1.15)",
+    zIndex: 1,
   }),
 }));

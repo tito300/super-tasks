@@ -13,14 +13,14 @@ import dayjs from "dayjs";
 import { useScriptType } from "../Providers/ScriptTypeProvider";
 import { useCalendarState } from "../Providers/CalendarStateProvider";
 import { startTransition, useState } from "react";
-import { useCalendarEvents } from "@src/api/calendar.api";
+import { useCalendarEvents, useCalendarLists } from "@src/api/calendar.api";
 import { AppControls } from "../shared/AppControls";
 
 export function CalendarControls(props: StackProps & { isLoading?: boolean }) {
-  const queryClient = useQueryClient();
-  const scriptType = useScriptType();
+  // using local state to only show loading bar when user explicitly clicks reload
   const [refetching, setRefetching] = useState(false);
-  const { isLoading } = useCalendarEvents();
+  const { refetch: refetchList } = useCalendarLists();
+  const { refetch } = useCalendarEvents();
 
   const {
     data: { selectedCalendarId },
@@ -33,15 +33,20 @@ export function CalendarControls(props: StackProps & { isLoading?: boolean }) {
       onSettingsClick={() => {}}
       onReloadClick={() => {
         setRefetching(true);
-        queryClient
-          .invalidateQueries({
-            queryKey: ["calendar", selectedCalendarId],
-          })
+        refetchList()
           .then(() => {
-            startTransition(() => {
+            refetch().finally(() => {
               setRefetching(false);
             });
+          })
+          .finally(() => {
+            setRefetching(false);
           });
+        // .then(() => {
+        //   startTransition(() => {
+        //     setRefetching(false);
+        //   });
+        // });
       }}
     >
       <DateControl isLoading={props.isLoading && !selectedCalendarId} pl={1} />

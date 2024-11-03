@@ -19,19 +19,19 @@ import { useUserState } from "../Providers/UserStateProvider";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { useScriptType } from "../Providers/ScriptTypeProvider";
 import { constants } from "@src/config/constants";
+import { googleScopes } from "@src/config/googleScopes";
+import { TabName } from "@src/config/settingsDefaults";
 
 const extensionId = chrome.runtime.id;
-
-export const scopes = {
-  google: {
-    calendar: "https://www.googleapis.com/auth/calendar",
-    tasks: "https://www.googleapis.com/auth/tasks",
-  },
+type SelectedApp = {
+  gTasks: boolean;
+  gCalendar: boolean;
+  chatGpt: boolean;
 };
 
 export default function AppOauthPicker(paperProps: PaperProps) {
   const [step, setStep] = useState<number>(1);
-  const [selectedApps, setSelectedApps] = useState({
+  const [selectedApps, setSelectedApps] = useState<SelectedApp>({
     gTasks: false,
     gCalendar: false,
     chatGpt: false,
@@ -46,7 +46,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
 
   useEffect(() => {
     if (!dataSyncing) {
-      const { gTasks, gCalendar } = userSelectedApps;
+      const { gTasks, gCalendar, chatGpt } = userSelectedApps;
 
       if (tokens.google) {
         setSelectedApps((selectedApps) => {
@@ -54,6 +54,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
             ...selectedApps,
             gTasks: !!gTasks,
             gCalendar: !!gCalendar,
+            chatGpt: !!chatGpt,
           };
         });
       }
@@ -67,12 +68,12 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   };
 
   const getSelectedScopes = () => {
-    const selectedScopes: string[] = [];
+    const selectedScopes: string[] = [googleScopes.email];
     if (selectedApps.gTasks) {
-      selectedScopes.push(scopes.google.tasks);
+      selectedScopes.push(googleScopes.tasks);
     }
     if (selectedApps.gCalendar) {
-      selectedScopes.push(scopes.google.calendar);
+      selectedScopes.push(googleScopes.calendars);
     }
     return selectedScopes;
   };
@@ -90,6 +91,9 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   };
 
   const selectedScopes = getSelectedScopes();
+  const hasSelectedApps = Object.values(selectedApps).some(
+    (selected) => selected
+  );
 
   if (authWarningDismissed && scriptType !== "Popup") return null;
 
@@ -163,7 +167,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
             {step === 1 && (
               // && selectedApp === "google"
               <GoogleOauthButton
-                disabled={!selectedScopes.length}
+                disabled={!hasSelectedApps}
                 selectedScopes={selectedScopes}
                 selectedApps={selectedApps}
               />
@@ -192,6 +196,12 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   );
 }
 
+const currentTabMap: Record<keyof SelectedApp, TabName> = {
+  gTasks: "tasks",
+  gCalendar: "calendar",
+  chatGpt: "chatGpt",
+};
+
 const GoogleOauthButton = (
   props: ButtonProps & {
     selectedScopes: string[];
@@ -208,19 +218,37 @@ const GoogleOauthButton = (
   const handleClick = async () => {
     userServices
       .getGoogleAuthToken({ interactive: true, scopes: selectedScopes })
-      .then((tokenRes) => {
+      .then(async (tokenRes) => {
         if (!tokenRes?.token) return;
+
+        const { jwtToken, user } = await userServices
+          .createUser({
+            email: tokenRes.email,
+            accountId: tokenRes.chromeId,
+            subscriptionType: "free",
+          })
+          .catch((err: any) => {
+            console.error(err);
+            return { jwtToken: "", user: { subscriptionType: "free" } };
+          });
+
+        userServices.setJwtTokenHeader(jwtToken);
+
+        const currentApp = Object.keys(selectedApps).find(
+          (app) => selectedApps[app as keyof typeof selectedApps]
+        ) as keyof typeof selectedApps;
 
         updateData({
           tokens: {
             ...tokens,
+            jwt: jwtToken,
             google: tokenRes.token,
           },
-          selectedApps: {
-            gCalendar: selectedApps.gCalendar,
-            gTasks: selectedApps.gTasks,
-            chatGpt: selectedApps.chatGpt,
-          },
+          currentTab: currentTabMap[currentApp] || "chatGpt",
+          email: tokenRes.email,
+          chromeId: tokenRes.chromeId,
+          subscriptionType: user.subscriptionType,
+          selectedApps,
           authWarningDismissed: false,
           authWarningDismissedAt: null,
         });

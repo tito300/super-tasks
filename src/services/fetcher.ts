@@ -3,9 +3,13 @@ import axios from "axios";
 
 const commonHeaders: Record<string, any> = {};
 
-export const setupToken = (token?: string | null) => {
+export const setupGoogleToken = (token?: string | null) => {
   commonHeaders["Content-Oauth"] = token;
   axios.defaults.headers.common["Content-Oauth"] = token;
+};
+export const setupJwtToken = (token?: string | null) => {
+  commonHeaders["Authorization"] = `Bearer ${token}`;
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
 
 export const getCommonHeaders = () => commonHeaders;

@@ -8,8 +8,9 @@ import {
 } from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { useMessageEngine } from "../Providers/MessageEngineProvider";
-import AppOauthPicker, { scopes } from "./AppOauthPicker";
+import AppOauthPicker from "./AppOauthPicker";
 import { useUserState } from "../Providers/UserStateProvider";
+import { googleScopes } from "@src/config/googleScopes";
 
 export function OauthRequired({
   children,
@@ -26,11 +27,9 @@ export function OauthRequired({
   const messageEngine = useMessageEngine();
 
   function getGrantedScopes() {
-    const scopes = [];
-    if (userState.selectedApps.gCalendar)
-      scopes.push("https://www.googleapis.com/auth/calendar");
-    if (userState.selectedApps.gTasks)
-      scopes.push("https://www.googleapis.com/auth/tasks");
+    const scopes = [googleScopes.email];
+    if (userState.selectedApps.gCalendar) scopes.push(googleScopes.calendars);
+    if (userState.selectedApps.gTasks) scopes.push(googleScopes.tasks);
     return scopes;
   }
 
@@ -63,7 +62,7 @@ export function OauthRequired({
   } = {}) {
     userServices
       .getGoogleAuthToken({ interactive: false, scopes: getGrantedScopes() })
-      .then((tokenRes) => {
+      .then(async (tokenRes) => {
         if (!tokenRes.token) {
           if (retries) {
             getAuthToken({ retries: retries - 1, resetToken });
@@ -82,17 +81,21 @@ export function OauthRequired({
           }
         }
 
+        const jwtToken = await userServices.generateJwtToken();
+        userServices.setJwtTokenHeader(jwtToken);
+
         updateUserState({
           tokens: {
             ...userState.tokens,
+            jwt: jwtToken,
             google: tokenRes.token,
           },
           selectedApps: {
             ...userState.selectedApps,
             gCalendar: !!tokenRes?.grantedScopes?.includes(
-              scopes.google.calendar
+              googleScopes.calendars
             ),
-            gTasks: !!tokenRes?.grantedScopes?.includes(scopes.google.tasks),
+            gTasks: !!tokenRes?.grantedScopes?.includes(googleScopes.tasks),
           },
         });
         tokenSetRef.current = true;

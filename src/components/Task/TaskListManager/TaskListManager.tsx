@@ -72,8 +72,8 @@ export function TaskListManager() {
           setSettingsOpen(!settingsOpen);
         }}
         onReloadClick={() => {
+          setRefetching(true);
           startTransition(() => {
-            setRefetching(true);
             queryClient.invalidateQueries({ queryKey: ["tasks"] }).then(() => {
               startTransition(() => {
                 setRefetching(false);

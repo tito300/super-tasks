@@ -12,22 +12,21 @@ import { useRootElement } from "@src/hooks/useRootElement";
 import { constants } from "@src/config/constants";
 import { MeetingSkeleton } from "./Meeting.skeleton";
 import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
+import { useCalendarEvents, useCalendarLists } from "@src/api/calendar.api";
 
 dayjs.extend(isToday);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export function CalendarTable({
-  calendarEvents,
-  isLoading,
-}: {
-  calendarEvents: SavedCalendarEvent[];
-  isLoading?: boolean;
-}) {
+export function CalendarTable() {
   const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
+  const { isLoading: isListLoading } = useCalendarLists();
+  const { isLoading: eventsLoading, data: calendarEvents } =
+    useCalendarEvents();
+  console.log("List Loading 3 ", isListLoading);
 
   const { events, allDayEvents } = useMemo(() => {
-    const sortedEvents = getTodaysEvents(calendarEvents);
+    const sortedEvents = getTodaysEvents(calendarEvents || []);
 
     // stacks overlapping events
     stackEvents(sortedEvents);
@@ -69,7 +68,7 @@ export function CalendarTable({
       <Table ref={(el) => setTableEl(el)} id="calendar">
         <DayColumn sx={{ width: 52 }}></DayColumn>
         <DayColumn className="column">
-          {isLoading ? (
+          {isListLoading || eventsLoading ? (
             <>
               <MeetingSkeleton top={60 * 3} height={60} />
               <MeetingSkeleton top={60 * 6} height={30} />

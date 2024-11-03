@@ -4,6 +4,8 @@ import { TabName, UserSettings } from "@src/config/settingsDefaults";
 import { useSyncedState } from "@src/hooks/useSyncedState";
 import { useScriptType } from "./ScriptTypeProvider";
 
+export type SubscriptionType = "free" | "premium";
+
 export type UserState = {
   currentTab: TabName;
   buttonExpanded: boolean;
@@ -11,6 +13,9 @@ export type UserState = {
   blurText: boolean;
   darkMode: boolean;
   tokens: UserSettings["tokens"];
+  email: string;
+  chromeId: string;
+  subscriptionType: SubscriptionType;
   selectedApps: UserSettings["selectedApps"];
   authWarningDismissed: boolean;
   authWarningDismissedAt: number | null;
@@ -40,6 +45,9 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     position: { distanceFromRight: null, distanceFromTop: null },
     authWarningDismissed: false,
     authWarningDismissedAt: null,
+    email: "",
+    chromeId: "",
+    subscriptionType: "free",
   });
 
   return (

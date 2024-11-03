@@ -37,14 +37,8 @@ export function TaskManager({ listId }: { listId: string }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 3 } })
   );
-  const {
-    filteredTasks,
-    completedTasks,
-    pinnedTasks,
-    isFetching,
-    isLoading,
-    isError,
-  } = useFilteredTasks();
+  const { filteredTasks, completedTasks, pinnedTasks, isLoading, isError } =
+    useFilteredTasks();
 
   const moveMutation = useMoveTask(listId);
 
@@ -77,16 +71,10 @@ export function TaskManager({ listId }: { listId: string }) {
   }
 
   return (
-    <Stack flexGrow={1} sx={{ px: 1, mb: 1.5 }} ref={rootRef}>
-      <LinearProgress
-        sx={{
-          visibility: isLoading ? "visible" : "hidden",
-          color: grey[500],
-        }}
-      />
+    <Stack flexGrow={1} sx={{ px: 1, pt: 0.5, mb: 1.5 }} ref={rootRef}>
       <TasksFilters />
       <AddTask />
-      {isFetching && !filteredTasks.length && (
+      {isLoading && !filteredTasks.length && (
         <>
           <TaskSkeleton />
           <TaskSkeleton />

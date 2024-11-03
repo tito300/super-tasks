@@ -1,3 +1,4 @@
+import { Sync } from "@mui/icons-material";
 import { assertApps } from "./appsConfig";
 
 export type TabName = "tasks" | "calendar" | "chatGpt" | "add";
@@ -16,6 +17,9 @@ export const userSettingsDefaults = {
   syncAccordionExpanded: false,
   blurText: false,
   syncBlurText: true,
+  syncChromeId: true,
+  syncEmail: true,
+  syncSubscriptionType: true,
   syncWindowNotifications: true,
   windowNotifications: true,
   syncSelectedTaskListId: true,
@@ -31,6 +35,7 @@ export const userSettingsDefaults = {
   syncTokens: true,
   tokens: {
     google: "",
+    jwt: "",
   },
 };
 

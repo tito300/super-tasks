@@ -36,6 +36,7 @@ import { AiSelectedText } from "./AiRewriteActions";
 import { CodeMarkdown } from "../shared/CodeMarkdown";
 import { ChatGptMessage } from "@src/chatGpt.types";
 import { useScriptType } from "../Providers/ScriptTypeProvider";
+import { retryAsync } from "@src/utils/retryAsync";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -361,7 +362,11 @@ export const AiConversation = ({
   };
 
   useLayoutEffect(() => {
-    if (currentTab !== "chatGpt" || !buttonExpanded) return;
+    if (
+      currentTab !== "chatGpt" ||
+      (scriptType === "Content" && !buttonExpanded)
+    )
+      return;
     scrollToBottom();
   }, [scrollableEl, currentTab, buttonExpanded]);
 
@@ -380,9 +385,13 @@ export const AiConversation = ({
       composerDraft: "",
       pending: true,
     });
+    setTimeout(() => {
+      scrollToBottom();
+    }, 50);
 
-    chatGpt
-      .getChatGptResponse(messagesClone, model, aiOptions)
+    retryAsync(() =>
+      chatGpt.getChatGptResponse(messagesClone, model, aiOptions)
+    )
       .then((response) => {
         messagesClone = [...messagesClone, response];
         updateData({ messages: messagesClone, pending: false });

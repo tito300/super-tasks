@@ -47,7 +47,7 @@ export const AiFormLayout = React.forwardRef<
 ) {
   const hasButtons = onBackClick || buttons || onRetryClick;
   return (
-    <AiModalContainer ref={ref} elevation={4} hidden={hidden} {...rest}>
+    <AiModalContainer ref={ref} elevation={3} hidden={hidden} {...rest}>
       <HeaderContainer
         direction="row"
         justifyContent="space-between"
@@ -163,8 +163,8 @@ const AiModalContainer = styled(Paper)<{ hidden?: boolean }>(
       maxHeight: "450px",
       display: hidden ? "none" : "flex",
       flexDirection: "column",
-      // overflowY: "auto",
-      // overflowX: "clip",
+      borderRadius: "4px",
+      overflow: "hidden",
     } as const)
 );
 

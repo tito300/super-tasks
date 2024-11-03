@@ -1,4 +1,3 @@
-import { requiredScopes } from "@src/config/googleScopes";
 import {
   TasksSettings,
   UserSettings,
@@ -6,8 +5,9 @@ import {
   userSettingsDefaults,
 } from "@src/config/settingsDefaults";
 import { storageService } from "@src/storage/storage.service";
-import { setupToken } from "../fetcher";
+import { fetcher, setupGoogleToken, setupJwtToken } from "../fetcher";
 import { ServiceObject } from "..";
+import { urls } from "@src/config/urls";
 
 export type UserServiceMethodName = keyof typeof userService;
 export const userService: ServiceObject = {
@@ -25,7 +25,10 @@ export const userService: ServiceObject = {
   },
 
   async setGoogleTokenHeader(token?: string) {
-    setupToken(token);
+    setupGoogleToken(token);
+  },
+  async setJwtTokenHeader(token?: string) {
+    setupJwtToken(token);
   },
 
   async getGoogleAuthToken(options?: {
@@ -33,20 +36,25 @@ export const userService: ServiceObject = {
     scopes?: string[];
   }) {
     try {
+      const scopes = options?.scopes || [];
+
       const tokenRes = await chrome.identity.getAuthToken({
         interactive: !!options?.interactive,
-        scopes: options?.scopes || [],
+        scopes: scopes,
         // scopes: ["https://www.googleapis.com/auth/tasks"],
       });
       const requiredScopesGranted = tokenRes?.token
-        ? requiredScopes.every((scope) =>
-            tokenRes?.grantedScopes?.includes?.(scope)
-          )
+        ? scopes.every((scope) => tokenRes?.grantedScopes?.includes?.(scope))
         : false;
 
       userService.setGoogleTokenHeader(tokenRes.token);
+
+      const userInfo = await userService.getUserInfo();
+
       return {
         token: tokenRes.token,
+        email: userInfo.email,
+        chromeId: userInfo.id,
         requiredScopesGranted,
         grantedScopes: tokenRes.grantedScopes,
       };
@@ -55,6 +63,11 @@ export const userService: ServiceObject = {
       return { token: null, requiredScopesGranted: false };
     }
   },
+  async getUserInfo() {
+    return chrome.identity.getProfileUserInfo({
+      accountStatus: "ANY",
+    } as chrome.identity.ProfileDetails);
+  },
   async openPopup() {
     chrome.windows.create({
       url: chrome.runtime.getURL("src/pages/popup/index.html"),
@@ -62,5 +75,30 @@ export const userService: ServiceObject = {
       width: 520,
       height: 300,
     });
+  },
+  async createUser(user: {
+    email: string;
+    accountId: string;
+    subscriptionType: string;
+  }) {
+    let jwtToken = "";
+    const createdUser = await fetcher
+      .post(`${urls.BASE_URL}/users`, user)
+      .then((res) => {
+        console.log({ res });
+        jwtToken = res.headers.get("Jwt-Token") || "";
+        return res.json();
+      })
+      .then((data) => {
+        console.log({ data });
+        return data;
+      });
+    return { jwtToken, user: createdUser };
+  },
+  async generateJwtToken(body: { accountId: string; googleToken: string }) {
+    return fetcher
+      .post(`${urls.BASE_URL}/auth/login`, body)
+      .then((res) => res.json())
+      .then((data) => data?.jwt_token as { jwt_token: string });
   },
 };

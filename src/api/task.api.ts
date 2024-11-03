@@ -26,26 +26,24 @@ export const useTasks = ({
 
   return useQuery<SavedTask[]>({
     queryKey: ["tasks", selectedTaskListId],
-    placeholderData: [] as SavedTask[],
     queryFn: async () => {
       if (!selectedTaskListId) return [];
 
-      try {
-        const data = await taskService.getTasks(selectedTaskListId);
-        const sortedData = data.sort((a, b) =>
-          a.position.localeCompare(b.position)
-        );
+      const data = await taskService.getTasks(selectedTaskListId);
+      const sortedData = data.sort((a: any, b: any) =>
+        a.position.localeCompare(b.position)
+      );
 
-        return sortedData;
-      } catch (err) {
-        console.error(err);
-        return [];
-      }
+      return sortedData;
+      // } catch (err) {
+      //   console.error(err);
+      //   return [];
+      // }
     },
     enabled: enabled ?? !!selectedTaskListId,
     // stale time prevents refetching for things like when user focuses on page
     // If you need to force a refetch, use queryClient.invalidateQueries
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes,
   });
 };
 
