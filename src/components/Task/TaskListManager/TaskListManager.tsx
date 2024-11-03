@@ -13,17 +13,13 @@ import React, { useEffect, useMemo } from "react";
 import { useTaskLists } from "../../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
 import { useTasksState } from "../../Providers/TasksStateProvider";
-import {
-  KeyboardArrowDown,
-  List,
-  Refresh,
-  Settings,
-} from "@mui/icons-material";
+import { KeyboardArrowDown, List } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
 import { TasksSettings } from "../TasksSettings/TasksSettings";
 import { useUserState } from "../../Providers/UserStateProvider";
 import { useScriptType } from "../../Providers/ScriptTypeProvider";
 import { AppControls } from "@src/components/shared/AppControls";
+import { Settings } from "@src/components/shared/Settings/Settings";
 
 export function TaskListManager() {
   const [active, setActive] = React.useState(false);
@@ -120,7 +116,7 @@ export function TaskListManager() {
       </AppControls>
 
       {settingsOpen ? (
-        <TasksSettings />
+        <Settings />
       ) : (
         <TaskManager listId={selectedTaskListId ?? ""} />
       )}
