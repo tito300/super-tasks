@@ -8,6 +8,8 @@ export type ChatGptMessage = {
   fullPageTitle?: string;
   fullPageDomain?: string;
   error?: boolean;
+  isSelectedText?: boolean;
+  isAdditionalText?: boolean;
 };
 
 export type ChatMessage = ChatGptMessage;

@@ -5,9 +5,26 @@ import { useChatGptSettings } from "./ChatGptSettingsProvider";
 // import { useChatGptSettings } from "./ChatGptSettingsProvider";
 
 export const llmModels = [
-  "gpt-3.5-turbo",
-  "gpt-4o-mini",
-  "chatgpt-4o-latest",
+  {
+    label: "GPT 4o",
+    value: "chatgpt-4o-latest",
+  },
+  {
+    label: "GPT 4o mini",
+    value: "gpt-4o-mini",
+  },
+  {
+    label: "GPT 3.5 Turbo",
+    value: "gpt-3.5-turbo",
+  },
+  // {
+  //   label: "GPT o1 mini",
+  //   value: "o1-mini",
+  // },
+  // {
+  //   label: "GPT o1 preview",
+  //   value: "o1-preview",
+  // },
 ] as const;
 export type LlmModel = (typeof llmModels)[number];
 
@@ -15,7 +32,7 @@ export type ChatGptState = {
   messages: ChatMessage[];
   composerDraft: string;
   pending: boolean;
-  model: LlmModel;
+  model: LlmModel["value"];
   aiOptions: {
     keepShort: boolean;
   };

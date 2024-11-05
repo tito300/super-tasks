@@ -18,7 +18,7 @@ import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
 import AddIcon from "@mui/icons-material/Add";
 import chatGptCalendarIcon from "@assets/img/chatgpt-icon.png";
 import { constants } from "@src/config/constants";
-import { Close } from "@mui/icons-material";
+import { BorderColor, BorderLeft, Close } from "@mui/icons-material";
 
 const AppContainer = styled(Paper)({
   position: "relative",
@@ -98,7 +98,7 @@ export function TabsManager({
             <TabContainer
               flexGrow={1}
               sx={{
-                display: currentTab === "calendar" ? "block" : "none",
+                display: currentTab === "calendar" ? "flex" : "none",
               }}
             >
               {tabs["calendar"]}
@@ -108,7 +108,7 @@ export function TabsManager({
             <TabContainer
               flexGrow={1}
               sx={{
-                display: currentTab === "chatGpt" ? "block" : "none",
+                display: currentTab === "chatGpt" ? "flex" : "none",
               }}
             >
               {tabs["chatGpt"]}
@@ -118,7 +118,7 @@ export function TabsManager({
             <TabContainer
               flexGrow={1}
               sx={{
-                display: currentTab === "add" ? "block" : "none",
+                display: currentTab === "add" ? "flex" : "none",
               }}
             >
               {tabs["add"]}
@@ -148,11 +148,15 @@ function NavigationTabs({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <TabIconsContainer scriptType={scriptType} id="summary-tabs-container">
-        <Stack direction={"row"} alignItems={"center"} mb={-1}>
-          {tasksAvailable && <TabOption tabName="tasks" />}
-          {calendarAvailable && <TabOption tabName="calendar" />}
+      <TabIconsContainer
+        onClick={onClose}
+        scriptType={scriptType}
+        id="summary-tabs-container"
+      >
+        <Stack direction={"row"} alignItems={"center"}>
           {chatGptAvailable && <TabOption tabName="chatGpt" />}
+          {calendarAvailable && <TabOption tabName="calendar" />}
+          {tasksAvailable && <TabOption tabName="tasks" />}
           {canAddMore && scriptType === "Popup" && <TabOption tabName="add" />}
         </Stack>
         <IconButton sx={{ ml: "auto" }} size="small" onClick={onClose}>
@@ -203,7 +207,10 @@ function TabOption({ tabName }: { tabName: TabName }) {
   return (
     <TabIconStyled
       size="small"
-      onClick={() => updateUserState({ currentTab: tabName })}
+      onClick={(e) => {
+        e.stopPropagation();
+        updateUserState({ currentTab: tabName });
+      }}
       selected={selected}
       scriptType={scriptType}
     >
@@ -216,14 +223,15 @@ const TabIconsContainer = styled(Stack)<{
   scriptType: ScriptType;
 }>(({ theme, scriptType }) => ({
   flexDirection: "row",
+  cursor: "pointer",
   alignItems: "center",
   justifyContent: "space-between",
   position: "fixed",
-  backgroundColor: "#98a2b9",
+  backgroundColor: "#eee8c8",
   borderTopLeftRadius: 4,
   borderTopRightRadius: 4,
   zIndex: 50,
-  padding: "2px 8px",
+  padding: "4px 8px 0px",
   borderBottom: `1px solid ${theme.palette.divider}`,
   width: scriptType === "Popup" ? "100%" : "auto",
   ...(scriptType === "Content" && { position: "initial" }),
@@ -234,27 +242,48 @@ const TabIconStyled = styled(IconButton)<{
   scriptType: ScriptType;
 }>(({ theme, selected, scriptType }) => ({
   // @ts-ignore
-  backgroundColor: "#d0d0d0",
+  // backgroundColor: "#f3f3f3",
+  border: "none",
   // @ts-ignore
-  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 0,
   // @ts-ignore
-  borderBottom: "none",
-  borderLeft: "none",
-  borderTopRightRadius: 2,
-  borderTopLeftRadius: 2,
-  borderBottomLeftRadius: 0,
-  borderBottomRightRadius: 0,
+  padding: "4px 14px",
   // @ts-ignore
-  padding: "5px 10px",
-  ":hover": {
-    backgroundColor: "#f1f1f1",
+  ":nth-child(even)": {
+    borderRight: `2px solid ${theme.palette.divider}`,
+    borderLeft: `2px solid ${theme.palette.divider}`,
   },
-
+  ":hover": {
+    backgroundColor: "#d3cfb9",
+    borderColor: "#d3cfb9",
+    borderTopRightRadius: 6,
+    borderTopLeftRadius: 6,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+    "& + button": {
+      borderColor: "#transparent",
+    },
+    "&:previous-child": {
+      borderColor: "#transparent",
+    },
+  },
   ...(selected && {
+    padding: "6px 14px 7px",
     backgroundColor: theme.palette.background.paper,
-    border: `1px solid #9e9e9e`,
+    border: `none`,
+    borderRight: "none",
+    borderLeft: "none",
+    borderTopRightRadius: 6,
+    borderTopLeftRadius: 6,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     borderBottomColor: "transparent",
-    transform: "scale(1.15)",
+    transform: "scale(1.05)",
+    marginBottom: -2,
     zIndex: 1,
+
+    "&:hover": {
+      backgroundColor: theme.palette.background.paper,
+    },
   }),
 }));

@@ -1,11 +1,7 @@
 {
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiuKr34K37js9DL8AldjxpzF45ybkHCy3tKuzQAZtfeVWE4LAv9DiWZKv+SV0BQbIEKfg4u57nr9uPQivnrjW8bXKXovKQPPybLs5FvqcJBXvmZkyHFuSAMwNZL0gw1UpNZZ90WovHIbV2ubZOklERoIuE+lF0Hw0wOTBRDMZAW4j4fsMzz/NFMoNQ5JXo1TtGe34RYqCV0CcO0Y3vtawcaywc5TNY6+2YYi9VAAh+PSscXptGhyDn3gdpxRpKiE4D1JolaXLF8r+kft91QFum4z79KXmIOcSfMAhVgnDH7Kqx5ivASPGu940oSNCdCwu3DZoiRIHEcGxImjieMJ2twIDAQAB",
   "action": {
-    "default_popup": "src/pages/popup/index.html",
-    "default_icon": "public/dev-icon-32.png"
-  },
-  "icons": {
-    "128": "public/dev-icon-128.png"
+    "default_popup": "src/pages/popup/index.html"
   },
   "web_accessible_resources": [
     {
@@ -14,7 +10,10 @@
         "dev-icon-128.png",
         "dev-icon-32.png",
         "google-tasks-icon.png",
-        "chatgpt-icon.png"
+        "chatgpt-icon.png",
+        "logo_2_128x128.png",
+        "logo_2_32x32.png",
+        "logo_3_128x128.png"
       ],
       "matches": ["<all_urls>"]
     }

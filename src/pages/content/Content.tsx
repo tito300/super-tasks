@@ -4,10 +4,14 @@ import { DockStation } from "./components/DockStation";
 import { constants } from "@src/config/constants";
 import { useTaskReminders } from "@src/hooks/useTaskReminders";
 import { useLogRender } from "@src/hooks/useLogRender";
+import { useUserSettings } from "@src/components/Providers/UserSettingsProvider";
 
 export function Content() {
   useTaskReminders();
   useLogRender("Content");
+  const {
+    userSettings: { popupOnly },
+  } = useUserSettings();
 
   useEffect(() => {
     const rootEl = document.getElementById(`${constants.EXTENSION_NAME}-root`);
@@ -17,6 +21,7 @@ export function Content() {
       });
     }
   }, []);
+  if (popupOnly) return null;
 
   return <DockStation />;
 }

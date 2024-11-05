@@ -60,6 +60,8 @@ export const tasksSettingsDefaults = {
 insureSyncIsDefined(tasksSettingsDefaults, "tasksSettingsDefaults");
 
 export const chatGptSettingsDefaults = {
+  disableTextSelectionTooltip: false,
+  syncDisableTextSelectionTooltip: true,
   syncMessages: true,
   syncComposerDraft: true,
   syncPending: true,

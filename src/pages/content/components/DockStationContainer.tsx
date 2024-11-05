@@ -27,6 +27,8 @@ import {
   convertRelativeToAbsolutePosition,
   useIsDraggingContext,
 } from "@src/components/Draggable";
+import { SmartExpand } from "./SmartExpand";
+import { useLogRender } from "@src/hooks/useLogRender";
 
 // const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
 //   position: "absolute",
@@ -35,12 +37,12 @@ import {
 // }));
 
 export function DockStationContainer({ children }: PropsWithChildren) {
-  const buttonsContainerRef = useRef<HTMLDivElement>(null);
+  useLogRender("DockStationContainer");
   const [isDragging, setIsDragging] = useState(false);
   const mounted = useLazyMounted();
   const queryClient = useQueryClient();
   const {
-    data: { buttonExpanded, position, authWarningDismissed },
+    data: { buttonExpanded, position, authWarningDismissed, selectedApps },
     updateData: updateUserState,
   } = useUserState();
 
@@ -90,6 +92,55 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       ? "bottom-left"
       : "top-left";
 
+  const appButtons: JSX.Element[] = [];
+
+  if (selectedApps["chatGpt"]) {
+    appButtons.push(
+      <AppIconButton
+        onClick={() => handleButtonClick("chatGpt")}
+        sx={{ backgroundColor: "white" }}
+      >
+        <img
+          src={runtime.getURL("chatgpt-icon.png")}
+          alt="calendar"
+          width={32}
+          height={32}
+        />
+      </AppIconButton>
+    );
+  }
+
+  if (selectedApps["gCalendar"]) {
+    appButtons.push(
+      <AppIconButton
+        onClick={() => handleButtonClick("calendar")}
+        sx={{ backgroundColor: "white" }}
+      >
+        <CalendarIconBadge>
+          <img src={googleCalendarIcon} alt="calendar" width={32} height={32} />
+        </CalendarIconBadge>
+      </AppIconButton>
+    );
+  }
+
+  if (selectedApps["gTasks"]) {
+    appButtons.push(
+      <AppIconButton
+        onClick={() => handleButtonClick("tasks")}
+        sx={{ backgroundColor: "white" }}
+      >
+        <TasksReminderBadge>
+          <img
+            src={runtime.getURL("google-tasks-icon.png")}
+            alt="tasks"
+            width={32}
+            height={32}
+          />
+        </TasksReminderBadge>
+      </AppIconButton>
+    );
+  }
+
   if (authWarningDismissed) return null;
 
   return (
@@ -125,102 +176,78 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       }
     >
       {!buttonExpanded && (
-        <ButtonsContainer
-          ref={buttonsContainerRef}
+        <SmartExpand
           pagePosition={pagePosition}
-          isDragging={isDragging}
-        >
-          <ExtensionCalendarButton
-            pagePosition={pagePosition}
-            onClick={() => handleButtonClick("calendar")}
-            id={`${constants.EXTENSION_NAME}-calendar-btn`}
-          >
-            <CalendarIconBadge>
-              <img
-                src={googleCalendarIcon}
-                alt="calendar"
-                width={28}
-                height={28}
-              />
-            </CalendarIconBadge>
-          </ExtensionCalendarButton>
-          <ExtensionTaskButton
-            pagePosition={pagePosition}
-            id={`${constants.EXTENSION_NAME}-tasks-button`}
-            onClick={() => {
-              handleButtonClick("tasks");
-            }}
-          >
-            <TasksReminderBadge>
-              <img
-                src={runtime.getURL("google-tasks-icon.png")}
-                alt="tasks"
-                width={28}
-                height={28}
-              />
-            </TasksReminderBadge>
-          </ExtensionTaskButton>
-          <ExtensionAiButton
-            pagePosition={pagePosition}
-            onClick={() => handleButtonClick("chatGpt")}
-            id={`${constants.EXTENSION_NAME}-ai-button`}
-          >
-            <BadgeStyled
-              slotProps={{
-                badge: {
-                  id: `${constants.EXTENSION_NAME}-remove-button`,
-                },
+          dragging={isDragging}
+          elementSize={58}
+          badgeContent={
+            <IconButton
+              sx={{ padding: 0 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setRemoved(true);
               }}
-              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-              color="default"
-              badgeContent={
-                <IconButton
-                  sx={{ padding: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRemoved(true);
-                  }}
-                >
-                  <Close sx={{ fontSize: 14, color: "white" }} />
-                </IconButton>
-              }
+            >
+              <Close sx={{ fontSize: 14, color: "white" }} />
+            </IconButton>
+          }
+          primaryElement={
+            <LogoIcon
+              onClick={() => handleButtonClick("chatGpt")}
+              id={`${constants.EXTENSION_NAME}-logo-button`}
             >
               <img
-                src={runtime.getURL("chatgpt-icon.png")}
-                alt="calendar"
+                src={runtime.getURL("logo_3_128x128.png")}
+                alt="logo"
                 width={28}
                 height={28}
               />
-            </BadgeStyled>
-          </ExtensionAiButton>
-        </ButtonsContainer>
+            </LogoIcon>
+          }
+          elements={appButtons}
+        />
       )}
     </DraggablePopperStyled>
   );
 }
 
-const BadgeStyled = styled(Badge)(() => {
+const AppIconButton = styled(IconButton)(({ theme }) => ({
+  backgroundColor: "white",
+  boxShadow: theme.shadows[3],
+  "&:hover": {
+    backgroundColor: "#ebebeb",
+  },
+}));
+
+export const BadgeStyled = styled(Badge)(() => {
   return {
     [`& #${constants.EXTENSION_NAME}-remove-button`]: {
-      right: -6,
       padding: "0 0",
-      backgroundColor: "#797979",
+      backgroundColor: "#4d4d4d",
       border: "1px solid white",
       color: "white",
     },
   };
 });
 
-const DraggablePopperStyled = styled(DraggablePopper)(() => ({
-  [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
-    display: "none",
-  },
-  [":hover"]: {
-    [`& .${badgeClasses.badge}#${constants.EXTENSION_NAME}-remove-button`]: {
-      display: "block",
+const DraggablePopperStyled = styled(DraggablePopper)(() => ({}));
+
+const LogoIcon = styled(IconButton)(({ theme }) => {
+  return {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    boxShadow: theme.shadows[3],
+    backgroundColor: "#fff",
+    transform: "translate(-50%, -50%)",
+    fontSize: 0,
+    cursor: "grab",
+    padding: "8px",
+    [":hover"]: {
+      backgroundColor: "#fff",
     },
-  },
-}));
+  };
+});
 
 const ExtensionTaskButton = styled(IconButton)<{ pagePosition: PagePosition }>(
   ({ theme }) => {
@@ -228,13 +255,12 @@ const ExtensionTaskButton = styled(IconButton)<{ pagePosition: PagePosition }>(
       position: "absolute",
       top: "50%",
       left: "50%",
-      boxShadow: theme.shadows[3],
       marginBottom: 2,
       backgroundColor: "#fff",
       color: "white",
       transform: "translate(-50%, -50%)",
       fontSize: 0,
-      padding: "12px",
+      padding: "10px",
       cursor: "grab",
       ["&:hover"]: {
         boxShadow: theme.shadows[6],
@@ -251,13 +277,12 @@ const ExtensionCalendarButton = styled(IconButton)<{
     position: "absolute",
     top: "50%",
     left: "50%",
-    boxShadow: theme.shadows[3],
     marginBottom: 2,
     backgroundColor: "#fff",
     color: "white",
     transform: "translate(-50%, -50%)",
     fontSize: 0,
-    padding: "12px",
+    padding: "10px",
     cursor: "grab",
     ["&:hover"]: {
       boxShadow: theme.shadows[6],
@@ -267,17 +292,16 @@ const ExtensionCalendarButton = styled(IconButton)<{
 });
 
 const ExtensionAiButton = styled(IconButton)<{ pagePosition: PagePosition }>(
-  ({ pagePosition, theme }) => {
+  ({}) => {
     return {
       position: "absolute",
       top: "50%",
       left: "50%",
-      boxShadow: theme.shadows[3],
       backgroundColor: "#fff",
       transform: "translate(-50%, -50%)",
       fontSize: 0,
       cursor: "grab",
-      padding: "12px",
+      padding: "10px",
       [":hover"]: {
         backgroundColor: "#fff",
       },
@@ -290,7 +314,7 @@ type PagePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 const ButtonsContainer = styled(Stack)<{
   pagePosition: PagePosition;
   isDragging: boolean;
-}>(({ pagePosition, isDragging }) => {
+}>(({ pagePosition, isDragging, theme }) => {
   return {
     height: 50,
     width: 50,
@@ -307,6 +331,7 @@ const ButtonsContainer = styled(Stack)<{
               pagePosition === "bottom-right" || pagePosition === "bottom-left"
                 ? "translate(-26px, -83px)"
                 : "translate(-26px, 32px)",
+            boxShadow: theme.shadows[3],
             transition: "transform 0.1s",
           },
           [`:hover& #${constants.EXTENSION_NAME}-tasks-button`]: {
@@ -314,7 +339,19 @@ const ButtonsContainer = styled(Stack)<{
               pagePosition === "bottom-right" || pagePosition === "top-right"
                 ? "translate(-85px, -26px);"
                 : "translate(32px, -26px)",
+            boxShadow: theme.shadows[3],
             transition: "transform 0.1s",
+          },
+          [`:hover& #${constants.EXTENSION_NAME}-ai-button`]: {
+            transform:
+              pagePosition === "bottom-right" || pagePosition === "top-right"
+                ? "translate(-26px, -26px)"
+                : "translate(-26px, -26px)",
+            boxShadow: theme.shadows[3],
+            transition: "transform 0.1s",
+          },
+          [`:hover& #${constants.EXTENSION_NAME}-logo-button`]: {
+            display: "none",
           },
         }),
   };

@@ -42,7 +42,6 @@ export function useCalendarLists() {
     queryKey: ["calendarLists"],
     queryFn: async () => {
       const data = await calendarService.getCalendars();
-      console.log("Calendar Lists triggered", data);
       return data;
     },
     // stale time prevents refetching for things like when user focuses on page

@@ -19,7 +19,14 @@ import {
   Typography,
 } from "@mui/material";
 import { useUserTypingInput } from "@src/hooks/useUserTypingInput";
-import { ComponentProps, forwardRef, useEffect, useRef, useState } from "react";
+import {
+  ComponentProps,
+  forwardRef,
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { styled } from "@mui/material";
 import { constants } from "@src/config/constants";
 import { Stack } from "@mui/material";
@@ -32,7 +39,8 @@ import { AiFormLayout, AiFormLayoutPaddings } from "./Shared/AiFormLayout";
 import { CodeMarkdown } from "../shared/CodeMarkdown";
 import { StyledPopper } from "../shared/StyledPopper";
 import { StyledPopover } from "../shared/StyledPopover";
-import { AiConversation } from "./ChatGpt";
+import { AiConversation, ConversationActions } from "./ChatGpt";
+import { useLogRender } from "@src/hooks/useLogRender";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -223,6 +231,7 @@ export const AiActionMap = {
 };
 
 export function AiSelectedText() {
+  useLogRender("AiSelectedText");
   const { selectedText: inSelectedText, selectedTextPositions } =
     useSelectedText();
   const [aiMessage, setAiMessage] = useState<string | null>(null);
@@ -247,8 +256,7 @@ export function AiSelectedText() {
     null
   );
   const [conversationKey, setConversationKey] = useState(0);
-
-  const formLayoutRef = useRef<HTMLDivElement>(null);
+  const conversationActions = useRef<ConversationActions>(null);
 
   const selectedText = aiOptions.fullPage
     ? getFullPageText()
@@ -270,7 +278,15 @@ export function AiSelectedText() {
     setHasInaccuracies(false);
   };
 
-  const handleSubmit = (todo: AiAction) => {
+  const handleSubmit = (
+    todo: AiAction,
+    _aiOptions?: Partial<typeof aiOptions>
+  ) => {
+    const mergedAiOptions = { ...aiOptions, ..._aiOptions };
+    const text = mergedAiOptions.fullPage
+      ? getFullPageText()
+      : selectedText?.trim() || null;
+
     resetResults({ keepSelectedAction: true });
     setLoading(true);
 
@@ -291,15 +307,13 @@ export function AiSelectedText() {
 
     if (!service) return;
 
-    let text = selectedText!;
-
     service({
       text,
-      aiOptions,
+      aiOptions: mergedAiOptions,
     })
       .then((res) => {
         setAiMessage(res.message);
-        if (aiOptions.factCheck) {
+        if (mergedAiOptions.factCheck) {
           setHasInaccuracies(res.hasInaccuracies);
           setFactCheckMessage(res.inaccuracyMessage);
         }
@@ -321,22 +335,29 @@ export function AiSelectedText() {
     }
   };
 
-  const handleOptionClick = (option: keyof typeof aiOptions) => {
-    setAiOptions((options) => ({ ...options, [option]: !options[option] }));
-  };
-
   const handleClose = () => {
     resetResults();
     setOpen(false);
   };
 
-  const handleResetConversation = () => {
-    setConversationKey((key) => key + 1);
+  const handleResultChatClick = () => {
+    conversationActions.current?.clearConversation();
+    setSelectedAction("Chat");
+    setSelectedText(aiMessage);
   };
 
   if (hideAll) return null;
 
   const showResults = selectedAction || loading;
+
+  const handleOptionClick = (option: keyof typeof aiOptions) => {
+    setAiOptions((options) => ({ ...options, [option]: !options[option] }));
+    if (showResults) {
+      startTransition(() => {
+        handleSubmit(selectedAction!, { [option]: !aiOptions[option] });
+      });
+    }
+  };
 
   return (
     <StyledPortal
@@ -394,7 +415,9 @@ export function AiSelectedText() {
             sx={{ height: "100%" }}
             fullPage={aiOptions.fullPage}
             hidden={selectedAction !== "Chat"}
-            initialMessage={currentSelectedText || "No text selected"}
+            initialMessage={_selectedText?.trim()}
+            actions={conversationActions}
+            disableStoreSync
           />
         </AiFormLayout>
 
@@ -422,6 +445,19 @@ export function AiSelectedText() {
           onClose={handleClose}
           onRetryClick={showResults && (() => handleSubmit(selectedAction!))}
           onBackClick={showResults && resetResults}
+          buttons={
+            showResults && (
+              <Button
+                variant="contained"
+                size="small"
+                color="primary"
+                disabled={loading}
+                onClick={handleResultChatClick}
+              >
+                chat
+              </Button>
+            )
+          }
         >
           <Stack
             px={AiFormLayoutPaddings.pxValue}
@@ -432,7 +468,7 @@ export function AiSelectedText() {
             borderColor={"divider"}
           >
             <AiOption
-              label="Keep Short"
+              label="Concise"
               variant="outlined"
               selected={aiOptions.keepShort}
               onClick={() => handleOptionClick("keepShort")}
@@ -559,10 +595,11 @@ export function AiOption({
 }
 export const AiOptionStyled = styled(Chip)<{
   selected: boolean;
-}>(({ selected }) => ({
+}>(({ selected, theme }) => ({
   cursor: "pointer",
   fontWeight: 500,
   borderRadius: 6,
+  borderColor: theme.palette.divider,
   "&:hover": {
     backgroundColor: "rgba(0,0,0,0.3)",
   },
@@ -679,7 +716,6 @@ function AiReWriteForm(
   }
 
   const handleCopyClick = () => {
-    // updateInput(suggestion!);
     navigator.clipboard.writeText(suggestion!);
     setSuggestion(null);
     onClose();
@@ -788,6 +824,7 @@ function AiReWriteForm(
             <Stack gap={0.5} direction="row" flexWrap="wrap">
               {improvements.map((tone) => (
                 <ToneChip
+                  key={tone}
                   onClick={() => handleToneClick(tone)}
                   selected={selectedImprovements.includes(tone)}
                   variant={"outlined"}

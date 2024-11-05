@@ -75,8 +75,6 @@ export const AiFormLayout = React.forwardRef<
           id={`${constants.EXTENSION_NAME}-modal-content-container`}
           sx={{
             minHeight: skeletonHeight ?? 0,
-            height: "100%",
-            overflow: "auto",
           }}
         >
           {errorMessage && (
@@ -146,7 +144,10 @@ export const AiFormLayoutPaddings = {
   pyValue: 2,
 };
 
-const AiModalContentContainer = styled("div")(({ theme }) => ({}));
+const AiModalContentContainer = styled("div")(({ theme }) => ({
+  height: "100%",
+  overflow: "auto",
+}));
 
 const AiModalFooterContainer = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(1.5, 2),
@@ -169,7 +170,7 @@ const AiModalContainer = styled(Paper)<{ hidden?: boolean }>(
 );
 
 const HeaderContainer = styled(Stack)(({ theme }) => ({
-  backgroundColor: theme.palette.grey[200],
+  backgroundColor: "#eee8c8",
   position: "sticky",
   top: 0,
   zIndex: 1,

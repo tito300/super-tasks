@@ -9,6 +9,7 @@ import {
   Button,
 } from "@mui/material";
 import { ExtensionSettings } from "./ExtensionSettings";
+import { AiSettings } from "@src/components/chatGpt/settings/AiSettings";
 
 export function Settings() {
   return (
@@ -37,11 +38,10 @@ export function Settings() {
           AI Settings
         </AccordionSummary>
         <AccordionDetails>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-          malesuada lacus ex, sit amet blandit leo lobortis eget.
+          <AiSettings />
         </AccordionDetails>
       </Accordion>
-      <Accordion>
+      {/* <Accordion>
         <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel3-content"
@@ -74,7 +74,7 @@ export function Settings() {
           <Button>Cancel</Button>
           <Button>Agree</Button>
         </AccordionActions>
-      </Accordion>
+      </Accordion> */}
     </Stack>
   );
 }

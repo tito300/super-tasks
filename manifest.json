@@ -21,11 +21,11 @@
   "action": {
     "default_popup": "src/pages/popup/index.html",
     "default_icon": {
-      "32": "icon-32.png"
+      "32": "logo_2_32x32.png"
     }
   },
   "icons": {
-    "128": "icon-128.png"
+    "128": "logo_2_128x128.png"
   },
   "permissions": [
     "activeTab",
@@ -53,7 +53,10 @@
         "icon-128.png",
         "icon-32.png",
         "google-tasks-icon.png",
-        "chatgpt-icon.png"
+        "chatgpt-icon.png",
+        "logo_2_128x128.png",
+        "logo_2_32x32.png",
+        "logo_3_128x128.png"
       ],
       "matches": ["<all_urls>"]
     }

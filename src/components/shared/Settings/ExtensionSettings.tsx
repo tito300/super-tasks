@@ -94,12 +94,12 @@ export function ExtensionSettings() {
   );
 }
 
-const FormGroupStyled = styled(FormGroup)({
+export const FormGroupStyled = styled(FormGroup)({
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
 });
 
-const SettingsGroup = styled(Stack)({
+export const SettingsGroup = styled(Stack)({
   marginBottom: 16,
 });

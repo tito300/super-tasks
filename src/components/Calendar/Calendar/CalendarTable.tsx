@@ -23,7 +23,6 @@ export function CalendarTable() {
   const { isLoading: isListLoading } = useCalendarLists();
   const { isLoading: eventsLoading, data: calendarEvents } =
     useCalendarEvents();
-  console.log("List Loading 3 ", isListLoading);
 
   const { events, allDayEvents } = useMemo(() => {
     const sortedEvents = getTodaysEvents(calendarEvents || []);

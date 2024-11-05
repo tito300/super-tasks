@@ -114,10 +114,10 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
     } else {
       const todaysOccurrence = getTodaysOccurrences(event);
       todaysOccurrence.forEach((occurrence) => {
-        event = {
-          ...event,
-          start: { ...event.start, dateTime: occurrence.toISOString() },
-        };
+        // event = {
+        //   ...event,
+        //   start: { ...event.start, dateTime: occurrence.toISOString() },
+        // };
 
         flatEvents.push(event);
       });

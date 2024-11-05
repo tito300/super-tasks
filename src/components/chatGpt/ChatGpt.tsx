@@ -18,7 +18,16 @@ import {
   llmModels,
   useChatGptState,
 } from "../Providers/ChatGptStateProvider";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  RefObject,
+  startTransition,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { Chip } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -37,6 +46,8 @@ import { CodeMarkdown } from "../shared/CodeMarkdown";
 import { ChatGptMessage } from "@src/chatGpt.types";
 import { useScriptType } from "../Providers/ScriptTypeProvider";
 import { retryAsync } from "@src/utils/retryAsync";
+import { useChatGptSettings } from "../Providers/ChatGptSettingsProvider";
+import { Settings } from "../shared/Settings/Settings";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -45,22 +56,35 @@ window.Prism = window.Prism || {};
 window.Prism.manual = true;
 
 export const ChatGpt = () => {
+  const { chatGptSettings } = useChatGptSettings();
+  const scrollableContainer = useScrollableEl();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <Container>
-      <ChatGptControls />
-      <ConversationsList />
-      <AiConversation />
-      {/* <AiRewriteActions /> */}
-      <AiSelectedText />
+      <ChatGptControls
+        settingsOpen={settingsOpen}
+        onSettingsClick={() => setSettingsOpen(!settingsOpen)}
+      />
+      {settingsOpen ? (
+        <Settings />
+      ) : (
+        <>
+          <ConversationsList />
+          <AiConversation scrollableContainer={scrollableContainer} />
+          {/* <AiRewriteActions /> */}
+        </>
+      )}
+      {!chatGptSettings.disableTextSelectionTooltip && <AiSelectedText />}
     </Container>
   );
 };
 
-export const ChatGptControls = (props: {}) => {
+export const ChatGptControls = (props: {
+  settingsOpen: boolean;
+  onSettingsClick: () => void;
+}) => {
   const { data: chatGptState, updateData } = useChatGptState();
-  const handleResetClick = () => {
-    updateData({ messages: [], composerDraft: "", pending: false });
-  };
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -70,22 +94,22 @@ export const ChatGptControls = (props: {}) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleModelClick = (model: LlmModel) => {
+  const handleModelClick = (model: LlmModel["value"]) => {
     updateData({ model });
     handleClose();
   };
 
   return (
     <AppControls
-      settingsOpen={false}
-      onSettingsClick={() => {}}
+      settingsOpen={props.settingsOpen}
+      onSettingsClick={props.onSettingsClick}
       reloading={false}
     >
       <Chip
         variant="outlined"
         size={"small"}
         sx={{ textTransform: "uppercase" }}
-        label={chatGptState.model}
+        label={llmModels.find((m) => m.value === chatGptState.model)?.label}
         onClick={handleChangeModalClick}
         onDelete={handleChangeModalClick}
         deleteIcon={<KeyboardArrowDownIcon />}
@@ -102,10 +126,11 @@ export const ChatGptControls = (props: {}) => {
         <MenuList dense>
           {llmModels.map((model) => (
             <MenuItem
+              key={model.value}
               sx={{ textTransform: "uppercase" }}
-              onClick={() => handleModelClick(model)}
+              onClick={() => handleModelClick(model.value)}
             >
-              {model}
+              {model.label}
             </MenuItem>
           ))}
         </MenuList>
@@ -129,10 +154,8 @@ export const ConversationsList = () => {
 export const MessagesContainer = styled(Stack)<{ empty: boolean }>(
   ({ theme, empty }) => ({
     flex: 1,
-    padding: theme.spacing(1, 1),
-    height: "100%",
+    padding: theme.spacing(0, 1.5, 1),
     justifyContent: empty ? "flex-end" : "initial",
-    overflow: "hidden",
   })
 );
 
@@ -148,7 +171,9 @@ export const MessageComposer = ({
     data: { composerDraft },
     updateData,
   } = useChatGptState();
-  const [value, setValue] = useState(composerDraft?.trim() || "");
+  const [value, setValue] = useState(
+    disableStoreSync ? "" : composerDraft?.trim() || ""
+  );
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
   };
@@ -179,6 +204,8 @@ export const MessageComposer = ({
   };
 
   const handleSubmit = () => {
+    if (!value.trim()) return;
+
     setValue("");
     onSubmit(value);
   };
@@ -203,8 +230,13 @@ export const MessageComposer = ({
         focused
         onKeyDown={handleKeyDown}
         onChange={handleChange}
+        sx={{
+          ["& .Mui-focused:after"]: {
+            borderBottom: "none",
+          },
+        }}
       />
-      <IconButton color="primary" onClick={handleSubmit}>
+      <IconButton onClick={handleSubmit}>
         <SendIcon />
       </IconButton>
     </Stack>
@@ -226,25 +258,14 @@ const MessagesWrapper = styled(Stack)(({ theme }) => ({
   paddingBottom: theme.spacing(3.5),
 }));
 
-const generateInitialMessage = (
-  initialMessage: string | null | undefined,
-  options: { fullPage?: boolean; isAdditionalText?: boolean } = {}
-): ChatGptMessage => {
+const getFullPageMessage = () => {
   return {
     id: 0,
-    message: `${
-      options.fullPage
-        ? "Full html page innerText"
-        : `${
-            options.isAdditionalText
-              ? "Additional Selected Text "
-              : "Selected Text"
-          }`
-    }: \n
-> ${initialMessage?.split("\n").join("\n> ")}\n\n
-**What would you like me to do with the selected text?**`,
+    message: `Full html page innerText: \n
+    ${document.body.innerText.split("\n").join("\n> ")}\n\n
+    **What would you like me to answer about this page?**`,
     direction: "inbound",
-    fullPage: options.fullPage,
+    fullPage: true,
     fullPageUrl: location.href,
     fullPageDomain: location.hostname,
     fullPageTitle: document.title,
@@ -252,18 +273,42 @@ const generateInitialMessage = (
   } as const;
 };
 
+const generateInitialMessage = (
+  initialMessage: string | null | undefined,
+  options: { isAdditionalText?: boolean } = {}
+): ChatGptMessage => {
+  return {
+    id: 0,
+    message: `>${initialMessage?.split("\n").join("\n> ")}\n\n
+**What would you like me to do with the text above?**`,
+    direction: "inbound",
+    createdAt: Date.now(),
+    isSelectedText: true,
+    isAdditionalText: options.isAdditionalText,
+  } as const;
+};
+
+export type ConversationActions = {
+  clearConversation: () => void;
+};
+
 export const AiConversation = ({
   initialMessage,
   scrollableContainer,
   fullPage,
   hidden,
+  disableStoreSync,
+  actions,
   ...rest
 }: {
   initialMessage?: string | null;
   scrollableContainer?: HTMLElement | null;
   fullPage?: boolean;
   hidden?: boolean;
+  disableStoreSync?: boolean;
+  actions?: RefObject<ConversationActions>;
 } & StackProps) => {
+  useLogRender("AiConversation");
   const [mounted, setMounted] = useState(false);
   const messagesWrapperRef = useRef<HTMLDivElement | null>(null);
   const {
@@ -279,18 +324,21 @@ export const AiConversation = ({
     data: { currentTab, buttonExpanded },
   } = useUserState();
   const { chatGpt } = useServicesContext();
-  const [localMessages, setLocalMessages] = useState<ChatGptMessage[]>([
-    generateInitialMessage(initialMessage, { fullPage }),
-  ]);
+  const [localMessages, setLocalMessages] = useState<ChatGptMessage[]>(() => {
+    if (!initialMessage) return [];
+
+    return [generateInitialMessage(initialMessage)];
+  });
   const scriptType = useScriptType();
-  const [localPending, setLocalPending] = useState(_pending);
+  const [localPending, setLocalPending] = useState(
+    disableStoreSync ? false : _pending
+  );
   const [localAiOptions, setLocalAiOptions] = useState({
-    ..._aiOptions,
+    ...(disableStoreSync ? undefined : _aiOptions),
   });
 
   const scrollableEl = scrollableContainer || messagesWrapperRef.current;
 
-  const disableStoreSync = !!initialMessage;
   const messages = disableStoreSync ? localMessages : _messages;
   const pending = disableStoreSync ? localPending : _pending;
   const aiOptions = disableStoreSync ? localAiOptions : _aiOptions;
@@ -300,30 +348,65 @@ export const AiConversation = ({
     [messages]
   );
 
+  useImperativeHandle(
+    actions,
+    () => ({
+      clearConversation: () => {
+        updateData({
+          messages: [],
+          composerDraft: "",
+          pending: false,
+        });
+      },
+    }),
+    []
+  );
+
   useEffect(() => {
     if (!disableStoreSync) return;
 
-    if (messages.length <= 1) {
-      setLocalMessages([generateInitialMessage(initialMessage, { fullPage })]);
-    } else if (messages.length >= 2) {
-      setLocalMessages((messages) => {
-        return [
-          ...messages,
-          generateInitialMessage(initialMessage, {
-            fullPage,
-            isAdditionalText: true,
-          }),
-        ];
-      });
+    if (initialMessage) {
+      if (!messages.find((m) => m.direction === "outbound")) {
+        setLocalMessages([generateInitialMessage(initialMessage)]);
+      } else {
+        setLocalMessages((messages) => {
+          return [
+            ...messages,
+            generateInitialMessage(initialMessage, { isAdditionalText: true }),
+          ];
+        });
+      }
       scrollToBottom();
     }
   }, [initialMessage]);
 
   useEffect(() => {
-    if (!hidden && messages.length > 1) {
+    if (!hidden) {
       scrollToBottom();
     }
   }, [hidden]);
+
+  useEffect(() => {
+    if (fullPage) {
+      if (fullPageSelected) {
+        setLocalMessages((messages) => {
+          return messages.filter(
+            (m) => !(m.fullPage && m.fullPageUrl === location.href)
+          );
+        });
+      } else {
+        setLocalMessages((messages) => {
+          return [...messages, getFullPageMessage()];
+        });
+      }
+    } else {
+      setLocalMessages((messages) => {
+        return messages.filter(
+          (m) => !(m.fullPage && m.fullPageUrl === location.href)
+        );
+      });
+    }
+  }, [fullPage]);
 
   const updateData = (
     data: Partial<ReturnType<typeof useChatGptState>["data"]>
@@ -345,7 +428,9 @@ export const AiConversation = ({
 
   const scrollToBottom = () => {
     if (scrollableEl) {
-      scrollableEl.scrollTop = scrollableEl.scrollHeight;
+      setTimeout(() => {
+        scrollableEl.scrollTop = scrollableEl.scrollHeight;
+      }, 100);
     }
   };
 
@@ -370,27 +455,32 @@ export const AiConversation = ({
     scrollToBottom();
   }, [scrollableEl, currentTab, buttonExpanded]);
 
-  const handleSubmit = (message: string) => {
-    let messagesClone = [
-      ...messages,
-      {
-        message,
-        direction: "outbound",
-        createdAt: Date.now(),
-        id: Date.now(),
-      } as const,
-    ];
+  const handleSubmit = (
+    message: string,
+    options?: {
+      keepShort?: boolean;
+      messages?: ChatGptMessage[];
+    }
+  ) => {
+    const formattedMessage = {
+      message: message.trim(),
+      direction: "outbound",
+      createdAt: Date.now(),
+      id: Date.now(),
+    } as const;
+    let messagesClone = [...(options?.messages || messages), formattedMessage];
     updateData({
       messages: messagesClone,
       composerDraft: "",
       pending: true,
     });
-    setTimeout(() => {
-      scrollToBottom();
-    }, 50);
+    scrollToBottom();
 
     retryAsync(() =>
-      chatGpt.getChatGptResponse(messagesClone, model, aiOptions)
+      chatGpt.getChatGptResponse(messagesClone, model, {
+        ...aiOptions,
+        ...(options?.keepShort != null && { keepShort: options.keepShort }),
+      })
     )
       .then((response) => {
         messagesClone = [...messagesClone, response];
@@ -420,11 +510,19 @@ export const AiConversation = ({
 
   const handleActionClick = (action: "clear" | "fullPage" | "shortAnswers") => {
     if (action === "clear") {
-      updateData({
-        messages: [],
-        composerDraft: "",
-        pending: false,
-      });
+      if (initialMessage) {
+        if (localMessages.length > 1) {
+          setLocalMessages([generateInitialMessage(initialMessage)]);
+        } else {
+          setLocalMessages([]);
+        }
+      } else {
+        updateData({
+          messages: [],
+          composerDraft: "",
+          pending: false,
+        });
+      }
     } else if (action === "fullPage") {
       if (fullPageSelected) {
         updateData({
@@ -434,42 +532,47 @@ export const AiConversation = ({
         });
       } else {
         updateData({
-          messages: [
-            ...messages,
-            generateInitialMessage(document.body.innerText, { fullPage: true }),
-          ],
+          messages: [...messages, getFullPageMessage()],
           composerDraft: "",
           pending: false,
         });
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
+        scrollToBottom();
       }
     } else if (action === "shortAnswers") {
-      updateData({
-        aiOptions: {
-          ...aiOptions,
-          keepShort: !aiOptions.keepShort,
-        },
-      });
+      if (aiOptions.keepShort) {
+        updateData({
+          aiOptions: {
+            ...aiOptions,
+            keepShort: false,
+          },
+        });
+      } else {
+        const autoRetry =
+          messages.length > 1 &&
+          messages[messages.length - 1]?.direction === "inbound";
+        updateData({
+          messages: autoRetry ? messages.slice(0, -2) : messages,
+          aiOptions: {
+            ...aiOptions,
+            keepShort: true,
+          },
+        });
+        if (autoRetry) {
+          startTransition(() => {
+            handleSubmit(messages[messages.length - 2].message, {
+              keepShort: true,
+              messages: messages.slice(0, -2),
+            });
+          });
+        }
+      }
     }
   };
 
   if (hidden) return null;
 
   return (
-    <MessagesContainer
-      ref={(el) => {
-        if (el) {
-          setMounted(true);
-        } else {
-          setMounted(false);
-        }
-      }}
-      flex={1}
-      empty={!messages?.length}
-      {...rest}
-    >
+    <MessagesContainer flex={1} empty={!messages?.length} {...rest}>
       <MessagesWrapper ref={messagesWrapperRef}>
         {messages?.length ? (
           messages.map((message, i) => {
@@ -507,7 +610,7 @@ export const AiConversation = ({
           >
             <ChatActionChip
               onClick={() => handleActionClick("shortAnswers")}
-              label="Short Answers"
+              label="Concise"
               selected={aiOptions.keepShort}
               size="small"
             />
@@ -519,11 +622,13 @@ export const AiConversation = ({
                 size="small"
               />
             )}
-            <ChatActionChip
-              onClick={() => handleActionClick("clear")}
-              label="Clear"
-              size="small"
-            />
+            {!!messages.length && (
+              <ChatActionChip
+                onClick={() => handleActionClick("clear")}
+                label="Clear"
+                size="small"
+              />
+            )}
           </Stack>
         )}
         <MessageComposer
@@ -671,7 +776,6 @@ export const Message = ({
           backgroundColor: message.error ? "#ffb4b4" : "white",
         }}
       >
-        {" "}
         {inbound ? (
           message.fullPage ? (
             <>
@@ -699,7 +803,7 @@ export const Message = ({
             <CodeMarkdown>{message.message}</CodeMarkdown>
           )
         ) : (
-          <Typography>{message.message}</Typography>
+          <Typography px={1.5}>{message.message}</Typography>
         )}
       </Paper>
     </MessageContainer>

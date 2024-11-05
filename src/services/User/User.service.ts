@@ -85,12 +85,10 @@ export const userService: ServiceObject = {
     const createdUser = await fetcher
       .post(`${urls.BASE_URL}/users`, user)
       .then((res) => {
-        console.log({ res });
         jwtToken = res.headers.get("Jwt-Token") || "";
         return res.json();
       })
       .then((data) => {
-        console.log({ data });
         return data;
       });
     return { jwtToken, user: createdUser };

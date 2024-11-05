@@ -86,13 +86,11 @@ fetcher.getWithCache = async (
 
   const cachedData = await getCachedData(cacheKey, maxCacheAge);
   if (cachedData) {
-    console.log("Returning cached data for ", cacheKey);
     return {
       json: async () => cachedData,
     };
   }
 
-  console.log("Cache missed for ", cacheKey);
   const response = await fetcher.get(url, options);
   const jsonFunc = response.json.bind(response);
   response.json = async () => {

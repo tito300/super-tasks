@@ -313,6 +313,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
                     size="small"
                     target="_blank"
                     variant="text"
+                    LinkComponent={"a"}
                   >
                     {event.location}
                   </Button>

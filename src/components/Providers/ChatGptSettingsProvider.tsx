@@ -14,6 +14,7 @@ import { deepmerge } from "@mui/utils";
 import { ChatMessage } from "@src/chatGpt.types";
 
 export type ChatGptSettings = {
+  disableTextSelectionTooltip: boolean;
   syncMessages: boolean;
   syncComposerDraft: boolean;
   syncPending: boolean;
