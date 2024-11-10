@@ -317,6 +317,7 @@ export const AiConversation = ({
       pending: _pending,
       model,
       aiOptions: _aiOptions,
+      composerDraft,
     },
     updateData: _updateData,
   } = useChatGptState();
@@ -519,7 +520,6 @@ export const AiConversation = ({
       } else {
         updateData({
           messages: [],
-          composerDraft: "",
           pending: false,
         });
       }
@@ -527,13 +527,11 @@ export const AiConversation = ({
       if (fullPageSelected) {
         updateData({
           messages: messages.slice(0, -1),
-          composerDraft: "",
           pending: false,
         });
       } else {
         updateData({
           messages: [...messages, getFullPageMessage()],
-          composerDraft: "",
           pending: false,
         });
         scrollToBottom();
@@ -549,7 +547,8 @@ export const AiConversation = ({
       } else {
         const autoRetry =
           messages.length > 1 &&
-          messages[messages.length - 1]?.direction === "inbound";
+          messages[messages.length - 1]?.direction === "inbound" &&
+          !composerDraft?.length;
         updateData({
           messages: autoRetry ? messages.slice(0, -2) : messages,
           aiOptions: {

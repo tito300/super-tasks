@@ -229,9 +229,9 @@ export function Meeting({ event }: { event: CalendarEvent }) {
               </Typography>
               <Typography variant="body2">
                 {" "}
-                {dayjs(getEventStartTime(event)).format("dddd, MMM M")} -{" "}
-                {dayjs(getEventStartTime(event)).format("H:mm")} -{" "}
-                {dayjs(getEventEndTime(event)).format("H:mma")}
+                {getEventStartTime(event)?.format("dddd, MMM M")} -{" "}
+                {getEventStartTime(event)?.format("H:mm")} -{" "}
+                {getEventEndTime(event)?.format("H:mma")}
               </Typography>
             </Stack>
           </Stack>

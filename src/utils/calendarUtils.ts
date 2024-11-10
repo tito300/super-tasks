@@ -9,15 +9,8 @@ import timeZone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timeZone);
 
-// [main recurring events]
-// [modified recurring events]
-// [modified recurring exceptions]
-// [single events]
-
 function isSingleEvent(event: SavedCalendarEvent) {
-  return (
-    !event.recurringEventId && !event.originalStartTime && !event.recurrence
-  );
+  return !event.recurringEventId && !event.recurrence;
 }
 
 function findSingleEvents(calendarEvents: SavedCalendarEvent[]) {
@@ -25,52 +18,25 @@ function findSingleEvents(calendarEvents: SavedCalendarEvent[]) {
 }
 
 function isRecurringEvent(event: SavedCalendarEvent) {
-  return (
-    !!event.recurrence && !event.recurringEventId && !event.id.includes("_")
-  );
+  return !!event.recurrence;
 }
 function findRecurringEvents(calendarEvents: SavedCalendarEvent[]) {
   return calendarEvents.filter(isRecurringEvent);
 }
-function isModifiedRecurringEvent(event: SavedCalendarEvent) {
-  return (
-    event.id.includes("_") && !event.recurringEventId && !!event.recurrence
-  );
-}
+
 function isRecurringEventException(event: SavedCalendarEvent) {
-  return !!event.recurringEventId;
-}
-
-function getLastModifiedRecurringEvent(
-  event: SavedCalendarEvent,
-  calendarEvents: SavedCalendarEvent[]
-) {
-  const modifiedEvents = calendarEvents.filter((e) => {
-    return isModifiedRecurringEvent(e) && e.id.split("_")[0] === event.id;
-  });
-
-  if (!modifiedEvents.length) return event;
-
-  // sort by modification date and return the last one
-  const lastModified = modifiedEvents.sort((a, b) => {
-    // date string example: 20220301T000000Z
-    return dayjs(b.id.split("_")[1], "YYYYMMDDThhmmss").diff(
-      dayjs(a.id.split("_")[1], "YYYYMMDDThhmmss")
-    );
-  })[0];
-
-  return lastModified;
+  return !event.recurrence && event.recurringEventId;
 }
 
 function findEventTodaysException(
-  event: SavedCalendarEvent,
+  recurringEvent: SavedCalendarEvent,
   calendarEvents: SavedCalendarEvent[]
 ) {
-  return calendarEvents.find((e) => {
+  return calendarEvents.find((currentEvent) => {
     return (
-      isRecurringEventException(e) &&
-      e.recurringEventId === event.id &&
-      getEventStartTime(e)?.isToday()
+      isRecurringEventException(currentEvent) &&
+      currentEvent.recurringEventId === recurringEvent.id &&
+      getEventStartTime(currentEvent)?.isToday()
     );
   });
 }
@@ -79,65 +45,65 @@ function validDisplayEvent(event: SavedCalendarEvent) {
   return event.status !== "cancelled" && event.eventType === "default";
 }
 
-// Any exceptions to the recurring events are provided as separate events
-// There are two types of changes:
-//   1- recurring event change: change that affects all future occurrences
-//   2- single event change: change that affects only one occurrence
-// event level changes are identified by the presence of recurringEventId
-// while the single event changes are identified by by it's absence
-// in either cases the modified events are distinguished from  main event
-// by appending "<id>_<timeofmodification>" to id. example: "123456_20220301T000000Z"
+/** Any exceptions to the recurring events are provided as separate events
+ * There are two types of changes:
+ *   1- recurring event change: change that affects all future occurrences
+ *   2- single event change: change that affects only one occurrence
+ *
+ * Recurring level changes are identified by the presence of "recurrence" rule and absence of recurringEventId
+ * while the single event changes are identified by the absence of "recurrence" rule and presence of recurringEventId
+ *
+ * In either cases the modified events are distinguished from original event
+ * by appending "<id>_<timeofmodification>" to id. example: "123456_20220301T000000Z"
+ *
+ * The timezone property on the event start and end fields represents the timezone of the time the event
+ * was created.
+ */
 export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const flatEvents: SavedCalendarEvent[] = [];
-  const singleEvents = findSingleEvents(calendarEvents);
-  const recurringModifiedEvents = findRecurringEvents(calendarEvents).map(
-    (event) => {
-      return getLastModifiedRecurringEvent(event, calendarEvents);
-    }
+  const validCalendarEvents = calendarEvents.filter(validDisplayEvent);
+  const singleEvents = findSingleEvents(validCalendarEvents);
+  const recurringEvents = findRecurringEvents(validCalendarEvents);
+  const recurringExceptions = validCalendarEvents.filter(
+    isRecurringEventException
   );
-  const recurringExceptions = calendarEvents.filter(isRecurringEventException);
 
   singleEvents.forEach((event) => {
-    if (!validDisplayEvent(event)) return;
     if (getEventStartTime(event)?.isToday()) flatEvents.push(event);
   });
 
-  recurringModifiedEvents.forEach((event) => {
-    if (!validDisplayEvent(event)) return;
+  recurringExceptions.forEach((event) => {
+    if (getEventStartTime(event)?.isToday()) flatEvents.push(event);
+  });
+
+  recurringEvents.forEach((event) => {
     const todaysException = findEventTodaysException(
       event,
       recurringExceptions
     );
 
-    if (todaysException && validDisplayEvent(todaysException)) {
-      flatEvents.push(todaysException);
+    if (todaysException) {
+      return;
     } else {
       const todaysOccurrence = getTodaysOccurrences(event);
-      todaysOccurrence.forEach((occurrence) => {
-        // event = {
-        //   ...event,
-        //   start: { ...event.start, dateTime: occurrence.toISOString() },
-        // };
-
-        flatEvents.push(event);
+      todaysOccurrence.forEach((_occurrence) => {
+        const occurrence = {
+          ...event,
+          start: {
+            ...event.start,
+            dateTime: _occurrence.start.toISOString(),
+          },
+          end: {
+            ...event.end,
+            dateTime: _occurrence.end.toISOString(),
+          },
+        };
+        flatEvents.push(occurrence);
       });
     }
   });
 
   return flatEvents;
-}
-
-function getTodaysCancelledEvents(calendarEvents: SavedCalendarEvent[]) {
-  return calendarEvents.reduce((acc, event) => {
-    if (event.status === "cancelled") {
-      acc[event.recurringEventId] =
-        event.start?.dateTime ||
-        event.start?.date ||
-        event.originalStartTime?.dateTime ||
-        event.originalStartTime?.date;
-    }
-    return acc;
-  }, {} as Record<string, string>);
 }
 
 export function getTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
@@ -240,39 +206,38 @@ export function getTodaysOccurrences(event: CalendarEvent) {
   const startOfDay = now.startOf("day").toDate();
   const endOfDay = now.endOf("day").toDate();
 
-  return rule.between(startOfDay, endOfDay);
+  return rule.between(startOfDay, endOfDay).map((date) => ({
+    start: dayjs(event.start.dateTime)
+      .set("date", dayjs().date())
+      .set("month", dayjs().month()),
+    end: dayjs(event.end.dateTime)
+      .set("date", dayjs().date())
+      .set("month", dayjs().month()),
+  }));
 }
 
-export function getEventStartTime(event: CalendarEvent) {
+export function getEventStartTime(
+  event: CalendarEvent,
+  { originalTime = false } = {}
+) {
   const start = event.start?.dateTime;
 
-  // google calendar times are weird. Sometimes they are in utc
-  // and sometimes they are in the event's timezone
-  if (start?.includes("Z") && event.start.timeZone !== "UTC") {
-    return dayjs(start).tz(event.start.timeZone);
-  } else if (start) {
-    // const startTime = dayjs.tz(start, event.start.timeZone);
+  if (!originalTime) {
+    // google calendar times are weird. Sometimes they are in utc
+    // and sometimes they are in the event's timezone
     return dayjs(start);
   }
 
   const original = event.originalStartTime?.dateTime;
 
-  if (original?.includes("Z")) {
-    return dayjs(original).tz(event.originalStartTime?.timeZone);
-  } else if (original) {
-    return dayjs(original);
-  }
+  return dayjs(original);
 }
 
 export function getEventEndTime(event: CalendarEvent) {
   const end = event.end?.dateTime || event.end?.date;
 
   if (end) {
-    if (end.includes("Z")) {
-      return dayjs(end).tz(event.end.timeZone);
-    } else {
-      return dayjs(end);
-    }
+    return dayjs(end);
   }
 }
 
