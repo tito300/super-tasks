@@ -23,10 +23,7 @@ import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { runtime } from "webextension-polyfill";
 import { useMountedRef } from "@src/hooks/useMountedRef";
 import { useLazyMounted } from "@src/hooks/useMounted";
-import {
-  convertRelativeToAbsolutePosition,
-  useIsDraggingContext,
-} from "@src/components/Draggable";
+import { convertRelativeToAbsolutePosition } from "@src/components/Draggable";
 import { SmartExpand } from "./SmartExpand";
 import { useLogRender } from "@src/hooks/useLogRender";
 
@@ -76,21 +73,17 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     setIsDragging(false);
   };
 
-  const defaultDistanceFromRight = position.distanceFromRight ?? 95;
-  const defaultDistanceFromTop = position.distanceFromTop ?? 95;
+  const defaultDistanceFromRight = position.percentageFromLeft ?? 95;
+  const defaultDistanceFromTop = position.percentageFromTop ?? 95;
   const defaultPosition = convertRelativeToAbsolutePosition(
     defaultDistanceFromRight,
     defaultDistanceFromTop
   );
 
-  const pagePosition =
-    defaultDistanceFromRight >= 50 && defaultDistanceFromTop >= 50
-      ? "bottom-right"
-      : defaultDistanceFromRight >= 50 && defaultDistanceFromTop < 50
-      ? "top-right"
-      : defaultDistanceFromRight < 50 && defaultDistanceFromTop >= 50
-      ? "bottom-left"
-      : "top-left";
+  const pagePosition = getPagePosition(
+    defaultDistanceFromRight,
+    defaultDistanceFromTop
+  );
 
   const appButtons: JSX.Element[] = [];
 
@@ -178,7 +171,6 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       {!buttonExpanded && (
         <SmartExpand
           pagePosition={pagePosition}
-          dragging={isDragging}
           elementSize={58}
           badgeContent={
             <IconButton
@@ -249,110 +241,17 @@ const LogoIcon = styled(IconButton)(({ theme }) => {
   };
 });
 
-const ExtensionTaskButton = styled(IconButton)<{ pagePosition: PagePosition }>(
-  ({ theme }) => {
-    return {
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      marginBottom: 2,
-      backgroundColor: "#fff",
-      color: "white",
-      transform: "translate(-50%, -50%)",
-      fontSize: 0,
-      padding: "10px",
-      cursor: "grab",
-      ["&:hover"]: {
-        boxShadow: theme.shadows[6],
-        backgroundColor: "#fff",
-      },
-    };
-  }
-);
-
-const ExtensionCalendarButton = styled(IconButton)<{
-  pagePosition: PagePosition;
-}>(({ pagePosition, theme, ref }) => {
-  return {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    marginBottom: 2,
-    backgroundColor: "#fff",
-    color: "white",
-    transform: "translate(-50%, -50%)",
-    fontSize: 0,
-    padding: "10px",
-    cursor: "grab",
-    ["&:hover"]: {
-      boxShadow: theme.shadows[6],
-      backgroundColor: "#fff",
-    },
-  };
-});
-
-const ExtensionAiButton = styled(IconButton)<{ pagePosition: PagePosition }>(
-  ({}) => {
-    return {
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      backgroundColor: "#fff",
-      transform: "translate(-50%, -50%)",
-      fontSize: 0,
-      cursor: "grab",
-      padding: "10px",
-      [":hover"]: {
-        backgroundColor: "#fff",
-      },
-    };
-  }
-);
-
 type PagePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
-const ButtonsContainer = styled(Stack)<{
-  pagePosition: PagePosition;
-  isDragging: boolean;
-}>(({ pagePosition, isDragging, theme }) => {
-  return {
-    height: 50,
-    width: 50,
-    ...(isDragging
-      ? null
-      : {
-          "&:hover": {
-            height: 120,
-            width: 120,
-            transform: "translate(35px, 35px)",
-          },
-          [`:hover& #${constants.EXTENSION_NAME}-calendar-btn`]: {
-            transform:
-              pagePosition === "bottom-right" || pagePosition === "bottom-left"
-                ? "translate(-26px, -83px)"
-                : "translate(-26px, 32px)",
-            boxShadow: theme.shadows[3],
-            transition: "transform 0.1s",
-          },
-          [`:hover& #${constants.EXTENSION_NAME}-tasks-button`]: {
-            transform:
-              pagePosition === "bottom-right" || pagePosition === "top-right"
-                ? "translate(-85px, -26px);"
-                : "translate(32px, -26px)",
-            boxShadow: theme.shadows[3],
-            transition: "transform 0.1s",
-          },
-          [`:hover& #${constants.EXTENSION_NAME}-ai-button`]: {
-            transform:
-              pagePosition === "bottom-right" || pagePosition === "top-right"
-                ? "translate(-26px, -26px)"
-                : "translate(-26px, -26px)",
-            boxShadow: theme.shadows[3],
-            transition: "transform 0.1s",
-          },
-          [`:hover& #${constants.EXTENSION_NAME}-logo-button`]: {
-            display: "none",
-          },
-        }),
-  };
-});
+export function getPagePosition(
+  percentageFromLeft: number,
+  percentageFromTop: number
+): PagePosition {
+  return percentageFromLeft >= 50 && percentageFromTop >= 50
+    ? "bottom-right"
+    : percentageFromLeft >= 50 && percentageFromTop < 50
+    ? "top-right"
+    : percentageFromLeft < 50 && percentageFromTop >= 50
+    ? "bottom-left"
+    : "top-left";
+}

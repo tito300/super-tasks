@@ -92,7 +92,7 @@ export function Task({
   const { data: tasks } = useTasks({ enabled: false });
   const [_, updateEnhancedTasks] = useEnhancedTasks();
 
-  useLogRender("Task");
+  useLogRender("Task", false);
 
   const addMutation = useAddTask(listId);
   const updateMutation = useUpdateTask(listId);

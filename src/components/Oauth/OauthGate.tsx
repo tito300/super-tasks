@@ -40,12 +40,12 @@ export function OauthRequired({
   }, [userState.tokens.google]);
 
   useEffect(() => {
-    if (!dataSyncing && !userState.tokens.google) {
+    if (!dataSyncing && (!userState.tokens.google || !userState.tokens.jwt)) {
       getAuthToken();
     } else if (!dataSyncing) {
       setLoading(false);
     }
-  }, [dataSyncing, userState?.tokens?.google]);
+  }, [dataSyncing, userState?.tokens?.google, userState?.tokens?.jwt]);
 
   useEffect(() => {
     messageEngine.onMessage("ReAuthenticate", async () => {

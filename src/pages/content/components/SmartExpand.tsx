@@ -1,10 +1,18 @@
 import { IconButton } from "@mui/material";
 import { styled, SxProps } from "@mui/material";
 import { Position } from "postcss";
-import { useState, useEffect, useRef, CSSProperties } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useLayoutEffect,
+} from "react";
 import { theme } from "webextension-polyfill";
 import { BadgeStyled } from "./DockStationContainer";
 import { constants } from "@src/config/constants";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
+import { shouldSnap, useDraggableContext } from "@src/components/Draggable";
 
 type PagePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -12,9 +20,15 @@ type SmartExpandProps = {
   elements: JSX.Element[];
   pagePosition: PagePosition;
   primaryElement: JSX.Element;
-  dragging: boolean;
   badgeContent?: JSX.Element;
   elementSize: number; // px
+};
+
+type OwnerState = SmartExpandProps & {
+  snap: boolean;
+  dataSyncing: boolean;
+  snapDirection: "left" | "right" | null;
+  isDragging: boolean;
 };
 
 /**
@@ -35,18 +49,32 @@ type SmartExpandProps = {
  */
 export function SmartExpand(props: SmartExpandProps) {
   const { elements, primaryElement, badgeContent } = props;
+  const { dataSyncing } = useUserState();
+  const { snapped, snapDirection, isDragging } = useDraggableContext();
+
+  const ownerState = {
+    ...props,
+    dataSyncing,
+    snap: snapped,
+    snapDirection,
+    isDragging,
+  };
+
   return (
-    <Container ownerProps={props}>
-      <ElementContainer data-smart-expand-primary ownerState={props}>
+    <Container id={`axess-smart-container`} ownerProps={ownerState}>
+      <ElementContainer
+        data-smart-expand-primary
+        ownerState={ownerState}
+        primary
+      >
         {primaryElement}
       </ElementContainer>
       {elements.map((element, index) => {
         if (!index && props.badgeContent) {
           return (
             <ElementContainer
-              opacity={0}
               data-smart-expand-index={index}
-              ownerState={props}
+              ownerState={ownerState}
             >
               <BadgeStyled
                 slotProps={{
@@ -66,9 +94,8 @@ export function SmartExpand(props: SmartExpandProps) {
 
         return (
           <ElementContainer
-            opacity={0}
             data-smart-expand-index={index}
-            ownerState={props}
+            ownerState={ownerState}
           >
             {element}
           </ElementContainer>
@@ -78,23 +105,44 @@ export function SmartExpand(props: SmartExpandProps) {
   );
 }
 
-const Container = styled("div")<{ ownerProps: SmartExpandProps }>(
+const Container = styled("div")<{ ownerProps: OwnerState }>(
   ({ ownerProps, theme }) => {
-    const { elements, pagePosition, primaryElement, dragging, elementSize } =
-      ownerProps;
+    const {
+      elements,
+      pagePosition,
+      isDragging,
+      elementSize,
+      snap,
+      dataSyncing,
+    } = ownerProps;
+
     return {
+      display: dataSyncing ? "none" : "block",
       width: elementSize,
       height: elementSize,
       position: "relative",
-      "&:hover [data-smart-expand-primary]": {
-        transform: "scale(1)",
-      },
-      ...(dragging
-        ? null
+      backgroundColor: "transparent",
+      cursor: "grab",
+      ...(isDragging
+        ? {
+            "&:hover [data-smart-expand-primary]": {
+              transform: "scale(1)",
+              opacity: snap ? 0 : 1,
+            },
+          }
         : {
+            ...(snap && {
+              width: 10, // width of the container is bigger than actual colored element width to give user more space to hover
+              height: 40, // height of the container is bigger than actual colored element height to give user more space to hover
+              pointerEvents: "none",
+            }),
             "&:hover": {
               height: getButtonsExpandedSize(elements.length, elementSize),
               width: getButtonsExpandedSize(elements.length, elementSize),
+              ...(snap && {
+                transform: "translate(0, -40px)",
+                pointerEvents: "auto",
+              }),
               [" [data-smart-expand-primary]"]: {
                 opacity: 0,
               },
@@ -102,16 +150,19 @@ const Container = styled("div")<{ ownerProps: SmartExpandProps }>(
                 transform: getElementTransform(pagePosition, 0),
                 transition: "transform 0.1s",
                 opacity: 1,
+                pointerEvents: "auto",
               },
               [" [data-smart-expand-index='1']"]: {
                 transform: getElementTransform(pagePosition, 1),
                 transition: "transform 0.1s",
                 opacity: 1,
+                pointerEvents: "auto",
               },
               [" [data-smart-expand-index='2']"]: {
                 transform: getElementTransform(pagePosition, 2),
                 transition: "transform 0.1s",
                 opacity: 1,
+                pointerEvents: "auto",
               },
             },
           }),
@@ -128,24 +179,62 @@ function getButtonsExpandedSize(elementsCount: number, elementSize: number) {
 }
 
 const ElementContainer = styled("div")<{
-  ownerState: SmartExpandProps;
-  opacity?: CSSProperties["opacity"];
-}>(({ ownerState, opacity }) => ({
+  ownerState: OwnerState;
+  primary?: boolean;
+}>(({ ownerState, primary }) => ({
   position: "absolute",
+  cursor: "pointer",
+  // @ts-ignore
   width: ownerState.elementSize,
+  // @ts-ignore
   height: ownerState.elementSize,
+  // @ts-ignore
   backgroundColor: "transparent",
-  transform: "scale(0.6)",
-  ...(opacity != null && { opacity }),
-  ...getElementStartingPositions(ownerState.pagePosition),
+  // @ts-ignore
+  pointerEvents: "none",
+  opacity: 0,
+  transform: "scale(0.2)",
+  bottom: 0,
+  right: 0,
+  ...(primary &&
+    ownerState.snap && {
+      width: 6,
+      height: 32,
+      backgroundColor: "#c69400",
+      background: "linear-gradient(to bottom, #f7aa44, #ffc496)",
+      pointerEvents: "auto",
+      opacity: 1,
+      transform: "translateY(-50%)",
+      top: "50%",
+      "& *": {
+        opacity: 0,
+      },
+      ...(ownerState.snapDirection === "right"
+        ? {
+            borderTopLeftRadius: 4,
+            borderBottomLeftRadius: 4,
+            right: 0,
+            borderLeft: "1px solid #b3b1b9",
+          }
+        : {
+            borderTopRightRadius: 4,
+            borderBottomRightRadius: 4,
+            left: 0,
+            borderRight: "1px solid #b3b1b9",
+          }),
+    }),
+  ...(primary &&
+    !ownerState.snap && {
+      opacity: 1,
+      pointerEvents: "auto",
+      background: "linear-gradient(45deg, #ffb445, #fff28f99)",
+      border: "1px solid #afafaf",
+      borderRadius: "50%",
+      "& *": {
+        opacity: 0,
+      },
+    }),
 }));
-
-function getElementStartingPositions(pagePosition: PagePosition) {
-  return {
-    bottom: 0,
-    right: 0,
-  };
-}
 
 function getElementTransform(pagePosition: PagePosition, index: number) {
   if (index === 0) return "translate(0, 0)";
@@ -208,4 +297,25 @@ function getBadgeAnchorOrigin(pagePosition: PagePosition) {
     vertical: "bottom",
     horizontal: "right",
   } as const;
+}
+
+export function useSnapDockStation() {
+  const [snap, setSnap] = useState(false);
+  const { data: userState } = useUserState();
+
+  useLayoutEffect(() => {
+    const percentageFromLeft = userState?.position?.percentageFromLeft;
+    const percentageFromTop = userState?.position?.percentageFromTop;
+
+    if (shouldSnap(percentageFromLeft, percentageFromTop)) {
+      setSnap(true);
+    } else {
+      setSnap(false);
+    }
+  }, [
+    userState?.position?.percentageFromLeft,
+    userState?.position?.percentageFromTop,
+  ]);
+
+  return snap;
 }

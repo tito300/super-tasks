@@ -27,14 +27,18 @@ export const convertRelativeToAbsolutePosition = (
   };
 };
 
-const isDraggingContext = React.createContext<boolean>(null!);
+const draggableContext = React.createContext<{
+  isDragging: boolean;
+  snapped: boolean;
+  snapDirection: "left" | "right" | null;
+}>(null!);
 
-export const useIsDraggingContext = () => {
-  const context = React.useContext(isDraggingContext);
+export const useDraggableContext = () => {
+  const context = React.useContext(draggableContext);
 
   if (context === null) {
     throw new Error(
-      "useIsDraggingContext must be used within a Draggable component"
+      "useDraggableContext must be used within a Draggable component"
     );
   }
 
@@ -72,13 +76,14 @@ export const Draggable = forwardRef<
   useLayoutEffect(() => {
     if (
       !dataSyncing &&
-      userState.position?.distanceFromRight != null &&
-      userState.position?.distanceFromTop != null
+      userState.position?.percentageFromLeft != null &&
+      userState.position?.percentageFromTop != null
     ) {
-      // assuming distanceFromRight and distanceFromTop are percentage values
+      // assuming percentageFromLeft and percentageFromTop are percentage values
       const x =
-        (window.innerWidth * userState.position.distanceFromRight) / 100;
-      const y = (window.innerHeight * userState.position.distanceFromTop) / 100;
+        (window.innerWidth * userState.position.percentageFromLeft) / 100;
+      const y =
+        (window.innerHeight * userState.position.percentageFromTop) / 100;
 
       setOffsets({
         x: x,
@@ -92,8 +97,8 @@ export const Draggable = forwardRef<
     const onResize = () => {
       setOffsets((prev) => {
         const positions = convertRelativeToAbsolutePosition(
-          userState.position.distanceFromRight ?? 95,
-          userState.position.distanceFromTop ?? 95
+          userState.position.percentageFromLeft ?? 95,
+          userState.position.percentageFromTop ?? 95
         );
         return {
           ...positions,
@@ -106,8 +111,8 @@ export const Draggable = forwardRef<
       window.removeEventListener("resize", onResize);
     };
   }, [
-    userState.position.distanceFromRight,
-    userState.position.distanceFromTop,
+    userState.position.percentageFromLeft,
+    userState.position.percentageFromTop,
   ]);
 
   const onMouseDown = useCallback(
@@ -140,10 +145,10 @@ export const Draggable = forwardRef<
         window.removeEventListener("mouseup", onMouseUp);
 
         if (x && y) {
-          const distanceFromRight = (x * 100) / window.innerWidth;
-          const distanceFromTop = (y * 100) / window.innerHeight;
+          const { percentageFromLeft, percentageFromTop } =
+            getDistancesFromRightAndTop(x, y);
 
-          updateData({ position: { distanceFromRight, distanceFromTop } });
+          updateData({ position: { percentageFromLeft, percentageFromTop } });
         }
       };
 
@@ -153,11 +158,39 @@ export const Draggable = forwardRef<
     [userState.buttonExpanded]
   );
 
+  const { percentageFromLeft, percentageFromTop } = getDistancesFromRightAndTop(
+    offsets.x ?? 0,
+    offsets.y ?? 0
+  );
+  const snap = useMemo(
+    () => shouldSnap(percentageFromLeft, percentageFromTop),
+    [percentageFromLeft, percentageFromTop]
+  );
+  const snapDirection = snap ? getSnapDirection(percentageFromLeft) : null;
+
+  const topLeftPositions = useMemo(
+    () =>
+      getTopLeftPosition({
+        x: offsets.x,
+        y: offsets.y,
+        snap,
+        snapDirection,
+      }),
+    [offsets.x, offsets.y, snap, snapDirection]
+  );
+
   const sx: SxProps = {
-    left: offsets.x ?? 0,
-    top: offsets.y ?? 0,
+    ...topLeftPositions,
     ...inSx,
   };
+
+  const draggableContextValues = useMemo(() => {
+    return {
+      isDragging,
+      snapped: snap,
+      snapDirection,
+    };
+  }, [isDragging, snap, snapDirection]);
 
   if (dataSyncing) return null;
 
@@ -170,9 +203,54 @@ export const Draggable = forwardRef<
       sx={sx}
       {...props}
     >
-      <isDraggingContext.Provider value={isDragging}>
+      <draggableContext.Provider value={draggableContextValues}>
         {typeof children === "function" ? children() : children}
-      </isDraggingContext.Provider>
+      </draggableContext.Provider>
     </Container>
   );
 });
+
+function getDistancesFromRightAndTop(x: number, y: number) {
+  return {
+    percentageFromLeft: (x * 100) / window.innerWidth,
+    percentageFromTop: (y * 100) / window.innerHeight,
+  };
+}
+
+function getSnapDirection(percentageFromLeft: number): "left" | "right" {
+  if (percentageFromLeft < 50) {
+    return "left";
+  } else {
+    return "right";
+  }
+}
+
+function getTopLeftPosition({
+  x,
+  y,
+  snap,
+  snapDirection,
+}: {
+  x: number | null | undefined;
+  y: number | null | undefined;
+  snap: boolean;
+  snapDirection: "left" | "right" | null;
+}) {
+  if (snap) {
+    return snapDirection === "left"
+      ? { left: 0, top: y, transform: "none" }
+      : { right: 0, top: y, transform: "none" };
+  } else {
+    return { left: x, top: y };
+  }
+}
+
+// if the percentage number is less that 5 percent, then it should snap
+export function shouldSnap(
+  percentageFromLeft: number | undefined | null,
+  percentageFromTop: number | undefined | null
+) {
+  if (percentageFromLeft == null || percentageFromTop == null) return false;
+
+  return percentageFromLeft < 2 || percentageFromLeft > 98;
+}

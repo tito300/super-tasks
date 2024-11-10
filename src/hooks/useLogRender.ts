@@ -2,7 +2,10 @@ import { useRef, useEffect } from "react";
 
 const timeThreshold = 1000 * 10;
 
-export function useLogRender(componentName: string) {
+export function useLogRender(
+  componentName: string,
+  renderWarning: boolean = true
+) {
   const renders = useRef(0);
   const lastResetTime = useRef(Date.now());
   const rendersSinceLastReset = useRef(0);
@@ -17,7 +20,7 @@ export function useLogRender(componentName: string) {
         rendersSinceLastReset.current = 0;
       }
 
-      if (rendersSinceLastReset.current > 20) {
+      if (renderWarning && rendersSinceLastReset.current > 20) {
         window.alert(
           `[${componentName}] has rendered ${
             rendersSinceLastReset.current

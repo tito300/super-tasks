@@ -20,8 +20,8 @@ export type UserState = {
   authWarningDismissed: boolean;
   authWarningDismissedAt: number | null;
   position: {
-    distanceFromRight: number | null;
-    distanceFromTop: number | null;
+    percentageFromLeft: number | null;
+    percentageFromTop: number | null;
   };
 };
 
@@ -42,7 +42,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     darkMode: userSettings.darkMode,
     tokens: userSettings.tokens,
     selectedApps: userSettings.selectedApps,
-    position: { distanceFromRight: null, distanceFromTop: null },
+    position: { percentageFromLeft: null, percentageFromTop: null },
     authWarningDismissed: false,
     authWarningDismissedAt: null,
     email: "",
