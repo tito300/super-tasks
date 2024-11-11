@@ -143,7 +143,7 @@ const Container = styled(Stack)({
   position: "relative",
   createdAt: Date.now(),
   width: "100%",
-  height: "100%",
+  height: 500,
 });
 
 export const ConversationsList = () => {

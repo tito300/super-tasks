@@ -27,6 +27,8 @@ const Markdown = styled(_Markdown)(({ theme }) => ({
     borderLeft: `4px solid ${theme.palette.divider}`,
     paddingLeft: "16px",
     margin: "16px 0",
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 4,
   },
   "blockquote p": {
     color: theme.palette.text.disabled,

@@ -33,6 +33,9 @@ export function StyledPortal({
   }, [containerEl]);
   return createPortal(
     <Container ref={(el) => setOpenRewriteContainerEl(el)} {...rest}>
+      <style>{`
+          *{box-sizing: border-box;}
+        `}</style>
       {cache && (
         <CacheProvider value={cache!}>
           <ThemeProvider theme={commonTheme}>{children}</ThemeProvider>

@@ -183,19 +183,6 @@ export function DockStationContainer({ children }: PropsWithChildren) {
               <Close sx={{ fontSize: 14, color: "white" }} />
             </IconButton>
           }
-          primaryElement={
-            <LogoIcon
-              onClick={() => handleButtonClick("chatGpt")}
-              id={`${constants.EXTENSION_NAME}-logo-button`}
-            >
-              <img
-                src={runtime.getURL("logo_3_128x128.png")}
-                alt="logo"
-                width={28}
-                height={28}
-              />
-            </LogoIcon>
-          }
           elements={appButtons}
         />
       )}

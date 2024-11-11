@@ -19,7 +19,6 @@ type PagePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 type SmartExpandProps = {
   elements: JSX.Element[];
   pagePosition: PagePosition;
-  primaryElement: JSX.Element;
   badgeContent?: JSX.Element;
   elementSize: number; // px
 };
@@ -48,7 +47,7 @@ type OwnerState = SmartExpandProps & {
  * styled component CSS transform is used to move the elements around.
  */
 export function SmartExpand(props: SmartExpandProps) {
-  const { elements, primaryElement, badgeContent } = props;
+  const { elements, badgeContent } = props;
   const { dataSyncing } = useUserState();
   const { snapped, snapDirection, isDragging } = useDraggableContext();
 
@@ -66,9 +65,7 @@ export function SmartExpand(props: SmartExpandProps) {
         data-smart-expand-primary
         ownerState={ownerState}
         primary
-      >
-        {primaryElement}
-      </ElementContainer>
+      ></ElementContainer>
       {elements.map((element, index) => {
         if (!index && props.badgeContent) {
           return (
@@ -124,17 +121,11 @@ const Container = styled("div")<{ ownerProps: OwnerState }>(
       backgroundColor: "transparent",
       cursor: "grab",
       ...(isDragging
-        ? {
-            "&:hover [data-smart-expand-primary]": {
-              transform: "scale(1)",
-              opacity: snap ? 0 : 1,
-            },
-          }
+        ? {}
         : {
             ...(snap && {
-              width: 10, // width of the container is bigger than actual colored element width to give user more space to hover
+              width: 12, // width of the container is bigger than actual colored element width to give user more space to hover
               height: 40, // height of the container is bigger than actual colored element height to give user more space to hover
-              pointerEvents: "none",
             }),
             "&:hover": {
               height: getButtonsExpandedSize(elements.length, elementSize),
@@ -172,9 +163,9 @@ const Container = styled("div")<{ ownerProps: OwnerState }>(
 
 function getButtonsExpandedSize(elementsCount: number, elementSize: number) {
   if (elementsCount === 1) {
-    return elementSize;
+    return elementSize * 1.2;
   } else if (elementsCount === 2 || elementsCount === 3) {
-    return elementSize * 2;
+    return elementSize * 2.2;
   }
 }
 
@@ -193,15 +184,15 @@ const ElementContainer = styled("div")<{
   // @ts-ignore
   pointerEvents: "none",
   opacity: 0,
-  transform: "scale(0.2)",
+  transform: "scale(0.15)",
   bottom: 0,
   right: 0,
   ...(primary &&
     ownerState.snap && {
-      width: 6,
-      height: 32,
-      backgroundColor: "#c69400",
-      background: "linear-gradient(to bottom, #f7aa44, #ffc496)",
+      width: 4,
+      height: 26,
+      backgroundColor: "#ff9f20",
+      background: "linear-gradient(to bottom, #ff9f20, #ffd7b7)",
       pointerEvents: "auto",
       opacity: 1,
       transform: "translateY(-50%)",
@@ -214,21 +205,20 @@ const ElementContainer = styled("div")<{
             borderTopLeftRadius: 4,
             borderBottomLeftRadius: 4,
             right: 0,
-            borderLeft: "1px solid #b3b1b9",
+            borderLeft: "1px solid #ff9f20",
           }
         : {
             borderTopRightRadius: 4,
             borderBottomRightRadius: 4,
             left: 0,
-            borderRight: "1px solid #b3b1b9",
+            borderRight: "1px solid #ff9f20",
           }),
     }),
   ...(primary &&
     !ownerState.snap && {
       opacity: 1,
       pointerEvents: "auto",
-      background: "linear-gradient(45deg, #ffb445, #fff28f99)",
-      border: "1px solid #afafaf",
+      background: "linear-gradient(45deg, #ff9e0e, #ffdb6f)",
       borderRadius: "50%",
       "& *": {
         opacity: 0,

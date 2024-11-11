@@ -31,6 +31,9 @@ export function StyledPopper({
         sx={sx}
         ref={(el) => setOpenRewriteContainerEl(el)}
       >
+        <style>{`
+          *{box-sizing: border-box;}
+        `}</style>
         {cache && (
           <CacheProvider value={cache!}>
             <ThemeProvider theme={commonTheme}>{children}</ThemeProvider>

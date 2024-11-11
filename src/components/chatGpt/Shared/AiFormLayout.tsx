@@ -5,7 +5,7 @@ import { styled } from "@mui/material";
 import { Paper } from "@mui/material";
 import { Box } from "@mui/material";
 import { Button } from "@mui/material";
-import { Close } from "@mui/icons-material";
+import { ChevronLeft, Close } from "@mui/icons-material";
 import React from "react";
 import { constants } from "@src/config/constants";
 
@@ -20,6 +20,7 @@ export const AiFormLayout = React.forwardRef<
     loading?: boolean;
     onBackClick?: (() => void) | falsyValue; // allows for booleanCondition && function syntax
     onRetryClick?: (() => void) | falsyValue;
+    disableFooterBackButton?: boolean;
     buttons?: React.ReactNode;
     hidden?: boolean;
     footer?: React.ReactNode;
@@ -40,12 +41,14 @@ export const AiFormLayout = React.forwardRef<
     footer,
     headerButtons,
     contentContainerRef,
+    disableFooterBackButton,
     onClose,
     ...rest
   },
   ref
 ) {
-  const hasButtons = onBackClick || buttons || onRetryClick;
+  const hasFooter =
+    (!disableFooterBackButton && onBackClick) || buttons || onRetryClick;
   return (
     <AiModalContainer ref={ref} elevation={3} hidden={hidden} {...rest}>
       <HeaderContainer
@@ -53,6 +56,11 @@ export const AiFormLayout = React.forwardRef<
         justifyContent="space-between"
         alignItems="center"
       >
+        {onBackClick && (
+          <IconButton size="small" onClick={onBackClick} sx={{ mx: 1 }}>
+            <ChevronLeft />
+          </IconButton>
+        )}
         <Typography
           variant="h6"
           sx={{
@@ -98,13 +106,13 @@ export const AiFormLayout = React.forwardRef<
             children
           )}
         </AiModalContentContainer>
-        {hasButtons && (
+        {hasFooter && (
           <AiModalFooterContainer
             direction="row"
             justifyContent="flex-end"
             gap={0.5}
           >
-            {onBackClick && (
+            {onBackClick && !disableFooterBackButton && (
               <Button
                 disabled={loading}
                 variant="text"

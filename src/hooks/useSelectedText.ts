@@ -40,8 +40,7 @@ export function useSelectedText() {
           top = cursorXY.y + inputOffsetTop;
           left = cursorXY.x + inputOffsetLeft;
           setTextType("input");
-        }
-        if (document.activeElement) {
+        } else if (document.activeElement) {
           if (document.activeElement.hasAttribute("contenteditable")) {
             setTextType("input");
           } else {
