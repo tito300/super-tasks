@@ -94,6 +94,9 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   const hasSelectedApps = Object.values(selectedApps).some(
     (selected) => selected
   );
+  const hasExistingSelectedApps = Object.values(userSelectedApps).some(
+    (selected) => selected
+  );
 
   if (authWarningDismissed && scriptType !== "Popup") return null;
 
@@ -104,74 +107,94 @@ export default function AppOauthPicker(paperProps: PaperProps) {
       sx={{ px: 2, py: 2, ...paperProps.sx }}
     >
       {scriptType === "Popup" ? (
-        <Stack>
-          <Typography variant="h6">Pick your Applications</Typography>
-          <Typography variant="subtitle2" pb={1.5}>
-            Don't worry, you can change this later.
-          </Typography>
-          <Stack direction="row" gap={1}>
-            {/* {!step && (
-              <>
-                <AppImg
-                  title="Google"
-                  selected={selectedApp === "google"}
-                  src={`chrome-extension://${extensionId}${googleIcon}`}
-                  onClick={() => {
-                    setSelectedApp("google");
-                  }}
-                />
-                <AppImg
-                  title="Chatgpt"
-                  selected={selectedApp === "chatgpt"}
-                  src={`chrome-extension://${extensionId}${chatgptIcon}`}
-                  onClick={() => {
-                    setSelectedApp("chatgpt");
-                  }}
-                />
-              </>
-            )} */}
-            {step === 1 && (
-              // && selectedApp === "google"
-              <>
+        <Stack gap={1.5}>
+          {hasExistingSelectedApps && (
+            <Stack>
+              <Typography variant="h6">Existing Applications</Typography>
+              <Stack direction="row" gap={1}>
+                {userSelectedApps.gCalendar && (
+                  <AppImg
+                    title="Google Calendar"
+                    selected={selectedApps.gCalendar}
+                    onClick={() => handleAppClick("gCalendar")}
+                    src={googleCalendar}
+                  />
+                )}
+                {userSelectedApps.gTasks && (
+                  <AppImg
+                    title="Google Tasks"
+                    selected={selectedApps.gTasks}
+                    onClick={() => handleAppClick("gTasks")}
+                    src={`chrome-extension://${extensionId}${googleTasks}`}
+                  />
+                )}
+                {userSelectedApps.chatGpt && (
+                  <AppImg
+                    title="Chatgpt"
+                    selected={selectedApps.chatGpt}
+                    src={`chrome-extension://${extensionId}${chatgptIcon}`}
+                    onClick={() => handleAppClick("chatGpt")}
+                  />
+                )}
+              </Stack>
+            </Stack>
+          )}
+          <Stack>
+            <Typography variant="h6">
+              {hasExistingSelectedApps
+                ? "Add more Applications"
+                : "Pick your Applications"}
+            </Typography>
+            {!hasExistingSelectedApps && (
+              <Typography variant="subtitle2" pb={1.5}>
+                Don't worry, you can change this later.
+              </Typography>
+            )}
+            <Stack direction="row" gap={1}>
+              {!userSelectedApps.gCalendar && (
                 <AppImg
                   title="Google Calendar"
                   selected={selectedApps.gCalendar}
                   onClick={() => handleAppClick("gCalendar")}
                   src={googleCalendar}
                 />
+              )}
+              {!userSelectedApps.gTasks && (
                 <AppImg
                   title="Google Tasks"
                   selected={selectedApps.gTasks}
                   onClick={() => handleAppClick("gTasks")}
                   src={`chrome-extension://${extensionId}${googleTasks}`}
                 />
+              )}
+              {!userSelectedApps.chatGpt && (
                 <AppImg
                   title="Chatgpt"
                   selected={selectedApps.chatGpt}
                   src={`chrome-extension://${extensionId}${chatgptIcon}`}
                   onClick={() => handleAppClick("chatGpt")}
                 />
-              </>
-            )}
-          </Stack>
-          <Stack direction="row" justifyContent="flex-end" marginTop={1}>
-            {step === 0 && (
-              <Button
-                disabled={!selectedApps}
-                variant="contained"
-                onClick={() => setStep((step) => step + 1)}
-              >
-                Next
-              </Button>
-            )}
-            {step === 1 && (
-              // && selectedApp === "google"
-              <GoogleOauthButton
-                disabled={!hasSelectedApps}
-                selectedScopes={selectedScopes}
-                selectedApps={selectedApps}
-              />
-            )}
+              )}
+            </Stack>
+            <Stack direction="row" justifyContent="flex-end" marginTop={1}>
+              {step === 0 && (
+                <Button
+                  disabled={!selectedApps}
+                  variant="contained"
+                  onClick={() => setStep((step) => step + 1)}
+                >
+                  Next
+                </Button>
+              )}
+              {step === 1 && (
+                // && selectedApp === "google"
+                <GoogleOauthButton
+                  disabled={!hasSelectedApps}
+                  selectedScopes={selectedScopes}
+                  selectedApps={selectedApps}
+                />
+              )}
+            </Stack>
           </Stack>
         </Stack>
       ) : (
@@ -284,7 +307,7 @@ const AppImg = (props: PaperProps & { src: string; selected?: boolean }) => {
         sx={{
           p: 1,
           cursor: "pointer",
-          border: "2px solid transparent",
+          border: "3px solid transparent",
           boxShadow: (theme) => theme.shadows[2],
           "&:hover": { boxShadow: (theme) => theme.shadows[4] },
           ...(selected && {

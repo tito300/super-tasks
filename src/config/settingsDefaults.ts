@@ -5,7 +5,7 @@ export type TabName = "tasks" | "calendar" | "chatGpt" | "add";
 
 // values in here should only be treated as defaults
 export const userSettingsDefaults = {
-  currentTab: "tasks" as TabName,
+  currentTab: "chatGpt" as TabName,
   defaultTab: "chatGpt" as TabName,
   popupOnly: false, // if true, the extension will only run in the popup
   syncCurrentTab: true,

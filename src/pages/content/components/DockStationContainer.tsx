@@ -1,37 +1,19 @@
-import { PropsWithChildren, useEffect, useRef, useState } from "react";
-import {
-  Badge,
-  Box,
-  IconButton,
-  Stack,
-  badgeClasses,
-  styled,
-} from "@mui/material";
-import { Close, MenuOpen, Remove, WidthFull } from "@mui/icons-material";
+import { PropsWithChildren, useState } from "react";
+import { Badge, IconButton, styled } from "@mui/material";
+import { Close } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 import { TasksReminderBadge } from "./TasksReminderBadge";
 import { focusAddTaskInput } from "./DockStationAccordion";
-import { CalendarIcon } from "@mui/x-date-pickers";
-import { calendarTheme } from "@src/theme/google.theme";
 import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
-import { cyan } from "@mui/material/colors";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { CalendarIconBadge } from "./CalendarIconBadge";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { runtime } from "webextension-polyfill";
-import { useMountedRef } from "@src/hooks/useMountedRef";
 import { useLazyMounted } from "@src/hooks/useMounted";
 import { convertRelativeToAbsolutePosition } from "@src/components/Draggable";
 import { SmartExpand } from "./SmartExpand";
 import { useLogRender } from "@src/hooks/useLogRender";
-
-// const ReminderBadgeStyled = styled(Badge)<BadgeProps>(({ theme }) => ({
-//   position: "absolute",
-//   top: 0,
-//   right: 0,
-// }));
 
 export function DockStationContainer({ children }: PropsWithChildren) {
   useLogRender("DockStationContainer");
@@ -39,7 +21,13 @@ export function DockStationContainer({ children }: PropsWithChildren) {
   const mounted = useLazyMounted();
   const queryClient = useQueryClient();
   const {
-    data: { buttonExpanded, position, authWarningDismissed, selectedApps },
+    data: {
+      buttonExpanded,
+      position,
+      authWarningDismissed,
+      selectedApps,
+      tokens,
+    },
     updateData: updateUserState,
   } = useUserState();
 
@@ -87,51 +75,72 @@ export function DockStationContainer({ children }: PropsWithChildren) {
 
   const appButtons: JSX.Element[] = [];
 
-  if (selectedApps["chatGpt"]) {
+  if (!tokens.jwt || !tokens.google) {
     appButtons.push(
       <AppIconButton
         onClick={() => handleButtonClick("chatGpt")}
         sx={{ backgroundColor: "white" }}
       >
         <img
-          src={runtime.getURL("chatgpt-icon.png")}
+          src={runtime.getURL("logo_2_32x32.png")}
           alt="calendar"
           width={32}
           height={32}
         />
       </AppIconButton>
     );
-  }
-
-  if (selectedApps["gCalendar"]) {
-    appButtons.push(
-      <AppIconButton
-        onClick={() => handleButtonClick("calendar")}
-        sx={{ backgroundColor: "white" }}
-      >
-        <CalendarIconBadge>
-          <img src={googleCalendarIcon} alt="calendar" width={32} height={32} />
-        </CalendarIconBadge>
-      </AppIconButton>
-    );
-  }
-
-  if (selectedApps["gTasks"]) {
-    appButtons.push(
-      <AppIconButton
-        onClick={() => handleButtonClick("tasks")}
-        sx={{ backgroundColor: "white" }}
-      >
-        <TasksReminderBadge>
+  } else {
+    if (selectedApps["chatGpt"]) {
+      appButtons.push(
+        <AppIconButton
+          onClick={() => handleButtonClick("chatGpt")}
+          sx={{ backgroundColor: "white" }}
+        >
           <img
-            src={runtime.getURL("google-tasks-icon.png")}
-            alt="tasks"
+            src={runtime.getURL("chatgpt-icon.png")}
+            alt="calendar"
             width={32}
             height={32}
           />
-        </TasksReminderBadge>
-      </AppIconButton>
-    );
+        </AppIconButton>
+      );
+    }
+
+    if (selectedApps["gCalendar"]) {
+      appButtons.push(
+        <AppIconButton
+          onClick={() => handleButtonClick("calendar")}
+          sx={{ backgroundColor: "white" }}
+        >
+          <CalendarIconBadge>
+            <img
+              src={googleCalendarIcon}
+              alt="calendar"
+              width={32}
+              height={32}
+            />
+          </CalendarIconBadge>
+        </AppIconButton>
+      );
+    }
+
+    if (selectedApps["gTasks"]) {
+      appButtons.push(
+        <AppIconButton
+          onClick={() => handleButtonClick("tasks")}
+          sx={{ backgroundColor: "white" }}
+        >
+          <TasksReminderBadge>
+            <img
+              src={runtime.getURL("google-tasks-icon.png")}
+              alt="tasks"
+              width={32}
+              height={32}
+            />
+          </TasksReminderBadge>
+        </AppIconButton>
+      );
+    }
   }
 
   if (authWarningDismissed) return null;

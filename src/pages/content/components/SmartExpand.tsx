@@ -1,14 +1,5 @@
-import { IconButton } from "@mui/material";
-import { styled, SxProps } from "@mui/material";
-import { Position } from "postcss";
-import {
-  useState,
-  useEffect,
-  useRef,
-  CSSProperties,
-  useLayoutEffect,
-} from "react";
-import { theme } from "webextension-polyfill";
+import { styled } from "@mui/material";
+import { useState, useLayoutEffect } from "react";
 import { BadgeStyled } from "./DockStationContainer";
 import { constants } from "@src/config/constants";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
@@ -103,7 +94,7 @@ export function SmartExpand(props: SmartExpandProps) {
 }
 
 const Container = styled("div")<{ ownerProps: OwnerState }>(
-  ({ ownerProps, theme }) => {
+  ({ ownerProps }) => {
     const {
       elements,
       pagePosition,
@@ -186,7 +177,7 @@ const ElementContainer = styled("div")<{
   opacity: 0,
   transform: "scale(0.15)",
   bottom: 0,
-  right: 0,
+  ...(ownerState.snapDirection === "right" ? { right: 0 } : { left: 0 }),
   ...(primary &&
     ownerState.snap && {
       width: 4,

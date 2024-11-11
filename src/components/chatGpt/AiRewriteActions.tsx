@@ -896,7 +896,7 @@ const ToneChip = styled(Chip)<{ selected?: boolean; type?: "multistep" }>(
     cursor: "pointer",
     fontWeight: 500,
     "&:hover": {
-      backgroundColor: "rgba(0,0,0,0.3)",
+      backgroundColor: "#ac90b44a",
     },
     ...(selected && {
       backgroundColor: "#ac90b44a",

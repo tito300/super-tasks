@@ -6,6 +6,6 @@ const root = createRoot(document.getElementById("root")!);
 
 root.render(
   <CommonProviders scriptType="Reminder">
-    <Reminder />
+    {(ready) => ready && <Reminder />}
   </CommonProviders>
 );

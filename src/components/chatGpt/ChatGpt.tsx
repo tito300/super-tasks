@@ -236,7 +236,11 @@ export const MessageComposer = ({
           },
         }}
       />
-      <IconButton onClick={handleSubmit}>
+      <IconButton
+        disabled={!value?.length}
+        color="primary"
+        onClick={handleSubmit}
+      >
         <SendIcon />
       </IconButton>
     </Stack>
@@ -647,7 +651,7 @@ const ChatActionChip = styled(Chip)<{ selected?: boolean }>(
     border: `1px solid ${theme.palette.grey[300]}`,
     boxShadow: "0px 1px 4px #00000025",
     ...(selected && {
-      backgroundColor: theme.palette.grey[500],
+      backgroundColor: theme.palette.primary.main,
       boxShadow: "none",
       border: "none",
       color: "white",
