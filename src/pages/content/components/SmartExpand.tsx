@@ -1,5 +1,5 @@
 import { styled } from "@mui/material";
-import { useState, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { BadgeStyled } from "./DockStationContainer";
 import { constants } from "@src/config/constants";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
@@ -12,7 +12,7 @@ type SmartExpandProps = {
   pagePosition: PagePosition;
   badgeContent?: JSX.Element;
   elementSize: number; // px
-};
+} & React.HTMLAttributes<HTMLDivElement>;
 
 type OwnerState = SmartExpandProps & {
   snap: boolean;
@@ -38,7 +38,7 @@ type OwnerState = SmartExpandProps & {
  * styled component CSS transform is used to move the elements around.
  */
 export function SmartExpand(props: SmartExpandProps) {
-  const { elements, badgeContent } = props;
+  const { elements, badgeContent, pagePosition, ...rest } = props;
   const { dataSyncing } = useUserState();
   const { snapped, snapDirection, isDragging } = useDraggableContext();
 
@@ -51,14 +51,21 @@ export function SmartExpand(props: SmartExpandProps) {
   };
 
   return (
-    <Container id={`axess-smart-container`} ownerProps={ownerState}>
+    <Container id={`axess-smart-container`} ownerProps={ownerState} {...rest}>
       <ElementContainer
         data-smart-expand-primary
         ownerState={ownerState}
         primary
       ></ElementContainer>
       {elements.map((element, index) => {
-        if (!index && props.badgeContent) {
+        const elementClone = React.cloneElement(element, {
+          onClick: (e: React.MouseEvent) => {
+            e.stopPropagation();
+            element.props.onClick?.(e);
+          },
+        });
+
+        if (!index && badgeContent) {
           return (
             <ElementContainer
               data-smart-expand-index={index}
@@ -70,11 +77,11 @@ export function SmartExpand(props: SmartExpandProps) {
                     id: `${constants.EXTENSION_NAME}-remove-button`,
                   },
                 }}
-                anchorOrigin={{ ...getBadgeAnchorOrigin(props.pagePosition) }}
+                anchorOrigin={{ ...getBadgeAnchorOrigin(pagePosition) }}
                 color="default"
                 badgeContent={badgeContent}
               >
-                {element}
+                {elementClone}
               </BadgeStyled>
             </ElementContainer>
           );
@@ -85,7 +92,7 @@ export function SmartExpand(props: SmartExpandProps) {
             data-smart-expand-index={index}
             ownerState={ownerState}
           >
-            {element}
+            {elementClone}
           </ElementContainer>
         );
       })}
@@ -115,8 +122,8 @@ const Container = styled("div")<{ ownerProps: OwnerState }>(
         ? {}
         : {
             ...(snap && {
-              width: 18, // width of the container is bigger than actual colored element width to give user more space to hover
-              height: 60, // height of the container is bigger than actual colored element height to give user more space to hover
+              width: 26, // width of the container is bigger than actual colored element width to give user more space to hover
+              height: 68, // height of the container is bigger than actual colored element height to give user more space to hover
             }),
             "&:hover": {
               height: getButtonsExpandedSize(elements.length, elementSize),
@@ -182,10 +189,10 @@ const ElementContainer = styled("div")<{
   ...(ownerState.snap && ownerState.snapDirection === "left" && { left: 0 }),
   ...(primary &&
     ownerState.snap && {
-      width: 5,
+      width: 6,
       height: 26,
       backgroundColor: "#ff9f20",
-      background: "linear-gradient(to bottom, #e78300, #ffbd89)",
+      background: "linear-gradient(to bottom, #c57000, #ff7c15)",
       pointerEvents: "auto",
       opacity: 1,
       transform: "translateY(-50%)",

@@ -6,7 +6,7 @@ import { storageService } from "@src/storage/storage.service";
 import { ChatGptSettings } from "@src/components/Providers/ChatGptSettingsProvider";
 import { chatGptSettingsDefaults } from "@src/config/settingsDefaults";
 import { LlmModel } from "@src/components/Providers/ChatGptStateProvider";
-import { Tone } from "@src/components/chatGpt/AiRewriteActions";
+import { Tone } from "@src/components/chatGpt/AiSelectedText";
 import { ServiceObject } from "..";
 
 export type AiQuickActionsBody = {

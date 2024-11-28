@@ -4,26 +4,27 @@ import { ServiceName } from "@src/services";
 import { ServiceMethodName } from "@src/services/Task/Task.service";
 import { UserServiceMethodName } from "@src/services/User/User.service";
 
-export type TaskMessage<T extends TaskAction = TaskAction> =
-  T extends "DockTask"
-    ? DockTaskMessage
-    : T extends "UnDockTask"
-    ? UnDockTaskMessage
-    : T extends "BroadcastMessage"
-    ? BroadcastMessage
-    : T extends "ServiceCall"
-    ? ServiceCallMessage
-    : T extends "UpdateTasks"
-    ? UpdateTasksMessage
-    : T extends "StartFetchTasksTimer" | "StopFetchTasksTimer"
-    ? FetchTasksTimerMessage
-    : T extends "ReAuthenticate"
-    ? ReAuthenticateMessage
-    : T extends "UserSettingsUpdated"
-    ? UserSettingsUpdatedMessage
-    : T extends "TaskReminder"
-    ? TaskReminderMessage
-    : never;
+export type TaskMessage<T extends TaskAction = TaskAction> = {
+  targetScript: ScriptType | undefined;
+} & T extends "DockTask"
+  ? DockTaskMessage
+  : T extends "UnDockTask"
+  ? UnDockTaskMessage
+  : T extends "BroadcastMessage"
+  ? BroadcastMessage
+  : T extends "ServiceCall"
+  ? ServiceCallMessage
+  : T extends "UpdateTasks"
+  ? UpdateTasksMessage
+  : T extends "StartFetchTasksTimer" | "StopFetchTasksTimer"
+  ? FetchTasksTimerMessage
+  : T extends "ReAuthenticate"
+  ? ReAuthenticateMessage
+  : T extends "UserSettingsUpdated"
+  ? UserSettingsUpdatedMessage
+  : T extends "TaskReminder"
+  ? TaskReminderMessage
+  : never;
 
 export type ScriptType = "Popup" | "Content" | "Background" | "Reminder";
 

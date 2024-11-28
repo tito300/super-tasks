@@ -2,8 +2,6 @@ import { getMessageEngine } from "@src/messageEngine/MessageEngine";
 import { initializeServices } from "@src/services";
 import { Alarms } from "webextension-polyfill";
 
-const htmlFile = "oauth.html";
-
 const messageEngine = getMessageEngine("Background");
 const services = initializeServices("Background");
 
@@ -13,13 +11,14 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
-// chrome.notifications.create("notificationId", {
-//   type: "basic",
-//   iconUrl: "icon.png",
-//   title: "Task Timer",
-//   eventTime: Date.now() + 1000 * 20,
-//   message: "Task Timer is running",
-// });
+chrome.tabs.onCreated.addListener(function (tab) {
+  if (tab.pendingUrl === "chrome://newtab/" || tab.url === "chrome://newtab/") {
+    chrome.tabs.update(tab.id as number, {
+      url: "https://www.google.com?axs=t",
+    });
+    console.log("new tab created", tab);
+  }
+});
 
 // #region Task Timer
 const handleFetchTasksAlarm = async () => {

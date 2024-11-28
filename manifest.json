@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Super tasks",
-  "description": "Adds points to Google Tasks",
+  "name": "Axess",
+  "description": "Axess your daily tools from any tab!",
   "oauth2": {
-    "client_id": "875323625973-pcdig9fjrq4l9ert26f74anqa4gfb84d.apps.googleusercontent.com",
+    "client_id": "567438855699-4vafg2ckks5ik6uvdbeoa2h7rr45a2i3.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/tasks",
@@ -21,11 +21,11 @@
   "action": {
     "default_popup": "src/pages/popup/index.html",
     "default_icon": {
-      "32": "logo_2_32x32.png"
+      "32": "logo_1_32x32_filled.png"
     }
   },
   "icons": {
-    "128": "logo_2_128x128.png"
+    "128": "logo_1_128x128_filled.png"
   },
   "permissions": [
     "activeTab",
@@ -37,7 +37,7 @@
     "notifications",
     "system.display"
   ],
-  "chrome_url_overrides": { "newtab": "src/pages/newtab/index.html" },
+  "//chrome_url_overrides": { "newtab": "src/pages/newtab/index.html" },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*", "<all_urls>"],
@@ -50,13 +50,10 @@
     {
       "resources": [
         "contentStyle.css",
-        "icon-128.png",
-        "icon-32.png",
         "google-tasks-icon.png",
         "chatgpt-icon.png",
-        "logo_2_128x128.png",
-        "logo_2_32x32.png",
-        "logo_3_128x128.png"
+        "logo_1_128x128.png",
+        "logo_1_32x32.png"
       ],
       "matches": ["<all_urls>"]
     }

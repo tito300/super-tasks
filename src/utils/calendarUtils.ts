@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import { rrulestr } from "rrule";
 import utc from "dayjs/plugin/utc";
 import timeZone from "dayjs/plugin/timezone";
+import { getCalendarEvents } from "@src/components/Calendar/mocks/calendarEvents";
 
 dayjs.extend(utc);
 dayjs.extend(timeZone);
@@ -114,6 +115,8 @@ export function getTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
     return aStart ? aStart.diff(bStart) : 0;
   });
 
+  // console.log("sortedEvents", sortedEvents);
+  // return getCalendarEvents();
   return sortedEvents;
 }
 

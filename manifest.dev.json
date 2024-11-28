@@ -1,5 +1,5 @@
 {
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiuKr34K37js9DL8AldjxpzF45ybkHCy3tKuzQAZtfeVWE4LAv9DiWZKv+SV0BQbIEKfg4u57nr9uPQivnrjW8bXKXovKQPPybLs5FvqcJBXvmZkyHFuSAMwNZL0gw1UpNZZ90WovHIbV2ubZOklERoIuE+lF0Hw0wOTBRDMZAW4j4fsMzz/NFMoNQ5JXo1TtGe34RYqCV0CcO0Y3vtawcaywc5TNY6+2YYi9VAAh+PSscXptGhyDn3gdpxRpKiE4D1JolaXLF8r+kft91QFum4z79KXmIOcSfMAhVgnDH7Kqx5ivASPGu940oSNCdCwu3DZoiRIHEcGxImjieMJ2twIDAQAB",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0FpsQRsXM8ly6nnw+qYoO7gt8YHW8V2x1soklp3CgeHNhvvLL2LPM5ewfa+jo4m/UC3gFiryIoflbYJqVpdu4edo8Z1PuLRU7nSQLTTtWtptqNula/2lzF1RkIZHR61X0CLjSQ2z93qGe12Iipa01U9w7Xg8q0uFyOZfhpIgidm+lWOwHm36nTJeBRKXLXUn+/Dl5Y72RftxgQkRjAEKGwAPf1d92nGUw8Zw+dO92kipjM0Q3x0yKmoK3KbCwP3TI6AvAcQ3L7Y8FAlZ42AmSLjlNY90wIebNeJPiZ+XM1abfKDPKJkMsQk+UAbgsxooBaOvL/xaPxqoeFHylSkgtQIDAQAB",
   "action": {
     "default_popup": "src/pages/popup/index.html"
   },
@@ -7,13 +7,10 @@
     {
       "resources": [
         "contentStyle.css",
-        "dev-icon-128.png",
-        "dev-icon-32.png",
         "google-tasks-icon.png",
         "chatgpt-icon.png",
-        "logo_2_128x128.png",
-        "logo_2_32x32.png",
-        "logo_3_128x128.png"
+        "logo_1_128x128.png",
+        "logo_1_32x32.png"
       ],
       "matches": ["<all_urls>"]
     }

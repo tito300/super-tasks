@@ -42,7 +42,7 @@ import { useUserState } from "../Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
 import { useScrollableEl } from "@src/hooks/useScrollableEl";
 import { useDebouncedValue } from "@src/hooks/useDebouncedValue";
-import { AiSelectedText } from "./AiRewriteActions";
+import { AiSelectedText } from "./AiSelectedText";
 import { CodeMarkdown } from "../shared/CodeMarkdown";
 import { ChatGptMessage } from "@src/chatGpt.types";
 import { useScriptType } from "../Providers/ScriptTypeProvider";
@@ -56,7 +56,7 @@ window.Prism = window.Prism || {};
 // @ts-expect-error
 window.Prism.manual = true;
 
-const premiumModels = ["chatgpt-4o-latest"];
+const premiumModels = ["gpt-4o"];
 
 export const ChatGpt = () => {
   const { chatGptSettings } = useChatGptSettings();
@@ -673,7 +673,7 @@ export const AiConversation = ({
   );
 };
 
-const ChatActionChip = styled(Chip)<{ selected?: boolean }>(
+export const ChatActionChip = styled(Chip)<{ selected?: boolean }>(
   ({ theme, selected }) => ({
     cursor: "pointer",
     color: theme.palette.text.secondary,
@@ -690,7 +690,7 @@ const ChatActionChip = styled(Chip)<{ selected?: boolean }>(
       backgroundColor: theme.palette.grey[200],
       boxShadow: "0px 1px 4px #00000035",
       ...(selected && {
-        backgroundColor: theme.palette.grey[500],
+        backgroundColor: theme.palette.primary.main,
         boxShadow: "none",
       }),
     },

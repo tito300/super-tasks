@@ -9,7 +9,7 @@ import {
   styled,
 } from "@mui/material";
 import { TabName } from "@src/config/settingsDefaults";
-import React from "react";
+import React, { useRef } from "react";
 import { useScriptType } from "./Providers/ScriptTypeProvider";
 import { ScriptType } from "@src/messageEngine/types/taskMessages";
 import { useUserState } from "./Providers/UserStateProvider";
@@ -43,10 +43,23 @@ export function TabsManager({
   tabs: Record<TabName, React.ReactNode>;
 } & StackProps) {
   const {
-    data: { currentTab, selectedApps },
+    data: { currentTab, selectedApps, buttonExpanded },
     updateData,
   } = useUserState();
   const scriptType = useScriptType();
+  const defaultTabOpened = scriptType === "Popup";
+
+  // we do not want to render tabs that haven't been selected to save on bandwidth and performance
+  const openedApps = useRef<Record<TabName, boolean>>({
+    tasks: defaultTabOpened,
+    calendar: defaultTabOpened,
+    chatGpt: defaultTabOpened,
+    add: defaultTabOpened,
+  });
+
+  if (buttonExpanded) {
+    openedApps.current[currentTab] = true;
+  }
 
   useLogRender("TabsManager");
 
@@ -73,17 +86,19 @@ export function TabsManager({
             transition: "bottom 0.1s",
           },
         },
+        boxShadow: (theme) => theme.shadows[3],
+        borderRadius: 2,
         ...rootProps?.sx,
       }}
     >
       <TabContext value={currentTab}>
         {!hideTabs && <NavigationTabs onClose={handleExtensionClose} />}
         <AppContainer
-          elevation={2}
+          elevation={0}
           onMouseDown={(e) => e.stopPropagation()}
           id={`${constants.EXTENSION_NAME}-scrollable-container`}
         >
-          {selectedApps.gTasks && (
+          {selectedApps.gTasks && openedApps.current.tasks && (
             <TabContainer
               flexGrow={1}
               sx={{
@@ -94,16 +109,18 @@ export function TabsManager({
               {tabs["tasks"]}
             </TabContainer>
           )}
-          {selectedApps.gCalendar && tabs["calendar"] && (
-            <TabContainer
-              flexGrow={1}
-              sx={{
-                display: currentTab === "calendar" ? "flex" : "none",
-              }}
-            >
-              {tabs["calendar"]}
-            </TabContainer>
-          )}
+          {selectedApps.gCalendar &&
+            openedApps.current.calendar &&
+            tabs["calendar"] && (
+              <TabContainer
+                flexGrow={1}
+                sx={{
+                  display: currentTab === "calendar" ? "flex" : "none",
+                }}
+              >
+                {tabs["calendar"]}
+              </TabContainer>
+            )}
           {selectedApps.chatGpt && tabs["chatGpt"] && (
             <TabContainer
               flexGrow={1}
@@ -231,7 +248,7 @@ const TabIconsContainer = styled(Stack)<{
   borderTopLeftRadius: 4,
   borderTopRightRadius: 4,
   zIndex: 50,
-  padding: "4px 8px 0px",
+  padding: "6px 8px 0px",
   borderBottom: `1px solid ${theme.palette.divider}`,
   width: scriptType === "Popup" ? "100%" : "auto",
   ...(scriptType === "Content" && { position: "initial" }),
@@ -247,7 +264,7 @@ const TabIconStyled = styled(IconButton)<{
   // @ts-ignore
   borderRadius: 0,
   // @ts-ignore
-  padding: "4px 14px",
+  padding: "4px 18px",
   // @ts-ignore
   ":nth-child(even)": {
     borderRight: `2px solid ${theme.palette.divider}`,
@@ -268,7 +285,7 @@ const TabIconStyled = styled(IconButton)<{
     },
   },
   ...(selected && {
-    padding: "6px 14px 7px",
+    padding: "6px 18px 7px",
     backgroundColor: theme.palette.background.paper,
     border: `none`,
     borderRight: "none",

@@ -134,12 +134,6 @@ export function TaskReminder({
         >
           8 hours
         </MenuItem>
-        <MenuItem
-          selected={task.alert === 60 * 24}
-          onClick={() => handleClose(60 * 24)}
-        >
-          1 day
-        </MenuItem>
       </Menu>
     </>
   );

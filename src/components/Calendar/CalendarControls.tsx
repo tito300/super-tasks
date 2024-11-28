@@ -1,4 +1,10 @@
-import { Refresh, CalendarMonth } from "@mui/icons-material";
+import {
+  Refresh,
+  CalendarMonth,
+  ChevronRight,
+  ChevronLeft,
+  UnfoldMore,
+} from "@mui/icons-material";
 import {
   StackProps,
   Stack,
@@ -7,6 +13,7 @@ import {
   Skeleton,
   Typography,
   CircularProgress,
+  MenuItem,
 } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -15,6 +22,8 @@ import { useCalendarState } from "../Providers/CalendarStateProvider";
 import { startTransition, useState } from "react";
 import { useCalendarEvents, useCalendarLists } from "@src/api/calendar.api";
 import { AppControls } from "../shared/AppControls";
+import { FormControl } from "@mui/material";
+import { Select } from "@mui/material";
 
 export function CalendarControls(
   props: StackProps & {
@@ -61,12 +70,54 @@ export function CalendarControls(
 }
 
 export function DateControl(props: StackProps & { isLoading?: boolean }) {
+  const [calendarListOpen, setCalendarListOpen] = useState(false);
+  const {
+    data: { selectedCalendarId },
+    updateData,
+  } = useCalendarState();
+  const { data } = useCalendarLists();
+
+  const handleCalendarChange = (event: any) => {
+    updateData({
+      selectedCalendarId: event.target.value,
+    });
+    setCalendarListOpen(false);
+  };
+
   return (
     <Stack direction="row" alignItems={"center"} {...props}>
+      <IconButton
+        size="small"
+        sx={{ mr: 0.25 }}
+        onClick={() => setCalendarListOpen(!calendarListOpen)}
+      >
+        <UnfoldMore fontSize="small" color="action" />
+        <CalendarMonth fontSize="small" color="action" />
+      </IconButton>
+      {calendarListOpen && (
+        <FormControl variant="standard" sx={{ pl: 1, minWidth: 120 }}>
+          <Select
+            id="demo-simple-select-standard"
+            disableUnderline
+            defaultOpen={true}
+            value={selectedCalendarId ?? ""}
+            onChange={handleCalendarChange}
+            onBlur={() => setCalendarListOpen(false)}
+          >
+            {data?.map((list, i) => {
+              if (list.kind)
+                return (
+                  <MenuItem selected={i === 0} key={list.id} value={list.id}>
+                    {list.summary}
+                  </MenuItem>
+                );
+            })}
+          </Select>
+        </FormControl>
+      )}
       {/* <IconButton size="small">
           <ArrowBackIosNewIcon />
         </IconButton> */}
-      <CalendarMonth fontSize="small" color="action" sx={{ mr: 0.75 }} />
       {props.isLoading ? (
         <Skeleton width={100} variant="text" />
       ) : (

@@ -73,6 +73,10 @@ export function DockStationContainer({ children }: PropsWithChildren) {
     defaultDistanceFromTop
   );
 
+  const handleContainerClick = () => {
+    handleButtonClick("chatGpt");
+  };
+
   const appButtons: JSX.Element[] = [];
 
   if (!tokens.jwt || !tokens.google) {
@@ -82,7 +86,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
         sx={{ backgroundColor: "white" }}
       >
         <img
-          src={runtime.getURL("logo_2_32x32.png")}
+          src={runtime.getURL("logo_1_32x32.png")}
           alt="calendar"
           width={32}
           height={32}
@@ -181,6 +185,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
         <SmartExpand
           pagePosition={pagePosition}
           elementSize={58}
+          onClick={handleContainerClick}
           badgeContent={
             <IconButton
               sx={{ padding: 0 }}

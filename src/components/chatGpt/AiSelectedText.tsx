@@ -1,12 +1,9 @@
 import {
   AutoFixHigh,
-  BorderColor,
   Cancel,
   Chat,
   CheckBox,
   CheckBoxOutlineBlank,
-  CheckBoxOutlined,
-  DeleteForever,
   DriveFileRenameOutline,
 } from "@mui/icons-material";
 import {
@@ -20,31 +17,22 @@ import {
   StackProps,
   Typography,
 } from "@mui/material";
-import { useUserTypingInput } from "@src/hooks/useUserTypingInput";
-import {
-  ComponentProps,
-  forwardRef,
-  startTransition,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, startTransition, useRef, useState } from "react";
 import { styled } from "@mui/material";
 import { constants } from "@src/config/constants";
 import { Stack } from "@mui/material";
 import { useServicesContext } from "../Providers/ServicesProvider";
 import { FormControlLabel } from "@mui/material";
-import { Checkbox } from "@mui/material";
 import { useSelectedText } from "@src/hooks/useSelectedText";
-import { StyledPortal } from "../shared/StyledProtal";
 import { AiFormLayout, AiFormLayoutPaddings } from "./Shared/AiFormLayout";
 import { CodeMarkdown } from "../shared/CodeMarkdown";
-import { StyledPopper } from "../shared/StyledPopper";
 import { StyledPopover } from "../shared/StyledPopover";
-import { AiConversation, ConversationActions } from "./ChatGpt";
+import { AiConversation, ChatActionChip, ConversationActions } from "./ChatGpt";
 import { useLogRender } from "@src/hooks/useLogRender";
 import { LlmModel } from "../Providers/ChatGptStateProvider";
 import { ShadowDomPortal } from "../shared/ShadowDomPortal";
+import { retryAsync } from "@src/utils/retryAsync";
+import { AiReWriteForm } from "./AiRewriteText";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -56,90 +44,7 @@ const AiMessageTypography = styled(Typography)({
   whiteSpace: "pre-line",
 });
 
-function validRewriteInput(input: string) {
-  // at least 3 words
-  if (!input.length) return false;
-
-  return true;
-}
-
-export function AiRewriteActions() {
-  const [hideIcon, setHideIcon] = useState(false);
-  const [openRewriteModal, setOpenRewriteModal] = useState(false);
-  const { typingInput, updateInput, container } = useUserTypingInput();
-  const { selectedText } = useSelectedText();
-  const tooltipRef = useRef<HTMLDivElement>(null);
-
-  const handleOpenModal = () => {
-    setOpenRewriteModal(!openRewriteModal);
-    setOpenRewriteModal(true);
-  };
-
-  const handleClose = () => {
-    setOpenRewriteModal(false);
-  };
-
-  const handleRemoveIcon = () => {
-    setHideIcon(true);
-  };
-
-  if (selectedText) return null;
-  if (hideIcon) return null;
-  if (!container) return null;
-  if (!validRewriteInput(typingInput)) return null;
-
-  const containerStyles = window.getComputedStyle(container);
-  const topOffset = -32 - (parseInt(containerStyles.paddingTop) || 0);
-  const rightOffset = -(parseInt(containerStyles.paddingRight) || 0);
-
-  return (
-    <>
-      <StyledPopper
-        open
-        anchorEl={document.body}
-        placement="top-end"
-        modifiers={[
-          {
-            name: "offset",
-            enabled: true,
-            options: {
-              offset: [rightOffset, topOffset],
-            },
-          },
-        ]}
-      >
-        <AiTooltipButtons
-          ref={tooltipRef}
-          expandDirection="left"
-          onOpen={handleOpenModal}
-          handleRemoveIcon={handleRemoveIcon}
-        />
-      </StyledPopper>
-      <StyledPopover
-        open={openRewriteModal}
-        anchorEl={container}
-        disableScrollLock
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "left",
-        }}
-      >
-        <AiReWriteForm
-          input={typingInput}
-          updateInput={updateInput}
-          onClose={handleClose}
-        />
-      </StyledPopover>
-    </>
-  );
-}
-
-const AiTooltipButtons = forwardRef<
+export const AiTooltipButtons = forwardRef<
   HTMLDivElement,
   {
     expandDirection: "left" | "right";
@@ -260,7 +165,7 @@ export function AiSelectedText() {
     factCheck: false,
     keepShort: false,
     fullPage: false,
-    model: "chatgpt-4o-latest",
+    model: "gpt-4o",
   });
   const [factCheckMessage, setFactCheckMessage] = useState<string | null>(null);
   const [hasInaccuracies, setHasInaccuracies] = useState(false);
@@ -324,10 +229,14 @@ export function AiSelectedText() {
 
     if (!service) return;
 
-    service({
-      text,
-      aiOptions: mergedAiOptions,
-    })
+    retryAsync(
+      () =>
+        service({
+          text,
+          aiOptions: mergedAiOptions,
+        }),
+      3
+    )
       .then((res) => {
         setAiMessage(res.message);
         if (mergedAiOptions.factCheck) {
@@ -495,41 +404,11 @@ export function AiSelectedText() {
             )
           }
         >
-          {selectedAction && !errorMessage && (
-            <Stack
-              px={AiFormLayoutPaddings.pxValue}
-              py={1}
-              direction="row"
-              gap={0.5}
-            >
-              <AiOption
-                label="Concise"
-                variant="outlined"
-                selected={aiOptions.keepShort}
-                onClick={() => handleOptionClick("keepShort")}
-              />
-              <AiOption
-                label="Full Page"
-                variant="outlined"
-                selected={aiOptions.fullPage}
-                onClick={() => handleOptionClick("fullPage")}
-              />
-
-              <AiOption
-                label="Fact Check"
-                variant="outlined"
-                disabled={selectedAction === "factCheck"}
-                selected={aiOptions.factCheck}
-                onClick={() => handleOptionClick("factCheck")}
-              />
-            </Stack>
-          )}
-          <Divider />
           {!selectedAction ? (
             <>
               <Stack
                 px={AiFormLayoutPaddings.pxValue}
-                py={1}
+                py={2}
                 direction="row"
                 flexWrap="wrap"
                 gap={0.5}
@@ -574,7 +453,7 @@ export function AiSelectedText() {
               <Divider />
               <Stack
                 px={AiFormLayoutPaddings.pxValue}
-                pt={1}
+                pt={2}
                 pb={2}
                 direction="row"
                 flexWrap="wrap"
@@ -603,7 +482,6 @@ export function AiSelectedText() {
               py={AiFormLayoutPaddings.pyValue}
               gap={1}
             >
-              <CodeMarkdown>{aiMessage!}</CodeMarkdown>
               {aiOptions.factCheck && factCheckMessage && (
                 <Alert
                   severity={hasInaccuracies ? "warning" : "info"}
@@ -613,6 +491,36 @@ export function AiSelectedText() {
                   {factCheckMessage}
                 </Alert>
               )}
+              <CodeMarkdown>{aiMessage!}</CodeMarkdown>
+            </Stack>
+          )}
+          {selectedAction && !errorMessage && (
+            <Stack
+              px={AiFormLayoutPaddings.pxValue}
+              py={1}
+              direction="row"
+              gap={0.5}
+            >
+              <ChatActionChip
+                label="Concise"
+                variant="outlined"
+                selected={aiOptions.keepShort}
+                onClick={() => handleOptionClick("keepShort")}
+              />
+              <ChatActionChip
+                label="Full Page"
+                variant="outlined"
+                selected={aiOptions.fullPage}
+                onClick={() => handleOptionClick("fullPage")}
+              />
+
+              <ChatActionChip
+                label="Fact Check"
+                variant="outlined"
+                disabled={selectedAction === "factCheck"}
+                selected={aiOptions.factCheck}
+                onClick={() => handleOptionClick("factCheck")}
+              />
             </Stack>
           )}
         </AiFormLayout>
@@ -680,220 +588,6 @@ export const containsHtml = (input: string) => {
   return /<[^>]*>/.test(input);
 };
 
-function AiReWriteForm(
-  props: {
-    input: string | null;
-    updateInput: (input: string) => void;
-    keepShort?: boolean;
-    factCheck?: boolean;
-  } & Omit<ComponentProps<typeof AiFormLayout>, "title">
-) {
-  const [selectedImprovements, setSelectedImprovements] = useState<Array<Tone>>(
-    []
-  );
-  const [suggestion, setSuggestion] = useState<string | null>(null);
-  const [inaccuracy, seInaccuracy] = useState<string | null>(null);
-  const [hasInaccuracies, setHasInaccuracies] = useState(false);
-  const { chatGpt } = useServicesContext();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [aiOptions, setAiOptions] = useState<{
-    factCheck: boolean;
-    keepShort: boolean;
-    model: LlmModel["value"];
-  }>({
-    factCheck: props.keepShort || false,
-    keepShort: props.factCheck || false,
-    model: "chatgpt-4o-latest",
-  });
-  const contentContainerRef = useRef<HTMLDivElement>(null);
-  const [skeletonHeight, setSkeletonHeight] = useState(150);
-  const [tokenLimitReached, setTokenLimitReached] = useState(false);
-
-  const { input, updateInput, onClose, onBackClick, ...rest } = props;
-
-  useEffect(() => {
-    if (
-      contentContainerRef.current &&
-      contentContainerRef.current.clientHeight
-    ) {
-      setSkeletonHeight(contentContainerRef.current.clientHeight);
-    }
-  }, [props.hidden]);
-
-  useEffect(() => {
-    setAiOptions((aiOptions) => ({
-      ...aiOptions,
-      ...(props.keepShort !== undefined && { keepShort: props.keepShort }),
-      ...(props.factCheck !== undefined && { factCheck: props.factCheck }),
-    }));
-  }, [props.keepShort, props.factCheck]);
-
-  const handleSubmit = () => {
-    resetResults();
-    setLoading(true);
-    chatGpt
-      .suggestRewrite({
-        improvements: selectedImprovements,
-        input,
-        checkInaccuracies: aiOptions.factCheck,
-        keepShort: aiOptions.keepShort,
-        model: aiOptions.model,
-      })
-      .then((res) => {
-        setSuggestion(res.message);
-        seInaccuracy(res.inaccuracyMessage);
-        setHasInaccuracies(!!res.hasInaccuracies);
-        setTokenLimitReached(!!res.limitReached);
-      })
-      .catch((error) => {
-        setError("Sorry, something went wrong.");
-      })
-      .finally(() => setLoading(false));
-  };
-
-  const handleToneClick = (tone: Tone) => {
-    if (selectedImprovements.includes(tone)) {
-      setSelectedImprovements((improvements) =>
-        improvements.filter((t) => t !== tone)
-      );
-    } else {
-      setSelectedImprovements((improvements) => [...improvements, tone]);
-    }
-  };
-
-  function resetResults() {
-    setSuggestion(null);
-    seInaccuracy(null);
-    setHasInaccuracies(false);
-    setError(null);
-  }
-
-  const handleCopyClick = () => {
-    navigator.clipboard.writeText(suggestion!);
-    setSuggestion(null);
-    onClose();
-  };
-
-  // const html = containsHtml(input);
-  const showResults = !!suggestion || loading || hasInaccuracies;
-  const showBackButton = showResults || onBackClick;
-
-  const handleBackClick = () => {
-    resetResults();
-    if (!showResults && onBackClick) {
-      onBackClick();
-    }
-  };
-
-  const handleAiOptionClick = (option: keyof typeof aiOptions) => {
-    setAiOptions((options) => ({ ...options, [option]: !options[option] }));
-  };
-
-  return (
-    <AiFormLayout
-      title={
-        showResults
-          ? "Rewrite Suggestion"
-          : `${constants.EXTENSION_NAME_CAPITALIZED} Rewrite`
-      }
-      skeletonHeight={skeletonHeight}
-      errorMessage={showResults ? error : ""}
-      limitReached={tokenLimitReached}
-      loading={loading}
-      onClose={onClose}
-      onBackClick={showBackButton && handleBackClick}
-      onRetryClick={showResults && handleSubmit}
-      buttons={
-        <>
-          {showResults && suggestion && (
-            <Button
-              variant="contained"
-              size="small"
-              disabled={loading}
-              onClick={handleCopyClick}
-            >
-              Copy Text
-            </Button>
-          )}
-          {!showResults && (
-            <Button
-              variant="contained"
-              size="small"
-              color="primary"
-              onClick={handleSubmit}
-            >
-              Run
-            </Button>
-          )}
-        </>
-      }
-      {...rest}
-    >
-      <Stack px={AiFormLayoutPaddings.pxValue} py={1} direction="row" gap={0.5}>
-        <AiOption
-          label={"Concise"}
-          variant="outlined"
-          selected={aiOptions.keepShort}
-          onClick={() => handleAiOptionClick("keepShort")}
-        />
-        <AiOption
-          label="Fact Check"
-          variant="outlined"
-          selected={aiOptions.factCheck}
-          onClick={() => handleAiOptionClick("factCheck")}
-        />
-      </Stack>
-      <Divider />
-      {showResults ? (
-        <Stack
-          px={AiFormLayoutPaddings.pxValue}
-          py={AiFormLayoutPaddings.pyValue}
-          ref={contentContainerRef}
-          gap={1}
-        >
-          <>
-            <CodeMarkdown>{suggestion}</CodeMarkdown>
-            {aiOptions.factCheck && inaccuracy && (
-              <Alert
-                severity={hasInaccuracies ? "warning" : "info"}
-                sx={{ whiteSpace: "pre-line" }}
-              >
-                <AlertTitle>Fact Check Result</AlertTitle>
-                {inaccuracy}
-              </Alert>
-            )}
-          </>
-        </Stack>
-      ) : (
-        <>
-          <Stack
-            px={AiFormLayoutPaddings.pxValue}
-            py={AiFormLayoutPaddings.pyValue}
-            ref={contentContainerRef}
-            gap={1}
-          >
-            {/* <Typography lineHeight={1} variant="subtitle1">
-          Select Improvements
-        </Typography> */}
-            <Stack gap={0.5} direction="row" flexWrap="wrap">
-              {improvements.map((tone) => (
-                <ToneChip
-                  key={tone}
-                  onClick={() => handleToneClick(tone)}
-                  selected={selectedImprovements.includes(tone)}
-                  variant={"outlined"}
-                  label={tone}
-                />
-              ))}
-            </Stack>
-          </Stack>
-        </>
-      )}
-    </AiFormLayout>
-  );
-}
-
 const AiLabel = styled(FormControlLabel)<{ selected: boolean }>(
   ({ theme, selected }) => ({
     borderRadius: 4,
@@ -909,19 +603,20 @@ const AiLabel = styled(FormControlLabel)<{ selected: boolean }>(
   })
 );
 
-const ToneChip = styled(Chip)<{ selected?: boolean; type?: "multistep" }>(
-  ({ selected, type }) => ({
-    cursor: "pointer",
-    fontWeight: 500,
-    "&:hover": {
-      backgroundColor: "#ac90b44a",
-    },
-    ...(selected && {
-      backgroundColor: "#ac90b44a",
-      borderColor: "#ac90b44a",
-    }),
-    ...(type === "multistep" && {
-      borderRadius: 3,
-    }),
-  })
-);
+export const ToneChip = styled(Chip)<{
+  selected?: boolean;
+  type?: "multistep";
+}>(({ selected, type }) => ({
+  cursor: "pointer",
+  fontWeight: 500,
+  ...(selected && {
+    backgroundColor: "#ac90b44a",
+    borderColor: "#ac90b44a",
+  }),
+  "&:hover": {
+    backgroundColor: "#ac90b44a !important",
+  },
+  ...(type === "multistep" && {
+    borderRadius: 3,
+  }),
+}));

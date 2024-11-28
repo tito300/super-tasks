@@ -37,8 +37,14 @@ export function TaskManager({ listId }: { listId: string }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 3 } })
   );
-  const { filteredTasks, completedTasks, pinnedTasks, isLoading, isError } =
-    useFilteredTasks();
+  const {
+    filteredTasks,
+    completedTasks,
+    pinnedTasks,
+    isLoading,
+    isError,
+    tasks,
+  } = useFilteredTasks();
 
   const moveMutation = useMoveTask(listId);
 
@@ -73,7 +79,14 @@ export function TaskManager({ listId }: { listId: string }) {
   return (
     <Stack flexGrow={1} sx={{ px: 1, pt: 0.5, mb: 1.5 }} ref={rootRef}>
       <TasksFilters />
-      <AddTask />
+      {!!tasks && tasks.length >= 100 ? (
+        <Alert severity="warning">
+          Maximum number of tasks (100) is reached. Delete old tasks to add
+          more.
+        </Alert>
+      ) : (
+        <AddTask />
+      )}
       {isLoading && !filteredTasks.length && (
         <>
           <TaskSkeleton />

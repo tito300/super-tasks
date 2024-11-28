@@ -48,16 +48,14 @@ export default function AppOauthPicker(paperProps: PaperProps) {
     if (!dataSyncing) {
       const { gTasks, gCalendar, chatGpt } = userSelectedApps;
 
-      if (tokens.google) {
-        setSelectedApps((selectedApps) => {
-          return {
-            ...selectedApps,
-            gTasks: !!gTasks,
-            gCalendar: !!gCalendar,
-            chatGpt: !!chatGpt,
-          };
-        });
-      }
+      setSelectedApps((selectedApps) => {
+        return {
+          ...selectedApps,
+          gTasks: !!gTasks,
+          gCalendar: !!gCalendar,
+          chatGpt: !!chatGpt,
+        };
+      });
     }
   }, [dataSyncing]);
 
@@ -92,6 +90,9 @@ export default function AppOauthPicker(paperProps: PaperProps) {
 
   const selectedScopes = getSelectedScopes();
   const hasSelectedApps = Object.values(selectedApps).some(
+    (selected) => selected
+  );
+  const allAppsSelected = Object.values(userSelectedApps).every(
     (selected) => selected
   );
   const hasExistingSelectedApps = Object.values(userSelectedApps).some(
@@ -141,7 +142,9 @@ export default function AppOauthPicker(paperProps: PaperProps) {
           )}
           <Stack>
             <Typography variant="h6">
-              {hasExistingSelectedApps
+              {allAppsSelected && hasExistingSelectedApps
+                ? "Re-signin below"
+                : hasExistingSelectedApps
                 ? "Add more Applications"
                 : "Pick your Applications"}
             </Typography>
@@ -243,6 +246,13 @@ const GoogleOauthButton = (
       .getGoogleAuthToken({ interactive: true, scopes: selectedScopes })
       .then(async (tokenRes) => {
         if (!tokenRes?.token) return;
+        const grantedScopes = tokenRes.grantedScopes || [];
+
+        const authorizedSelectedApps = {
+          gTasks: grantedScopes.includes(googleScopes.tasks),
+          gCalendar: grantedScopes.includes(googleScopes.calendars),
+          chatGpt: selectedApps.chatGpt,
+        };
 
         const { jwtToken, user } = await userServices
           .createUser({
@@ -271,7 +281,7 @@ const GoogleOauthButton = (
           email: tokenRes.email,
           chromeId: tokenRes.chromeId,
           subscriptionType: user.subscriptionType,
-          selectedApps,
+          selectedApps: authorizedSelectedApps,
           authWarningDismissed: false,
           authWarningDismissedAt: null,
         });

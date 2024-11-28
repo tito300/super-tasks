@@ -205,14 +205,22 @@ export function Meeting({ event }: { event: CalendarEvent }) {
           horizontal: "left",
         }}
       >
-        <Stack p={0.5} pb={2} width={345}>
+        <Stack
+          pt={2}
+          pb={2.5}
+          pl={3}
+          pr={1}
+          gap={1.5}
+          width={345}
+          borderRadius={4}
+        >
           {/* <Stack
             direction="row"
             alignItems="center"
             justifyContent="space-between"
             p={0.5}
           ></Stack> */}
-          <Stack direction="row" alignItems="flex-start" p={0.5} pl={1.5}>
+          <Stack direction="row" alignItems="flex-start">
             <Box
               borderRadius={1}
               sx={{
@@ -235,7 +243,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
               </Typography>
             </Stack>
           </Stack>
-          <Stack direction="row" alignItems="flex-start" p={1} pl={1.5}>
+          <Stack direction="row" alignItems="flex-start">
             <PeopleAltOutlined color="action" fontSize="small" sx={{ mt: 1 }} />
             <Stack ml={1}>
               <Typography variant="body1">
@@ -304,7 +312,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
             </Stack>
           </Stack>
           {event.location && (
-            <Stack direction="row" alignItems="flex-start" p={0.5} pl={1.5}>
+            <Stack direction="row" alignItems="flex-start">
               <LocationCity fontSize="small" color="action" sx={{ mt: 1 }} />
               <Stack ml={1}>
                 {event.location.includes("http") ? (
@@ -324,9 +332,9 @@ export function Meeting({ event }: { event: CalendarEvent }) {
             </Stack>
           )}
           {event.description && (
-            <Stack direction="row" alignItems="flex-start" p={0.5} pl={1.5}>
+            <Stack direction="row" alignItems="flex-start">
               <Subject fontSize="small" color="action" sx={{ mt: 1 }} />
-              <Stack ml={1}>
+              <Stack ml={1} py={1} sx={{ overflowY: "auto" }}>
                 <Box
                   sx={{ color: (theme) => theme.palette.action.active }}
                   dangerouslySetInnerHTML={{ __html: event.description }}

@@ -42,7 +42,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     darkMode: userSettings.darkMode,
     tokens: userSettings.tokens,
     selectedApps: userSettings.selectedApps,
-    position: { percentageFromLeft: null, percentageFromTop: null },
+    position: { percentageFromLeft: 99, percentageFromTop: 90 },
     authWarningDismissed: false,
     authWarningDismissedAt: null,
     email: "",

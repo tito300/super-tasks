@@ -35,6 +35,7 @@ export const initializeServices = (scriptType: ScriptType) => {
   if (!initiated) {
     if (scriptType === "Background") {
       messageEngine.onMessage("ServiceCall", async (message) => {
+        console.log("service call");
         const service = services[message.payload.serviceName];
         try {
           const response = await service[message.payload.method](

@@ -58,6 +58,7 @@ export class MessageEngine {
     if (this.scriptType !== "Background") {
       this.sendMessage("BroadcastMessage", { action, payload });
     } else {
+      this.sendMessageToPopup(action, payload, sourceScript);
       chrome.tabs.query({}, (tabs) => {
         tabs
           .sort((tab) => {
@@ -73,8 +74,20 @@ export class MessageEngine {
           });
         console.log("broadcastCounter = ", this.broadcastMessageCounter);
       });
-      this.sendMessage(action, payload, sourceScript);
     }
+  }
+
+  sendMessageToPopup<T extends TaskAction>(
+    action: T,
+    payload: TaskMessage<T>["payload"],
+    sourceScript?: ScriptType
+  ) {
+    chrome.runtime.sendMessage({
+      action,
+      payload,
+      targetScript: "Popup" as ScriptType,
+      sourceScript: sourceScript || this.scriptType,
+    });
   }
 
   sendMessageToTab<T extends TaskAction>(
@@ -100,6 +113,12 @@ export class MessageEngine {
       sendResponse: (response: MessageResponse) => void
     ) => {
       if (this.isValidMessage(message) && message.action === action) {
+        if (
+          "targetScript" in message &&
+          message.targetScript !== this.scriptType
+        )
+          return;
+
         callback(message as TaskMessage<T>)
           .then((response) => {
             sendResponse({

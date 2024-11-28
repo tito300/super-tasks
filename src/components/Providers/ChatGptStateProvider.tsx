@@ -7,7 +7,7 @@ import { useChatGptSettings } from "./ChatGptSettingsProvider";
 export const llmModels = [
   {
     label: "GPT 4o",
-    value: "chatgpt-4o-latest",
+    value: "gpt-4o",
   },
   {
     label: "GPT 4o mini",
