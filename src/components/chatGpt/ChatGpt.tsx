@@ -1,5 +1,6 @@
 import SendIcon from "@mui/icons-material/Send";
 import {
+  Alert,
   Avatar,
   Box,
   IconButton,
@@ -18,7 +19,7 @@ import {
   llmModels,
   useChatGptState,
 } from "../Providers/ChatGptStateProvider";
-import {
+import React, {
   RefObject,
   startTransition,
   useEffect,
@@ -55,13 +56,15 @@ window.Prism = window.Prism || {};
 // @ts-expect-error
 window.Prism.manual = true;
 
+const premiumModels = ["chatgpt-4o-latest"];
+
 export const ChatGpt = () => {
   const { chatGptSettings } = useChatGptSettings();
-  const scrollableContainer = useScrollableEl();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <Container>
+    <Container ref={containerRef}>
       <ChatGptControls
         settingsOpen={settingsOpen}
         onSettingsClick={() => setSettingsOpen(!settingsOpen)}
@@ -71,7 +74,7 @@ export const ChatGpt = () => {
       ) : (
         <>
           <ConversationsList />
-          <AiConversation scrollableContainer={scrollableContainer} />
+          <AiConversation scrollableContainer={containerRef.current} />
           {/* <AiRewriteActions /> */}
         </>
       )}
@@ -144,6 +147,7 @@ const Container = styled(Stack)({
   createdAt: Date.now(),
   width: "100%",
   height: 500,
+  overflow: "auto",
 });
 
 export const ConversationsList = () => {
@@ -482,14 +486,33 @@ export const AiConversation = ({
     scrollToBottom();
 
     retryAsync(() =>
-      chatGpt.getChatGptResponse(messagesClone, model, {
+      chatGpt.getChatGptResponse(messagesClone, {
         ...aiOptions,
+        model,
         ...(options?.keepShort != null && { keepShort: options.keepShort }),
       })
     )
       .then((response) => {
         messagesClone = [...messagesClone, response];
-        updateData({ messages: messagesClone, pending: false });
+
+        const addLimitReachedMessage =
+          response.limitReached && premiumModels.includes(model);
+
+        if (addLimitReachedMessage)
+          messagesClone.push({
+            type: "history",
+            message:
+              "Limit reached for premium models. Switching to a free model.",
+            direction: "inbound",
+            createdAt: Date.now(),
+            id: Date.now(),
+            limitReached: true,
+          });
+        updateData({
+          messages: messagesClone,
+          pending: false,
+          ...(addLimitReachedMessage && { model: "gpt-4o-mini" }),
+        });
         setTimeout(() => {
           scrollToMsgTop(response.id);
         }, 100);
@@ -579,10 +602,17 @@ export const AiConversation = ({
       <MessagesWrapper ref={messagesWrapperRef}>
         {messages?.length ? (
           messages.map((message, i) => {
+            if (message.type === "history")
+              return (
+                <HistoryMessage key={message.id}>
+                  {message.message}
+                </HistoryMessage>
+              );
+
             return (
               <Message
-                id={`${constants.EXTENSION_NAME}-message-${message.id}`}
                 key={message.id}
+                id={`${constants.EXTENSION_NAME}-message-${message.id}`}
                 message={message}
               />
             );
@@ -777,6 +807,7 @@ export const Message = ({
           borderRadius: 3,
           filter: blurText ? "blur(7px)" : "none",
           backgroundColor: message.error ? "#ffb4b4" : "white",
+          maxWidth: 300,
         }}
       >
         {inbound ? (
@@ -815,4 +846,12 @@ export const Message = ({
 
 function truncateText(text: string, maxLength: number) {
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
+function HistoryMessage({ children }: { children: React.ReactNode }) {
+  return (
+    <Box width={"100%"} py={1.5} px={3} display="flex" justifyContent="center">
+      <Alert severity="warning">{children}</Alert>
+    </Box>
+  );
 }

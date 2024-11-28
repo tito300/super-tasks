@@ -115,8 +115,8 @@ const Container = styled("div")<{ ownerProps: OwnerState }>(
         ? {}
         : {
             ...(snap && {
-              width: 12, // width of the container is bigger than actual colored element width to give user more space to hover
-              height: 40, // height of the container is bigger than actual colored element height to give user more space to hover
+              width: 18, // width of the container is bigger than actual colored element width to give user more space to hover
+              height: 60, // height of the container is bigger than actual colored element height to give user more space to hover
             }),
             "&:hover": {
               height: getButtonsExpandedSize(elements.length, elementSize),
@@ -177,13 +177,15 @@ const ElementContainer = styled("div")<{
   opacity: 0,
   transform: "scale(0.15)",
   bottom: 0,
-  ...(ownerState.snapDirection === "right" ? { right: 0 } : { left: 0 }),
+  // @ts-ignore
+  right: 0,
+  ...(ownerState.snap && ownerState.snapDirection === "left" && { left: 0 }),
   ...(primary &&
     ownerState.snap && {
-      width: 4,
+      width: 5,
       height: 26,
       backgroundColor: "#ff9f20",
-      background: "linear-gradient(to bottom, #ff9f20, #ffd7b7)",
+      background: "linear-gradient(to bottom, #e78300, #ffbd89)",
       pointerEvents: "auto",
       opacity: 1,
       transform: "translateY(-50%)",
@@ -209,7 +211,7 @@ const ElementContainer = styled("div")<{
     !ownerState.snap && {
       opacity: 1,
       pointerEvents: "auto",
-      background: "linear-gradient(45deg, #ff9e0e, #ffdb6f)",
+      background: "linear-gradient(45deg, #dc8300, #ffb834)",
       borderRadius: "50%",
       "& *": {
         opacity: 0,

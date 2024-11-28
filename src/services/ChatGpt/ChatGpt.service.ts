@@ -11,6 +11,7 @@ import { ServiceObject } from "..";
 
 export type AiQuickActionsBody = {
   text: string;
+  model: LlmModel;
   aiOptions: {
     factCheck: boolean;
     keepShort: boolean;
@@ -26,24 +27,14 @@ export type AiQuickActionsResponse = {
 export const chatGptService: ServiceObject = {
   getChatGptResponse: async (
     messages: ChatMessage[],
-    model: LlmModel,
     aiOptions: {
       keepShort?: boolean;
+      model: LlmModel;
     }
   ) => {
-    //   await wait(2000);
-    //   return {
-    //     id: 1,
-    //     direction: "inbound",
-    //     createdAt: Date.now(),
-    //     message: `
-    //       this is an api response message
-    //   `,
-    //   } as ChatMessage;
     return fetcher
       .post(`${urls.BASE_URL}/ai/chat`, {
         messages,
-        model,
         aiOptions,
       })
       .then((res) => res.json())
@@ -65,18 +56,19 @@ export const chatGptService: ServiceObject = {
     input,
     checkInaccuracies,
     keepShort,
+    model,
   }: {
     improvements: Tone[];
     input: string;
     checkInaccuracies?: boolean;
     keepShort?: boolean;
+    model: LlmModel;
   }) => {
     return fetcher
       .post(`${urls.BASE_URL}/ai/rewrite`, {
         input,
         improvements,
-        checkInaccuracies,
-        keepShort,
+        aiOptions: { factCheck: checkInaccuracies, keepShort, model },
       })
       .then((res) => res.json())
       .then((res) => {

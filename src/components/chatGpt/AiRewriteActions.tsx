@@ -43,6 +43,8 @@ import { StyledPopper } from "../shared/StyledPopper";
 import { StyledPopover } from "../shared/StyledPopover";
 import { AiConversation, ConversationActions } from "./ChatGpt";
 import { useLogRender } from "@src/hooks/useLogRender";
+import { LlmModel } from "../Providers/ChatGptStateProvider";
+import { ShadowDomPortal } from "../shared/ShadowDomPortal";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -253,13 +255,20 @@ export function AiSelectedText() {
     factCheck: boolean;
     keepShort: boolean;
     fullPage: boolean;
-  }>({ factCheck: false, keepShort: false, fullPage: false });
+    model: LlmModel["value"];
+  }>({
+    factCheck: false,
+    keepShort: false,
+    fullPage: false,
+    model: "chatgpt-4o-latest",
+  });
   const [factCheckMessage, setFactCheckMessage] = useState<string | null>(null);
   const [hasInaccuracies, setHasInaccuracies] = useState(false);
   const [currentSelectedText, setCurrentSelectedText] = useState<string | null>(
     null
   );
   const [conversationKey, setConversationKey] = useState(0);
+  const [tokenLimitReached, setTokenLimitReached] = useState(false);
   const conversationActions = useRef<ConversationActions>(null);
 
   const selectedAction = selectedActionsHistory.length
@@ -325,6 +334,9 @@ export function AiSelectedText() {
           setHasInaccuracies(res.hasInaccuracies);
           setFactCheckMessage(res.inaccuracyMessage);
         }
+        if (res.limitReached) {
+          setTokenLimitReached(true);
+        }
       })
       .catch((error) => {
         setErrorMessage("Sorry, something went wrong.");
@@ -385,7 +397,7 @@ export function AiSelectedText() {
   };
 
   return (
-    <StyledPortal
+    <ShadowDomPortal
       style={{
         position: "absolute",
         top: 0,
@@ -393,7 +405,6 @@ export function AiSelectedText() {
         zIndex: Number.MAX_SAFE_INTEGER - 10,
         display: showComponent ? "block" : "none",
       }}
-      container={document.body}
     >
       <AiTooltipButtons
         ref={containerRef}
@@ -465,6 +476,7 @@ export function AiSelectedText() {
           }
           skeletonHeight={100}
           errorMessage={errorMessage}
+          limitReached={tokenLimitReached}
           loading={loading}
           onClose={handleClose}
           onRetryClick={showResults && (() => handleSubmit(selectedAction!))}
@@ -483,7 +495,7 @@ export function AiSelectedText() {
             )
           }
         >
-          {selectedAction && (
+          {selectedAction && !errorMessage && (
             <Stack
               px={AiFormLayoutPaddings.pxValue}
               py={1}
@@ -606,7 +618,7 @@ export function AiSelectedText() {
         </AiFormLayout>
         <Divider />
       </StyledPopover>
-    </StyledPortal>
+    </ShadowDomPortal>
   );
 }
 
@@ -688,12 +700,15 @@ function AiReWriteForm(
   const [aiOptions, setAiOptions] = useState<{
     factCheck: boolean;
     keepShort: boolean;
+    model: LlmModel["value"];
   }>({
     factCheck: props.keepShort || false,
     keepShort: props.factCheck || false,
+    model: "chatgpt-4o-latest",
   });
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const [skeletonHeight, setSkeletonHeight] = useState(150);
+  const [tokenLimitReached, setTokenLimitReached] = useState(false);
 
   const { input, updateInput, onClose, onBackClick, ...rest } = props;
 
@@ -723,11 +738,13 @@ function AiReWriteForm(
         input,
         checkInaccuracies: aiOptions.factCheck,
         keepShort: aiOptions.keepShort,
+        model: aiOptions.model,
       })
       .then((res) => {
         setSuggestion(res.message);
         seInaccuracy(res.inaccuracyMessage);
-        setHasInaccuracies(res.hasInaccuracies);
+        setHasInaccuracies(!!res.hasInaccuracies);
+        setTokenLimitReached(!!res.limitReached);
       })
       .catch((error) => {
         setError("Sorry, something went wrong.");
@@ -782,6 +799,7 @@ function AiReWriteForm(
       }
       skeletonHeight={skeletonHeight}
       errorMessage={showResults ? error : ""}
+      limitReached={tokenLimitReached}
       loading={loading}
       onClose={onClose}
       onBackClick={showBackButton && handleBackClick}

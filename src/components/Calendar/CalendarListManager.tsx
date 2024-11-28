@@ -17,8 +17,8 @@ export function CalendarListManager(stackProps: StackProps) {
   useEffect(() => {
     if (!selectedCalendarId && !!calendarList?.length) {
       updateCalendarState({
-        // selectedCalendarId: calendarList.find((c) => c.primary)?.id,
-        selectedCalendarId: "tarek.demachkie@gmail.com",
+        selectedCalendarId: calendarList.find((c) => c.primary)?.id,
+        // selectedCalendarId: "tarek.demachkie@gmail.com",
       });
     }
   }, [calendarList, selectedCalendarId]);

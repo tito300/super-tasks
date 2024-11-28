@@ -9,6 +9,8 @@ import { styled } from "@mui/material";
 const Container = styled("div")({});
 
 /**
+ * WARNING: Do not use directly if you don't want to affect page styles
+ *
  * StyledPortal should be used to render components that need to be styled by the extension's theme.
  * By default portals are rendered in the body of the document, which means they are not styled by the extension's theme.
  */
@@ -18,7 +20,7 @@ export function StyledPortal({
   ...rest
 }: {
   children: React.ReactNode;
-  container: HTMLElement;
+  container: HTMLElement | ShadowRoot;
 } & React.HTMLAttributes<HTMLDivElement>) {
   const [containerEl, setOpenRewriteContainerEl] =
     useState<HTMLDivElement | null>(null);
@@ -32,7 +34,11 @@ export function StyledPortal({
     });
   }, [containerEl]);
   return createPortal(
-    <Container ref={(el) => setOpenRewriteContainerEl(el)} {...rest}>
+    <Container
+      id="axess-styled-portal"
+      ref={(el) => setOpenRewriteContainerEl(el)}
+      {...rest}
+    >
       <style>{`
           *{box-sizing: border-box;}
         `}</style>

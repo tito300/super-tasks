@@ -14,6 +14,8 @@ import {
 
 export class MessageEngine {
   scriptType: ScriptType | undefined;
+  broadcastMessageCounter = 0;
+
   constructor(scriptType: ScriptType) {
     this.scriptType = scriptType;
     this[`init${scriptType}`]();
@@ -66,8 +68,10 @@ export class MessageEngine {
             if (options?.highlightedOnly && !tab.highlighted) return;
             if (options?.activeTabOnly && !tab.active) return;
 
+            this.broadcastMessageCounter++;
             this.sendMessageToTab(tab.id!, action, payload, sourceScript);
           });
+        console.log("broadcastCounter = ", this.broadcastMessageCounter);
       });
       this.sendMessage(action, payload, sourceScript);
     }

@@ -8,6 +8,7 @@ import { Button } from "@mui/material";
 import { ChevronLeft, Close } from "@mui/icons-material";
 import React from "react";
 import { constants } from "@src/config/constants";
+import { Alert } from "@mui/material";
 
 type falsyValue = false | null | undefined;
 export const AiFormLayout = React.forwardRef<
@@ -26,6 +27,7 @@ export const AiFormLayout = React.forwardRef<
     footer?: React.ReactNode;
     headerButtons?: React.ReactNode;
     contentContainerRef?: React.RefObject<HTMLDivElement>;
+    limitReached?: boolean;
   } & PaperProps
 >(function _AiFormLayout(
   {
@@ -42,6 +44,7 @@ export const AiFormLayout = React.forwardRef<
     headerButtons,
     contentContainerRef,
     disableFooterBackButton,
+    limitReached,
     onClose,
     ...rest
   },
@@ -85,11 +88,6 @@ export const AiFormLayout = React.forwardRef<
             minHeight: skeletonHeight ?? 0,
           }}
         >
-          {errorMessage && (
-            <Typography px={AiFormLayoutPaddings.pxValue} color="error">
-              {errorMessage}
-            </Typography>
-          )}
           {loading ? (
             <Box
               px={AiFormLayoutPaddings.pxValue}
@@ -102,8 +100,22 @@ export const AiFormLayout = React.forwardRef<
               />
             </Box>
           ) : (
-            // prettier-ignore
-            children
+            <>
+              {errorMessage && (
+                <Typography px={AiFormLayoutPaddings.pxValue} color="error">
+                  {errorMessage}
+                </Typography>
+              )}
+              {/* // prettier-ignore */}
+              {children}
+              {limitReached && (
+                <Alert severity="warning">
+                  Daily limit is reached on premium models. Results will be
+                  generated using the free model. We’ll offer upgrade options in
+                  the future. Thanks for being an early Axess user!
+                </Alert>
+              )}
+            </>
           )}
         </AiModalContentContainer>
         {hasFooter && (

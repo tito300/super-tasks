@@ -11,6 +11,7 @@ import { commonTheme } from "@src/theme/common.theme";
 import { useState, useMemo } from "react";
 import createCache from "@emotion/cache";
 import { styled } from "@mui/material";
+import { ShadowDomPortal } from "./ShadowDomPortal";
 
 const StyledPopoverContainer = styled("div")({});
 
@@ -19,34 +20,38 @@ export function StyledPopover({
   sx,
   ...rest
 }: { children: React.ReactNode; sx?: SxProps } & PopoverProps) {
-  const [containerEl, setOpenRewriteContainerEl] =
-    useState<HTMLDivElement | null>(null);
+  // const [containerEl, setOpenRewriteContainerEl] =
+  //   useState<HTMLDivElement | null>(null);
 
-  const cache = useMemo(() => {
-    if (!containerEl) return null;
+  // const cache = useMemo(() => {
+  //   if (!containerEl) return null;
 
-    return createCache({
-      key: `${constants.EXTENSION_NAME}-css`,
-      container: containerEl as HTMLElement,
-    });
-  }, [containerEl]);
+  //   return createCache({
+  //     key: `${constants.EXTENSION_NAME}-css`,
+  //     container: containerEl as HTMLElement,
+  //   });
+  // }, [containerEl]);
 
   return (
-    <Popover sx={{ zIndex: 1000 }} {...rest}>
-      <StyledPopoverContainer
-        id={`${constants.EXTENSION_NAME}-popover-container`}
-        sx={sx}
-        ref={(el) => setOpenRewriteContainerEl(el)}
-      >
-        <style>{`
+    <ShadowDomPortal>
+      <Popover disablePortal sx={{ zIndex: 1000 }} {...rest}>
+        {/* <StyledPopoverContainer
+          id={`${constants.EXTENSION_NAME}-popover-container`}
+          sx={sx}
+          ref={(el) => setOpenRewriteContainerEl(el)}
+        >
+          <style>{`
           *{box-sizing: border-box;}
         `}</style>
-        {cache && (
-          <CacheProvider value={cache!}>
-            <ThemeProvider theme={commonTheme}>{children}</ThemeProvider>
-          </CacheProvider>
-        )}
-      </StyledPopoverContainer>
-    </Popover>
+          {cache && (
+            <CacheProvider value={cache!}>
+              <ThemeProvider theme={commonTheme}> */}
+        {children}
+        {/* </ThemeProvider>
+            </CacheProvider>
+          )}
+        </StyledPopoverContainer> */}
+      </Popover>
+    </ShadowDomPortal>
   );
 }
