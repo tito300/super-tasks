@@ -32,7 +32,7 @@ export const TaskServices: ServiceObject = {
   },
   getTasks: async (listId: string) => {
     const tasks = await fetcher
-      .getWithCache(`${urls.BASE_URL}/tasks/${listId}/tasks`, {
+      .getWithCache(`${urls.BASE_URL}/taskLists/${listId}/tasks`, {
         cacheKey: `tasks-${listId}`,
       })
       .then((res) => res.json())
@@ -46,7 +46,7 @@ export const TaskServices: ServiceObject = {
   },
   getTaskLists: async () => {
     return fetcher
-      .getWithCache(`${urls.BASE_URL}/tasks`, { cacheKey: "taskLists" })
+      .getWithCache(`${urls.BASE_URL}/taskLists`, { cacheKey: "taskLists" })
       .then((res) => res.json())
       .then((res) => {
         return (res?.items || []) as TaskList[];
@@ -59,7 +59,7 @@ export const TaskServices: ServiceObject = {
   ) => {
     return fetcher
       .post(
-        `${urls.BASE_URL}/tasks/${listId}/tasks?previous=${
+        `${urls.BASE_URL}/taskLists/${listId}/tasks?previous=${
           previousTaskId ?? ""
         }`,
         task
@@ -72,7 +72,7 @@ export const TaskServices: ServiceObject = {
   updateTask: async (listId: string, task: SavedTask) => {
     TaskServices.updateLocalTaskState(task);
     return fetcher
-      .post(`${urls.BASE_URL}/tasks/${listId}/tasks/${task.id}`, task)
+      .post(`${urls.BASE_URL}/taskLists/${listId}/tasks/${task.id}`, task)
       .then((res) => res.json())
       .then((res) => {
         return res as SavedTask;
@@ -84,7 +84,7 @@ export const TaskServices: ServiceObject = {
     previousTaskId?: string | null
   ) => {
     return fetcher
-      .post(`${urls.BASE_URL}/tasks/${listId}/tasks/${taskId}/move`, {
+      .post(`${urls.BASE_URL}/taskLists/${listId}/tasks/${taskId}/move`, {
         previousTaskId,
       })
       .then((res) => res.json())
@@ -93,7 +93,9 @@ export const TaskServices: ServiceObject = {
       });
   },
   deleteTask: async (listId: string, taskId: string) => {
-    return fetcher.delete(`${urls.BASE_URL}/tasks/${listId}/tasks/${taskId}`);
+    return fetcher.delete(
+      `${urls.BASE_URL}/taskLists/${listId}/tasks/${taskId}`
+    );
   },
   setReminder: async (
     taskId: string,

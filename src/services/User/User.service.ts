@@ -5,7 +5,7 @@ import {
   userSettingsDefaults,
 } from "@src/config/settingsDefaults";
 import { storageService } from "@src/storage/storage.service";
-import { fetcher, setupGoogleToken, setupJwtToken } from "../fetcher";
+import { fetcher, setupJwtToken } from "../fetcher";
 import { ServiceObject } from "..";
 import { urls } from "@src/config/urls";
 
@@ -24,9 +24,6 @@ export const userService: ServiceObject = {
     });
   },
 
-  async setGoogleTokenHeader(token?: string) {
-    setupGoogleToken(token);
-  },
   async setJwtTokenHeader(token?: string) {
     setupJwtToken(token);
   },
@@ -46,8 +43,6 @@ export const userService: ServiceObject = {
       const requiredScopesGranted = tokenRes?.token
         ? scopes.every((scope) => tokenRes?.grantedScopes?.includes?.(scope))
         : false;
-
-      userService.setGoogleTokenHeader(tokenRes.token);
 
       const userInfo = await userService.getUserInfo();
 
@@ -93,7 +88,7 @@ export const userService: ServiceObject = {
       });
     return { jwtToken, user: createdUser };
   },
-  async generateJwtToken(body: { accountId: string; googleToken: string }) {
+  async generateJwtToken(body: { email: string; googleToken: string }) {
     return fetcher
       .post(`${urls.BASE_URL}/auth/login`, body)
       .then((res) => res.json())

@@ -21,6 +21,7 @@ import { useScriptType } from "../Providers/ScriptTypeProvider";
 import { constants } from "@src/config/constants";
 import { googleScopes } from "@src/config/googleScopes";
 import { TabName } from "@src/config/settingsDefaults";
+import { LoadingButton } from "@mui/lab";
 
 const extensionId = chrome.runtime.id;
 type SelectedApp = {
@@ -66,7 +67,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   };
 
   const getSelectedScopes = () => {
-    const selectedScopes: string[] = [googleScopes.email];
+    const selectedScopes: string[] = [googleScopes.email, googleScopes.openId];
     if (selectedApps.gTasks) {
       selectedScopes.push(googleScopes.tasks);
     }
@@ -234,6 +235,7 @@ const GoogleOauthButton = (
     selectedApps: { gTasks: boolean; gCalendar: boolean; chatGpt: boolean };
   }
 ) => {
+  const [loading, setLoading] = useState(false);
   const { user: userServices } = useServicesContext();
   const {
     data: { tokens },
@@ -242,6 +244,7 @@ const GoogleOauthButton = (
   const { selectedScopes, selectedApps, ...rest } = props;
 
   const handleClick = async () => {
+    setLoading(true);
     userServices
       .getGoogleAuthToken({ interactive: true, scopes: selectedScopes })
       .then(async (tokenRes) => {
@@ -259,6 +262,7 @@ const GoogleOauthButton = (
             email: tokenRes.email,
             accountId: tokenRes.chromeId,
             subscriptionType: "free",
+            googleToken: tokenRes.token,
           })
           .catch((err: any) => {
             console.error(err);
@@ -285,11 +289,13 @@ const GoogleOauthButton = (
           authWarningDismissed: false,
           authWarningDismissedAt: null,
         });
-      });
+      })
+      .finally(() => setLoading(false));
   };
   return (
-    <Button
+    <LoadingButton
       variant="outlined"
+      loading={loading}
       onClick={handleClick}
       startIcon={
         <IconImage
@@ -301,7 +307,7 @@ const GoogleOauthButton = (
       sx={{ textTransform: "none", ...rest.sx }}
     >
       Sign in with Google
-    </Button>
+    </LoadingButton>
   );
 };
 

@@ -3,4 +3,5 @@ export const googleScopes = {
   tasks: "https://www.googleapis.com/auth/tasks",
   calendars: "https://www.googleapis.com/auth/calendar",
   events: "https://www.googleapis.com/auth/calendar.events",
+  openId: "openid",
 };

@@ -33,12 +33,6 @@ export function OauthRequired({
     return scopes;
   }
 
-  useLayoutEffect(() => {
-    if (userState.tokens.google) {
-      userServices.setGoogleTokenHeader(userState.tokens.google);
-    }
-  }, [userState.tokens.google]);
-
   useEffect(() => {
     if (!dataSyncing && (!userState.tokens.google || !userState.tokens.jwt)) {
       getAuthToken();
@@ -81,7 +75,10 @@ export function OauthRequired({
           }
         }
 
-        const jwtToken = await userServices.generateJwtToken();
+        const jwtToken = await userServices.generateJwtToken({
+          googleToken: tokenRes.token,
+          accountId: tokenRes.email,
+        });
         userServices.setJwtTokenHeader(jwtToken);
 
         updateUserState({

@@ -226,6 +226,7 @@ export const MessageComposer = ({
       <TextField
         value={value}
         variant="filled"
+        autoFocus
         multiline
         placeholder="Type a message"
         fullWidth
