@@ -1,13 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SavedTask, TaskEnhanced } from "../components/Task/Task";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 import { useCallback, useEffect, useState } from "react";
-import {
-  TasksState,
-  useTasksState,
-} from "@src/components/Providers/TasksStateProvider";
+import { useTasksState } from "@src/components/Providers/TasksStateProvider";
 import { StorageData, storageService } from "@src/storage/storage.service";
+import { useCustomQuery } from "@src/hooks/useCustomQuery";
 
 export type TaskList = {
   id: string;
@@ -24,7 +22,7 @@ export const useTasks = ({
     data: { selectedTaskListId },
   } = useTasksState();
 
-  return useQuery<SavedTask[]>({
+  return useCustomQuery<SavedTask[]>({
     queryKey: ["tasks", selectedTaskListId],
     queryFn: async () => {
       if (!selectedTaskListId) return [];
@@ -35,28 +33,18 @@ export const useTasks = ({
       );
 
       return sortedData;
-      // } catch (err) {
-      //   console.error(err);
-      //   return [];
-      // }
     },
     enabled: enabled ?? !!selectedTaskListId,
-    // stale time prevents refetching for things like when user focuses on page
-    // If you need to force a refetch, use queryClient.invalidateQueries
-    staleTime: 1000 * 60 * 5, // 5 minutes,
   });
 };
 
 export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
   const { task } = useServicesContext();
-  return useQuery<TaskList[]>({
+  return useCustomQuery<TaskList[]>({
     queryKey: ["taskLists"],
     placeholderData: [] as TaskList[],
-    queryFn: async () => {
-      return task.getTaskLists();
-    },
+    queryFn: () => task.getTaskLists(),
     enabled,
-    staleTime: 1000 * 60 * 60 * 2, // 5 minutes
   });
 };
 

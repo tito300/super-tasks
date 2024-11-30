@@ -30,9 +30,7 @@ export function TaskListManager() {
   const {
     data: { buttonExpanded },
   } = useUserState();
-  const { data } = useTaskLists({
-    enabled: scriptType === "Popup" ? true : buttonExpanded,
-  });
+  const { data } = useTaskLists();
 
   const queryClient = useQueryClient();
   const {

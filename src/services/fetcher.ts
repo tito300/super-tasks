@@ -36,9 +36,43 @@ export function fetcher(url: string, options: RequestInit = {}) {
   });
 }
 
-fetcher.get = (url: string, options: RequestInit = {}) => {
-  return fetcher(url, { method: "GET", ...options });
+type Timestamp = number;
+const cache: Record<
+  string,
+  {
+    timestamp: Timestamp;
+    data: any;
+    response: Response;
+  }
+> = {};
+
+fetcher.get = async (url: string, options: RequestInit = {}) => {
+  if (cache[url] && Date.now() - cache[url].timestamp < 1000 * 10) {
+    console.log("Using cache for", url);
+    const response = cache[url].response;
+    response.json = async () => cache[url].data;
+    return Promise.resolve(response);
+  }
+
+  const response = await fetcher(url, { method: "GET", ...options });
+  const data = await response.json();
+  cache[url] = {
+    timestamp: Date.now(),
+    data,
+    response,
+  };
+  cleanupCache();
+  return response;
 };
+
+function cleanupCache() {
+  const now = Date.now();
+  Object.keys(cache).forEach((key) => {
+    if (now - cache[key].timestamp > 1000 * 60) {
+      delete cache[key];
+    }
+  });
+}
 
 fetcher.post = (url: string, body: any, options: RequestInit = {}) => {
   return fetcher(url, {

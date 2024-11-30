@@ -120,7 +120,7 @@ export function TaskManager({ listId }: { listId: string }) {
                 filteredTasks.map((task) => (
                   <Task
                     loading={isLoading}
-                    key={task.id || task.title}
+                    key={task.id + task.title}
                     listId={listId}
                     data={task}
                   />
