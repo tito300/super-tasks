@@ -26,7 +26,6 @@ export const useCalendarEvents = ({
       if (!selectedCalendarId) return [];
 
       const data = await calendarService.getCalendarEvents(selectedCalendarId);
-      console.log("data", data);
       return data;
     },
     enabled: !!selectedCalendarId,

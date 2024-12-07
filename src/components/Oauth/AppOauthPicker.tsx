@@ -39,7 +39,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   });
   const scriptType = useScriptType();
   const {
-    data: { selectedApps: userSelectedApps, tokens, authWarningDismissed },
+    data: { selectedApps: savedSelectedApps, tokens, authWarningDismissed },
     dataSyncing,
     updateData: updateUserState,
   } = useUserState();
@@ -47,7 +47,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
 
   useEffect(() => {
     if (!dataSyncing) {
-      const { gTasks, gCalendar, chatGpt } = userSelectedApps;
+      const { gTasks, gCalendar, chatGpt } = savedSelectedApps;
 
       setSelectedApps((selectedApps) => {
         return {
@@ -93,14 +93,26 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   const hasSelectedApps = Object.values(selectedApps).some(
     (selected) => selected
   );
-  const allAppsSelected = Object.values(userSelectedApps).every(
+  const allAppsSelected = Object.values(savedSelectedApps).every(
     (selected) => selected
   );
-  const hasExistingSelectedApps = Object.values(userSelectedApps).some(
+  const noAppsSelected = Object.values(savedSelectedApps).every(
+    (selected) => !selected
+  );
+  const hasExistingSelectedApps = Object.values(savedSelectedApps).some(
     (selected) => selected
   );
 
+  const selectedAppsCount =
+    Object.values(selectedApps).filter((selected) => selected).length || 0;
+  const savedSelectedAppsCount =
+    Object.values(savedSelectedApps).filter((selected) => selected).length || 0;
+  const hasUnselectedApps = savedSelectedAppsCount < 3;
+
   if (authWarningDismissed && scriptType !== "Popup") return null;
+  const newAppsSelected =
+    !tokens.google || selectedAppsCount > savedSelectedAppsCount;
+  const modified = selectedAppsCount !== savedSelectedAppsCount;
 
   return (
     <Paper
@@ -114,7 +126,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
             <Stack>
               <Typography variant="h6">Existing Applications</Typography>
               <Stack direction="row" gap={1}>
-                {userSelectedApps.gCalendar && (
+                {savedSelectedApps.gCalendar && (
                   <AppImg
                     title="Google Calendar"
                     selected={selectedApps.gCalendar}
@@ -122,7 +134,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
                     src={googleCalendar}
                   />
                 )}
-                {userSelectedApps.gTasks && (
+                {savedSelectedApps.gTasks && (
                   <AppImg
                     title="Google Tasks"
                     selected={selectedApps.gTasks}
@@ -130,7 +142,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
                     src={`chrome-extension://${extensionId}${googleTasks}`}
                   />
                 )}
-                {userSelectedApps.chatGpt && (
+                {savedSelectedApps.chatGpt && (
                   <AppImg
                     title="Chatgpt"
                     selected={selectedApps.chatGpt}
@@ -143,11 +155,11 @@ export default function AppOauthPicker(paperProps: PaperProps) {
           )}
           <Stack>
             <Typography variant="h6">
-              {allAppsSelected && hasExistingSelectedApps
-                ? "Re-signin below"
-                : hasExistingSelectedApps
+              {hasUnselectedApps
                 ? "Add more Applications"
-                : "Pick your Applications"}
+                : noAppsSelected
+                ? "Pick your Applications"
+                : ""}
             </Typography>
             {!hasExistingSelectedApps && (
               <Typography variant="subtitle2" pb={1.5}>
@@ -155,7 +167,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
               </Typography>
             )}
             <Stack direction="row" gap={1}>
-              {!userSelectedApps.gCalendar && (
+              {!savedSelectedApps.gCalendar && (
                 <AppImg
                   title="Google Calendar"
                   selected={selectedApps.gCalendar}
@@ -163,7 +175,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
                   src={googleCalendar}
                 />
               )}
-              {!userSelectedApps.gTasks && (
+              {!savedSelectedApps.gTasks && (
                 <AppImg
                   title="Google Tasks"
                   selected={selectedApps.gTasks}
@@ -171,7 +183,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
                   src={`chrome-extension://${extensionId}${googleTasks}`}
                 />
               )}
-              {!userSelectedApps.chatGpt && (
+              {!savedSelectedApps.chatGpt && (
                 <AppImg
                   title="Chatgpt"
                   selected={selectedApps.chatGpt}
@@ -181,23 +193,26 @@ export default function AppOauthPicker(paperProps: PaperProps) {
               )}
             </Stack>
             <Stack direction="row" justifyContent="flex-end" marginTop={1}>
-              {step === 0 && (
-                <Button
-                  disabled={!selectedApps}
-                  variant="contained"
-                  onClick={() => setStep((step) => step + 1)}
-                >
-                  Next
-                </Button>
-              )}
-              {step === 1 && (
+              {newAppsSelected ? (
                 // && selectedApp === "google"
                 <GoogleOauthButton
                   disabled={!hasSelectedApps}
                   selectedScopes={selectedScopes}
                   selectedApps={selectedApps}
                 />
-              )}
+              ) : modified ? (
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    updateUserState({
+                      selectedApps: selectedApps,
+                      currentTab: "tasks",
+                    });
+                  }}
+                >
+                  Save
+                </Button>
+              ) : null}
             </Stack>
           </Stack>
         </Stack>

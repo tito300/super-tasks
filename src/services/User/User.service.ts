@@ -8,6 +8,7 @@ import { storageService } from "@src/storage/storage.service";
 import { fetcher, setupJwtToken } from "../fetcher";
 import { ServiceObject } from "..";
 import { urls } from "@src/config/urls";
+import { revokeGoogleToken } from "./utils/revokeGoogleToken";
 
 export type UserServiceMethodName = keyof typeof userService;
 export const userService: ServiceObject = {
@@ -57,6 +58,16 @@ export const userService: ServiceObject = {
       console.error(err);
       return { token: null, requiredScopesGranted: false };
     }
+  },
+  async revokeUserToken(token?: string) {
+    if (!token) {
+      console.error("No token provided to revoke");
+      return;
+    }
+    await revokeGoogleToken(token);
+    return chrome.identity.removeCachedAuthToken({
+      token,
+    });
   },
   async getUserInfo() {
     return chrome.identity.getProfileUserInfo({

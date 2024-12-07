@@ -16,7 +16,6 @@ chrome.tabs.onCreated.addListener(function (tab) {
     chrome.tabs.update(tab.id as number, {
       url: "https://www.google.com?axs=t",
     });
-    console.log("new tab created", tab);
   }
 });
 

@@ -115,8 +115,6 @@ export function getTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
     return aStart ? aStart.diff(bStart) : 0;
   });
 
-  // console.log("sortedEvents", sortedEvents);
-  // return getCalendarEvents();
   return sortedEvents;
 }
 

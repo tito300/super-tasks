@@ -126,7 +126,8 @@ export type AiAction =
   | "Answer"
   | "PeerReview"
   | "Chat"
-  | "factCheck";
+  | "factCheck"
+  | "Fix";
 
 export const AiActionMap = {
   Explain: "Explain",
@@ -137,6 +138,7 @@ export const AiActionMap = {
   Answer: "Answer",
   Chat: "Chat",
   factCheck: "Fact Check",
+  Fix: "Fix",
 };
 
 export function AiSelectedText() {

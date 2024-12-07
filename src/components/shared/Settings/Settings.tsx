@@ -10,6 +10,8 @@ import {
 } from "@mui/material";
 import { ExtensionSettings } from "./ExtensionSettings";
 import { AiSettings } from "@src/components/chatGpt/settings/AiSettings";
+import { useUserState } from "@src/components/Providers/UserStateProvider";
+import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 
 export function Settings() {
   return (
@@ -75,6 +77,56 @@ export function Settings() {
           <Button>Agree</Button>
         </AccordionActions>
       </Accordion> */}
+      <Stack
+        width="100%"
+        direction="row"
+        gap={1}
+        px={2}
+        py={1.5}
+        alignItems="center"
+        justifyContent={"flex-end"}
+      >
+        <AddMoreIntegrations />
+        <SignOut />
+      </Stack>
     </Stack>
+  );
+}
+
+function SignOut() {
+  const { data: userState, updateData } = useUserState();
+  const { user: userService } = useServicesContext();
+  const handleClick = () => {
+    userService.revokeUserToken(userState.tokens.google).then(() => {
+      updateData({
+        tokens: {
+          ...userState.tokens,
+          google: "",
+        },
+      });
+    });
+  };
+
+  if (!userState.tokens.google) return null;
+
+  return (
+    <Button variant="contained" color="error" onClick={handleClick}>
+      Sign Out
+    </Button>
+  );
+}
+
+function AddMoreIntegrations() {
+  const { updateData } = useUserState();
+  return (
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={() => {
+        updateData({ currentTab: "add" });
+      }}
+    >
+      Modify Integrations
+    </Button>
   );
 }
