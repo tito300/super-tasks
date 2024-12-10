@@ -688,10 +688,10 @@ export const ChatActionChip = styled(Chip)<{ selected?: boolean }>(
       color: "white",
     }),
     ["&:hover"]: {
-      backgroundColor: theme.palette.grey[200],
+      backgroundColor: theme.palette.grey[200] + " !important",
       boxShadow: "0px 1px 4px #00000035",
       ...(selected && {
-        backgroundColor: theme.palette.primary.main,
+        backgroundColor: theme.palette.primary.main + " !important",
         boxShadow: "none",
       }),
     },

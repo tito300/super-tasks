@@ -136,4 +136,12 @@ export const chatGptService: ServiceObject = {
         return res as AiQuickActionsResponse;
       });
   },
+  fix: async (body: AiQuickActionsBody) => {
+    return fetcher
+      .post(`${urls.BASE_URL}/ai/quick-action`, { action: "Fix", ...body })
+      .then((res) => res.json())
+      .then((res) => {
+        return res as AiQuickActionsResponse;
+      });
+  },
 };

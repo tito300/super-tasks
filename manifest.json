@@ -53,7 +53,8 @@
         "google-tasks-icon.png",
         "chatgpt-icon.png",
         "logo_1_128x128.png",
-        "logo_1_32x32.png"
+        "logo_1_32x32.png",
+        "logo_1_32x32_filled.png"
       ],
       "matches": ["<all_urls>"]
     }

@@ -53,7 +53,7 @@ export const AiFormLayout = React.forwardRef<
   const hasFooter =
     (!disableFooterBackButton && onBackClick) || buttons || onRetryClick;
   return (
-    <AiModalContainer ref={ref} elevation={3} hidden={hidden} {...rest}>
+    <AiModalContainer ref={ref} elevation={0} hidden={hidden} {...rest}>
       <HeaderContainer
         direction="row"
         justifyContent="space-between"
@@ -64,17 +64,24 @@ export const AiFormLayout = React.forwardRef<
             <ChevronLeft />
           </IconButton>
         )}
-        <Typography
-          variant="h6"
-          sx={{
-            textTransform: "none",
-            px: (theme) => theme.spacing(2.5),
-            py: (theme) => theme.spacing(1),
-            my: 0,
-          }}
-        >
-          {title}
-        </Typography>
+        <Stack direction="row" alignItems={"center"} px={2.5} py={1}>
+          <img
+            src={chrome.runtime.getURL("logo_1_32x32_filled.png")}
+            alt="calendar"
+            width={20}
+            height={20}
+          />
+          <Typography
+            variant="h6"
+            sx={{
+              textTransform: "none",
+              pl: (theme) => theme.spacing(1.5),
+              my: 0,
+            }}
+          >
+            {title}
+          </Typography>
+        </Stack>
         <Stack direction="row" alignItems="center" gap={0.25} px={1}>
           {headerButtons}
           <IconButton size="small" onClick={onClose}>

@@ -147,7 +147,7 @@ export const AiActionMap = {
   Answer: "Answer",
   Chat: "Chat",
   factCheck: "Fact Check",
-  Fix: "Fix",
+  Fix: "Fix it",
 };
 
 export function AiSelectedText() {
@@ -244,6 +244,8 @@ export function AiSelectedText() {
         ? chatGpt.summarize
         : todo === "factCheck"
         ? chatGpt.factCheck
+        : todo === "Fix"
+        ? chatGpt.fix
         : null;
 
     if (!service) return;
@@ -354,6 +356,7 @@ export function AiSelectedText() {
         sx={{ zIndex: Number.MAX_SAFE_INTEGER - 9 }}
         slotProps={{
           paper: {
+            elevation: 3,
             sx: {
               overflowY: "unset",
               overflowX: "unset",
@@ -493,6 +496,13 @@ export function AiSelectedText() {
                   variant="outlined"
                   disabled={noTextSelected}
                 />
+                <ToneChip
+                  label={AiActionMap.Fix}
+                  onClick={() => handleTodoClick("Fix")}
+                  selected={selectedAction === "Fix"}
+                  variant="outlined"
+                  disabled={noTextSelected}
+                />
               </Stack>
               <Divider />
               <Stack
@@ -535,7 +545,14 @@ export function AiSelectedText() {
                   {factCheckMessage}
                 </Alert>
               )}
-              <CodeMarkdown>{aiMessage!}</CodeMarkdown>
+              <Box
+                pl={2}
+                sx={{
+                  wordBreak: "break-word",
+                }}
+              >
+                <CodeMarkdown>{aiMessage!}</CodeMarkdown>
+              </Box>
             </Stack>
           )}
           {selectedAction && !errorMessage && (
@@ -544,6 +561,7 @@ export function AiSelectedText() {
               py={1}
               direction="row"
               gap={0.5}
+              sx={{ position: "sticky", bottom: 0 }}
             >
               <ChatActionChip
                 label="Concise"
