@@ -9,15 +9,23 @@ import {
 import {
   Alert,
   AlertTitle,
+  Box,
   Button,
   Chip,
   ChipProps,
   Divider,
   IconButton,
   StackProps,
+  Tooltip,
   Typography,
 } from "@mui/material";
-import { forwardRef, startTransition, useRef, useState } from "react";
+import {
+  forwardRef,
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { styled } from "@mui/material";
 import { constants } from "@src/config/constants";
 import { Stack } from "@mui/material";
@@ -33,6 +41,7 @@ import { LlmModel } from "../Providers/ChatGptStateProvider";
 import { ShadowDomPortal } from "../shared/ShadowDomPortal";
 import { retryAsync } from "@src/utils/retryAsync";
 import { AiReWriteForm } from "./AiRewriteText";
+import { useMessageEngine } from "../Providers/MessageEngineProvider";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -143,13 +152,15 @@ export const AiActionMap = {
 
 export function AiSelectedText() {
   useLogRender("AiSelectedText");
+  const [open, setOpen] = useState(false);
+  const messageEngine = useMessageEngine();
   const {
     selectedText: inSelectedText,
     selectedTextPositions,
     textType,
+    getSelectedText,
   } = useSelectedText();
   const [aiMessage, setAiMessage] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
   const [hideAll, setHideAll] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -181,6 +192,12 @@ export function AiSelectedText() {
   const selectedAction = selectedActionsHistory.length
     ? selectedActionsHistory[selectedActionsHistory.length - 1]
     : null;
+
+  useEffect(() => {
+    messageEngine.onMessage("OpenWithAxessAI", async () => {
+      handleOpen(getSelectedText());
+    });
+  }, []);
 
   const resetResults = ({
     keepSelectedAction,
@@ -282,15 +299,16 @@ export function AiSelectedText() {
     setSelectedActionsHistory((history) => history.slice(0, -1));
   };
 
-  const handleOpen = () => {
+  const handleOpen = (_selection?: string) => {
     setOpen(true);
-    if (currentSelectedText !== inSelectedText) {
+    const selection = _selection ?? inSelectedText;
+    if (currentSelectedText !== selection) {
       resetResults();
       if (textType === "input") {
         setSelectedActionsHistory((history) => [...history, "Rewrite"]);
       }
     }
-    setCurrentSelectedText(inSelectedText);
+    setCurrentSelectedText(selection);
   };
 
   if (hideAll) return null;
@@ -307,6 +325,8 @@ export function AiSelectedText() {
     }
   };
 
+  const noTextSelected = !currentSelectedText?.trim?.();
+
   return (
     <ShadowDomPortal
       style={{
@@ -321,7 +341,7 @@ export function AiSelectedText() {
         ref={containerRef}
         sx={{ ...selectedTextPositions }}
         expandDirection="right"
-        onOpen={handleOpen}
+        onOpen={() => handleOpen()}
         handleRemoveIcon={() => setHideAll(true)}
       />
       <StyledPopover
@@ -408,9 +428,26 @@ export function AiSelectedText() {
         >
           {!selectedAction ? (
             <>
+              <Box px={AiFormLayoutPaddings.pxValue} pt={1}>
+                <Typography
+                  variant="body2"
+                  color="GrayText"
+                  textOverflow={"ellipsis"}
+                  overflow={"hidden"}
+                  whiteSpace={"nowrap"}
+                  borderLeft={"4px solid #0000001f"}
+                  sx={{ backgroundColor: "#f3f3f3" }}
+                  py={0.5}
+                  pl={1}
+                  borderRadius={0.5}
+                >
+                  {noTextSelected ? "No text selected" : currentSelectedText}
+                </Typography>
+              </Box>
               <Stack
                 px={AiFormLayoutPaddings.pxValue}
-                py={2}
+                pt={1.5}
+                pb={2}
                 direction="row"
                 flexWrap="wrap"
                 gap={0.5}
@@ -420,22 +457,25 @@ export function AiSelectedText() {
                   onClick={() => handleTodoClick("Explain")}
                   selected={selectedAction === "Explain"}
                   variant="outlined"
+                  disabled={noTextSelected}
                 />
                 <ToneChip
                   label={AiActionMap.Summarize}
                   onClick={() => handleTodoClick("Summarize")}
                   selected={selectedAction === "Summarize"}
                   variant="outlined"
+                  disabled={noTextSelected}
                 />
                 <ToneChip
                   label={AiActionMap.Simplify}
                   onClick={() => handleTodoClick("Simplify")}
                   selected={selectedAction === "Simplify"}
                   variant="outlined"
+                  disabled={noTextSelected}
                 />
                 <ToneChip
                   label={AiActionMap.Answer}
-                  disabled={aiOptions.fullPage}
+                  disabled={aiOptions.fullPage || noTextSelected}
                   onClick={() => handleTodoClick("Answer")}
                   selected={selectedAction === "Answer"}
                   variant={"outlined"}
@@ -444,12 +484,14 @@ export function AiSelectedText() {
                   label={AiActionMap.factCheck}
                   onClick={() => handleTodoClick("factCheck")}
                   variant={"outlined"}
+                  disabled={noTextSelected}
                 />
                 <ToneChip
                   label={AiActionMap.PeerReview}
                   onClick={() => handleTodoClick("PeerReview")}
                   selected={selectedAction === "PeerReview"}
                   variant="outlined"
+                  disabled={noTextSelected}
                 />
               </Stack>
               <Divider />
@@ -464,7 +506,7 @@ export function AiSelectedText() {
                 <ToneChip
                   icon={<DriveFileRenameOutline fontSize="small" />}
                   label={AiActionMap.Rewrite}
-                  disabled={aiOptions.fullPage}
+                  disabled={aiOptions.fullPage || noTextSelected}
                   onClick={() => handleTodoClick("Rewrite")}
                   variant={"outlined"}
                   type="multistep"

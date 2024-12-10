@@ -24,6 +24,8 @@ export type TaskMessage<T extends TaskAction = TaskAction> = {
   ? UserSettingsUpdatedMessage
   : T extends "TaskReminder"
   ? TaskReminderMessage
+  : T extends "OpenWithAxessAI"
+  ? OpenWithAxessAI
   : never;
 
 export type ScriptType = "Popup" | "Content" | "Background" | "Reminder";
@@ -91,6 +93,12 @@ export type TaskReminderMessage = {
   };
 };
 
+export type OpenWithAxessAI = {
+  action: "OpenWithAxessAI";
+  sourceScript: ScriptType;
+  payload?: null;
+};
+
 export const taskActions = [
   "DockTask",
   "UnDockTask",
@@ -102,6 +110,7 @@ export const taskActions = [
   "ReAuthenticate",
   "UserSettingsUpdated",
   "TaskReminder",
+  "OpenWithAxessAI",
 ] as const;
 export type TaskAction = (typeof taskActions)[number];
 

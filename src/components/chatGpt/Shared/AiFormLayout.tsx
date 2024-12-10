@@ -70,6 +70,7 @@ export const AiFormLayout = React.forwardRef<
             textTransform: "none",
             px: (theme) => theme.spacing(2.5),
             py: (theme) => theme.spacing(1),
+            my: 0,
           }}
         >
           {title}

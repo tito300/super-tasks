@@ -1,5 +1,6 @@
+import { useMessageEngine } from "@src/components/Providers/MessageEngineProvider";
 import { getCursorXY } from "@src/utils/getCurserXY";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export function useSelectedText() {
   const [selectedText, setSelectedText] = useState<string | null>(null);
@@ -107,7 +108,20 @@ export function useSelectedText() {
     }
   }
 
-  return { selectedText, updateSelectedText, selectedTextPositions, textType };
+  const getSelectedText = useCallback(() => {
+    const selection = window.getSelection();
+    if (selection) {
+      return selection.toString();
+    }
+  }, []);
+
+  return {
+    selectedText,
+    updateSelectedText,
+    selectedTextPositions,
+    textType,
+    getSelectedText,
+  };
 }
 
 function getOffsetTop(element: HTMLElement | null): number {

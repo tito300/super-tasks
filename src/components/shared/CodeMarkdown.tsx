@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { backdropClasses, styled } from "@mui/material";
 import { ComponentProps } from "react";
 import _Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -26,9 +26,12 @@ const Markdown = styled(_Markdown)(({ theme }) => ({
   blockquote: {
     borderLeft: `4px solid ${theme.palette.divider}`,
     paddingLeft: "16px",
+    paddingTop: "6px",
+    paddingBottom: "6px",
     margin: "16px 0",
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
+    backgroundColor: "#f3f3f3",
   },
   "blockquote p": {
     color: theme.palette.text.disabled,

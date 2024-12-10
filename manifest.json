@@ -32,13 +32,12 @@
     "tabs",
     "storage",
     "identity",
-    "openid",
     "identity.email",
     "alarms",
     "notifications",
-    "system.display"
+    "system.display",
+    "contextMenus"
   ],
-  "//chrome_url_overrides": { "newtab": "src/pages/newtab/index.html" },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*", "<all_urls>"],

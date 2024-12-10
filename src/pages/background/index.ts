@@ -9,6 +9,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
     // todo
   }
+
+  chrome.contextMenus.create({
+    id: "OpenWithAxessAI",
+    title: "Open with Axess Ai",
+    contexts: ["all"],
+  });
 });
 
 chrome.tabs.onCreated.addListener(function (tab) {
@@ -16,6 +22,16 @@ chrome.tabs.onCreated.addListener(function (tab) {
     chrome.tabs.update(tab.id as number, {
       url: "https://www.google.com?axs=t",
     });
+  }
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (tab && info.menuItemId === "OpenWithAxessAI") {
+    messageEngine.sendMessageToTab(
+      tab.id as number,
+      "OpenWithAxessAI",
+      undefined
+    );
   }
 });
 
