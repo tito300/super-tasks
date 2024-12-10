@@ -20,18 +20,18 @@ export function ExtensionSettings() {
           <FormControlLabel
             control={
               <Switch
-                checked={userSettings.popupOnly}
+                checked={!userSettings.popupOnly}
                 onChange={(e) =>
                   updateUserSettings({ popupOnly: e.target.checked })
                 }
               />
             }
-            label="Prevent Extension on Pages"
+            label="Show Extension on Pages"
           />
           <Tooltip
             title={
               <>
-                If enabled, the extension will not show up on pages. To use the
+                If disabled, the extension will not show up on pages. To use the
                 extension you will need to click on the extension icon in the
                 browser toolbar.
               </>

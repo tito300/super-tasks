@@ -8,6 +8,7 @@ export const userSettingsDefaults = {
   currentTab: "chatGpt" as TabName,
   defaultTab: "chatGpt" as TabName,
   popupOnly: false, // if true, the extension will only run in the popup
+  syncPopupOnly: true,
   syncCurrentTab: true,
   darkMode: false,
   syncDarkMode: true,

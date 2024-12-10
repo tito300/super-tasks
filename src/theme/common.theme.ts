@@ -71,5 +71,16 @@ export const commonTheme: Theme = createTheme({
         },
       },
     },
+    MuiTooltip: {
+      defaultProps: {
+        componentsProps: {
+          tooltip: {
+            sx: {
+              minWidth: "200px",
+            },
+          },
+        },
+      },
+    },
   },
 });

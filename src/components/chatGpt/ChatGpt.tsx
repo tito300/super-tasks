@@ -13,7 +13,6 @@ import {
   Typography,
 } from "@mui/material";
 import { constants } from "@src/config/constants";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import {
   LlmModel,
   llmModels,
@@ -34,13 +33,9 @@ import { Chip } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { Menu } from "@mui/material";
 import { MenuItem } from "@mui/material";
-import Markdown from "react-markdown";
 import { AppControls } from "../shared/AppControls";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useUserState } from "../Providers/UserStateProvider";
 import { useLogRender } from "@src/hooks/useLogRender";
-import { useScrollableEl } from "@src/hooks/useScrollableEl";
 import { useDebouncedValue } from "@src/hooks/useDebouncedValue";
 import { AiSelectedText } from "./AiSelectedText";
 import { CodeMarkdown } from "../shared/CodeMarkdown";
@@ -78,7 +73,7 @@ export const ChatGpt = () => {
           {/* <AiRewriteActions /> */}
         </>
       )}
-      {!chatGptSettings.disableTextSelectionTooltip && <AiSelectedText />}
+      <AiSelectedText />
     </Container>
   );
 };

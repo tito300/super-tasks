@@ -42,6 +42,7 @@ import { ShadowDomPortal } from "../shared/ShadowDomPortal";
 import { retryAsync } from "@src/utils/retryAsync";
 import { AiReWriteForm } from "./AiRewriteText";
 import { useMessageEngine } from "../Providers/MessageEngineProvider";
+import { useChatGptSettings } from "../Providers/ChatGptSettingsProvider";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -169,6 +170,7 @@ export function AiSelectedText() {
     AiAction[]
   >([]);
   const { chatGpt } = useServicesContext();
+  const { chatGptSettings } = useChatGptSettings();
   const [aiOptions, setAiOptions] = useState<{
     factCheck: boolean;
     keepShort: boolean;
@@ -339,16 +341,33 @@ export function AiSelectedText() {
         display: showComponent ? "block" : "none",
       }}
     >
-      <AiTooltipButtons
-        ref={containerRef}
-        sx={{ ...selectedTextPositions }}
-        expandDirection="right"
-        onOpen={() => handleOpen()}
-        handleRemoveIcon={() => setHideAll(true)}
-      />
+      {!chatGptSettings.disableTextSelectionTooltip && (
+        <AiTooltipButtons
+          ref={containerRef}
+          sx={{ ...selectedTextPositions }}
+          expandDirection="right"
+          onOpen={() => handleOpen()}
+          handleRemoveIcon={() => setHideAll(true)}
+        />
+      )}
       <StyledPopover
         open={open}
-        anchorEl={containerRef.current}
+        anchorEl={
+          containerRef.current || {
+            nodeType: 1,
+            getBoundingClientRect: () => ({
+              top: window.innerHeight - 50,
+              left: window.innerWidth - 4,
+              width: 4,
+              height: 4,
+              bottom: 46,
+              right: 0,
+              x: 0,
+              y: 0,
+              toJSON: () => ({}),
+            }),
+          }
+        }
         keepMounted
         disableScrollLock
         disablePortal
@@ -440,7 +459,7 @@ export function AiSelectedText() {
                   whiteSpace={"nowrap"}
                   borderLeft={"4px solid #0000001f"}
                   sx={{ backgroundColor: "#f3f3f3" }}
-                  py={0.5}
+                  py={1}
                   pl={1}
                   borderRadius={0.5}
                 >
