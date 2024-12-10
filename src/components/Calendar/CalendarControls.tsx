@@ -34,8 +34,8 @@ export function CalendarControls(
 ) {
   // using local state to only show loading bar when user explicitly clicks reload
   const [refetching, setRefetching] = useState(false);
-  const { refetch: refetchList } = useCalendarLists();
-  const { refetch } = useCalendarEvents();
+  const { refetch: refetchList } = useCalendarLists({ enabled: false });
+  const { refetch, isLoading } = useCalendarEvents({ enabled: false });
 
   const {
     data: { selectedCalendarId },
@@ -43,7 +43,7 @@ export function CalendarControls(
 
   return (
     <AppControls
-      reloading={refetching}
+      reloading={refetching || isLoading}
       settingsOpen={props.settingsOpen}
       onSettingsClick={() => props.onSettingsClick()}
       onReloadClick={() => {

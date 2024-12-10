@@ -98,12 +98,7 @@ export function TaskManager({ listId }: { listId: string }) {
 
       <Stack flexGrow={1}>
         {pinnedTasks?.map((task) => (
-          <Task
-            loading={isLoading}
-            key={task.id || task.title}
-            listId={listId}
-            data={task}
-          />
+          <Task key={task.id || task.title} listId={listId} data={task} />
         ))}
 
         <DndContext
@@ -119,7 +114,6 @@ export function TaskManager({ listId }: { listId: string }) {
               {!!filteredTasks?.length &&
                 filteredTasks.map((task) => (
                   <Task
-                    loading={isLoading}
                     key={task.id + task.title}
                     listId={listId}
                     data={task}

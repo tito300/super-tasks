@@ -30,10 +30,16 @@ export const TaskServices: ServiceObject = {
       return (data || {}) as TasksState;
     });
   },
-  getTasks: async (listId: string) => {
+  getTasks: async (
+    listId: string,
+    { useCacheOnly }: { useCacheOnly?: boolean } = {}
+  ) => {
     const tasks = await fetcher
       .getWithCache(`${urls.BASE_URL}/taskLists/${listId}/tasks`, {
         cacheKey: `tasks-${listId}`,
+        ...(useCacheOnly && {
+          maxCacheAge: 1000 * 60 * 60 * 24,
+        }),
       })
       .then((res) => res.json())
       .then((res) => {
@@ -44,9 +50,18 @@ export const TaskServices: ServiceObject = {
     });
     return TaskServices.mergeWithLocalState(tasks);
   },
-  getTaskLists: async () => {
+  getTaskLists: async ({
+    useCacheOnly,
+  }: {
+    useCacheOnly?: boolean;
+  } = {}) => {
     return fetcher
-      .getWithCache(`${urls.BASE_URL}/taskLists`, { cacheKey: "taskLists" })
+      .getWithCache(`${urls.BASE_URL}/taskLists`, {
+        cacheKey: "taskLists",
+        ...(useCacheOnly && {
+          maxCacheAge: 1000 * 60 * 60 * 24,
+        }),
+      })
       .then((res) => res.json())
       .then((res) => {
         return (res?.items || []) as TaskList[];

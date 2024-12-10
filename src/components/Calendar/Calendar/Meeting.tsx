@@ -108,6 +108,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 export function Meeting({ event }: { event: CalendarEvent }) {
   const startHour = getEventStartTime(event)?.hour();
   const startMinute = getEventStartTime(event)?.minute();
+  const allDay = isAllDayEvent(event);
 
   const {
     data: { blurText },
@@ -125,7 +126,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
   const open = Boolean(anchorEl);
 
   const { top, height } = useMemo(() => {
-    if (event.allDay) return { top: 0, height: 20 };
+    if (allDay) return { top: 0, height: 20 };
     if (!startHour) return { top: 0, height: 30 };
 
     const top = startHour * 60 + startMinute!;
@@ -138,7 +139,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     const height = bottom - top;
 
     return { top, height };
-  }, [event.end.dateTime, startHour, startMinute]);
+  }, [event.end.dateTime, startHour, startMinute, allDay]);
 
   const attendeesCounts = useMemo(
     () => ({
@@ -167,7 +168,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
     <>
       <CustomWidthTooltip title={event.summary} placement="top">
         <MeetingStyled
-          allDay={event.allDay}
+          allDay={allDay}
           reservedCount={event.reservationCount}
           totalStackedEvents={event.totalStackedEvents}
           responseStatus={responseStatus}
@@ -178,8 +179,8 @@ export function Meeting({ event }: { event: CalendarEvent }) {
             variant="body2"
             sx={{ filter: blurText ? "blur(5px)" : "none" }}
             whiteSpace="nowrap"
-            lineHeight={event.allDay ? 0.8 : undefined}
-            fontSize={event.allDay ? 12 : undefined}
+            lineHeight={allDay ? 0.8 : undefined}
+            fontSize={allDay ? 12 : undefined}
           >
             {event.summary}
           </Typography>
@@ -188,7 +189,7 @@ export function Meeting({ event }: { event: CalendarEvent }) {
               fontSize={12}
               sx={{ filter: blurText ? "blur(5px)" : "none" }}
             >
-              {event.allDay
+              {allDay
                 ? dayjs(event.start.date).format("ddd, MMM D")
                 : getEventStartTime(event)!.format("H:mm")}{" "}
               - {getEventEndTime(event)?.format("H:mma")}
@@ -354,4 +355,8 @@ function getMeetingPositions(stackOrder: number, totalStacked: number) {
   const left = `${(stackOrder - 1) * increment}%`;
   const right = `${baseRight + (totalStacked - stackOrder) * increment}%`;
   return { left, right };
+}
+
+export function isAllDayEvent(event: CalendarEvent) {
+  return !!event.start.date && !event.start.dateTime;
 }

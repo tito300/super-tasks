@@ -1,7 +1,11 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Stack, Typography, IconButton, Chip } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useCalendarEvents, useCalendarSettings } from "@src/api/calendar.api";
+import {
+  useCachedCalendarEvents,
+  useCalendarEvents,
+  useCalendarSettings,
+} from "@src/api/calendar.api";
 import dayjs from "dayjs";
 import duration, { Duration } from "dayjs/plugin/duration";
 import { CalendarEvent } from "@src/calendar.types";
@@ -111,7 +115,7 @@ export function useNextEventTimer() {
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const [timeToNextEvent, setTimeToNextEvent] = useState<Duration | null>(null);
 
-  const { data: calendarEvents } = useCalendarEvents();
+  const { data: calendarEvents } = useCachedCalendarEvents();
 
   useEffect(() => {
     if (!calendarEvents?.length) return;

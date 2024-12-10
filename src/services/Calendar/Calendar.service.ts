@@ -36,9 +36,21 @@ export const calendarServices: ServiceObject = {
   //     return (data.calendarState || {}) as CalendarEventsGlobalState;
   //   });
   // },
-  getCalendarEvents: async (listId: string) => {
+  getCalendarEvents: async (
+    listId: string,
+    {
+      useCacheOnly,
+    }: {
+      useCacheOnly?: boolean;
+    } = {}
+  ) => {
     const calendarEvents = await fetcher
-      .get(`${urls.BASE_URL}/calendars/${listId}/events`)
+      .getWithCache(`${urls.BASE_URL}/calendars/${listId}/events`, {
+        cacheKey: `calendarEvents-${listId}`,
+        ...(useCacheOnly && {
+          maxCacheAge: 1000 * 60 * 60 * 24,
+        }),
+      })
       .then((res) => res.json())
       .then((res) => {
         return (res?.data?.items || []) as SavedCalendarEvent[];
@@ -64,9 +76,14 @@ export const calendarServices: ServiceObject = {
 
     return calendarEvents;
   },
-  getCalendars: async () => {
+  getCalendars: async ({ useCacheOnly }: { useCacheOnly?: boolean } = {}) => {
     return fetcher
-      .get(`${urls.BASE_URL}/calendars`)
+      .getWithCache(`${urls.BASE_URL}/calendars`, {
+        cacheKey: "calendars",
+        ...(useCacheOnly && {
+          maxCacheAge: 1000 * 60 * 60 * 24,
+        }),
+      })
       .then((res) => res.json())
       .then((res) => {
         return (res || []) as ListCalendar[];

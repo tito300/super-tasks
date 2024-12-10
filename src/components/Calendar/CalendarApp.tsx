@@ -11,8 +11,6 @@ import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 import { constants } from "@src/config/constants";
 
 export function CalendarApp() {
-  const scriptType = useScriptType();
-
   return (
     // <CalendarSettingsProvider>
     //   <CalendarsStateProvider>

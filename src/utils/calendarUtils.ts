@@ -5,7 +5,6 @@ import dayjs from "dayjs";
 import { rrulestr } from "rrule";
 import utc from "dayjs/plugin/utc";
 import timeZone from "dayjs/plugin/timezone";
-import { getCalendarEvents } from "@src/components/Calendar/mocks/calendarEvents";
 
 dayjs.extend(utc);
 dayjs.extend(timeZone);

@@ -38,13 +38,45 @@ export const useTasks = ({
   });
 };
 
+export const useCachedTasks = () => {
+  const { task: taskService } = useServicesContext();
+  const {
+    data: { selectedTaskListId },
+  } = useTasksState();
+
+  return useCustomQuery<SavedTask[]>({
+    queryKey: ["tasks", "cached", selectedTaskListId],
+    queryFn: async () => {
+      if (!selectedTaskListId) return [];
+
+      const data = await taskService.getTasks(selectedTaskListId, {
+        useCacheOnly: true,
+      });
+      const sortedData = data.sort((a: any, b: any) =>
+        a.position.localeCompare(b.position)
+      );
+
+      return sortedData;
+    },
+    enabled: true,
+  });
+};
+
 export const useTaskLists = ({ enabled }: { enabled?: boolean } = {}) => {
   const { task } = useServicesContext();
   return useCustomQuery<TaskList[]>({
     queryKey: ["taskLists"],
-    placeholderData: [] as TaskList[],
     queryFn: () => task.getTaskLists(),
     enabled,
+  });
+};
+
+export const useCachedTaskLists = () => {
+  const { task } = useServicesContext();
+  return useCustomQuery<TaskList[]>({
+    queryKey: ["taskLists", "cached"],
+    queryFn: () => task.getTaskLists({ useCacheOnly: true }),
+    enabled: true,
   });
 };
 

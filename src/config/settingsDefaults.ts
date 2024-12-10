@@ -74,6 +74,7 @@ insureSyncIsDefined(chatGptSettingsDefaults, "chatGptSettingsDefaults");
 export const calendarSettingsDefaults = {
   // used to determine when to start showing the count down badge
   badgeCountDownMinutes: 30,
+  syncSelectedCalendarId: true,
 };
 
 export type UserSettings = typeof userSettingsDefaults;

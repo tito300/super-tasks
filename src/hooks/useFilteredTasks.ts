@@ -1,4 +1,9 @@
-import { useTaskLists, useTasks } from "@src/api/task.api";
+import {
+  useCachedTaskLists,
+  useCachedTasks,
+  useTaskLists,
+  useTasks,
+} from "@src/api/task.api";
 import { useTasksState } from "@src/components/Providers/TasksStateProvider";
 import { useDeferredValue, useMemo } from "react";
 
@@ -7,7 +12,16 @@ export function useFilteredTasks() {
   const { isLoading: isListLoading } = useTaskLists({
     enabled: false,
   });
-  const { data: tasks, isLoading: isTasksLoading, ...rest } = useTasks();
+  const { data: cachedTasks } = useCachedTasks();
+  const {
+    data: inTasks,
+    isLoading: isTasksLoading,
+    isFetching: isTasksPending,
+    ...rest
+  } = useTasks();
+
+  const tasks = isTasksLoading ? cachedTasks : inTasks;
+  const isLoading = isListLoading || isTasksLoading;
 
   const filters = useDeferredValue(tasksState.filters);
   const searchedTasks = useMemo(() => {
@@ -98,8 +112,6 @@ export function useFilteredTasks() {
     if (!searchedTasks) return [];
     return searchedTasks.filter((task) => task.pinned);
   }, [searchedTasks]);
-
-  const isLoading = isListLoading || isTasksLoading;
 
   return {
     filteredTasks,

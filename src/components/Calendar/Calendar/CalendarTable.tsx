@@ -1,6 +1,6 @@
 import { Stack, styled } from "@mui/material";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Meeting } from "./Meeting";
+import { isAllDayEvent, Meeting } from "./Meeting";
 import { SavedCalendarEvent } from "@src/calendar.types";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -12,7 +12,10 @@ import { useRootElement } from "@src/hooks/useRootElement";
 import { constants } from "@src/config/constants";
 import { MeetingSkeleton } from "./Meeting.skeleton";
 import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
-import { useCalendarEvents, useCalendarLists } from "@src/api/calendar.api";
+import {
+  useCachedCalendarEvents,
+  useCalendarEvents,
+} from "@src/api/calendar.api";
 
 dayjs.extend(isToday);
 dayjs.extend(utc);
@@ -20,25 +23,28 @@ dayjs.extend(timezone);
 
 export function CalendarTable() {
   const [tableEl, setTableEl] = useState<HTMLDivElement | null>(null);
-  const { isLoading: isListLoading } = useCalendarLists();
-  const { isLoading: eventsLoading, data: calendarEvents } =
-    useCalendarEvents();
+  const results = useCalendarEvents();
+  const cachedResults = useCachedCalendarEvents();
+  const { data: calendarEvents } = results;
 
   const { events, allDayEvents } = useMemo(() => {
-    const sortedEvents = getTodaysEvents(calendarEvents || []);
+    const displayedEvents = calendarEvents || cachedResults.data || [];
+    const sortedEvents = getTodaysEvents(displayedEvents || []);
 
     // stacks overlapping events
     stackEvents(sortedEvents);
 
     const allDayEvents = sortedEvents.filter((event) => {
-      return event.allDay;
+      return isAllDayEvent(event);
     });
     const rest = sortedEvents.filter((event) => {
-      return !event.allDay;
+      return !isAllDayEvent(event);
     });
 
     return { events: rest, allDayEvents };
-  }, [calendarEvents]);
+  }, [calendarEvents, cachedResults.data]);
+
+  const showSkeleton = cachedResults.isLoading;
 
   return (
     <Stack position="relative">
@@ -67,7 +73,7 @@ export function CalendarTable() {
       <Table ref={(el) => setTableEl(el)} id="calendar">
         <DayColumn sx={{ width: 52 }}></DayColumn>
         <DayColumn className="column">
-          {isListLoading || eventsLoading ? (
+          {showSkeleton ? (
             <>
               <MeetingSkeleton top={60 * 3} height={60} />
               <MeetingSkeleton top={60 * 6} height={30} />

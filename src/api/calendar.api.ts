@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from "react";
 import { deepmerge } from "@mui/utils";
 import { useCalendarState } from "@src/components/Providers/CalendarStateProvider";
 import { useCustomQuery } from "@src/hooks/useCustomQuery";
+import { UseQueryOptions } from "@tanstack/react-query";
 
 export const useCalendarEvents = ({
   enabled,
@@ -23,21 +24,51 @@ export const useCalendarEvents = ({
   return useCustomQuery<SavedCalendarEvent[]>({
     queryKey: ["calendar", selectedCalendarId],
     queryFn: async () => {
-      if (!selectedCalendarId) return [];
-
       const data = await calendarService.getCalendarEvents(selectedCalendarId);
       return data;
     },
-    enabled: !!selectedCalendarId,
+    enabled: !!selectedCalendarId || enabled,
     // stale time prevents refetching for things like when user focuses on page
     // If you need to force a refetch, use queryClient.invalidateQueries
   });
 };
 
-export function useCalendarLists() {
+export const useCachedCalendarEvents = () => {
+  const { calendar: calendarService } = useServicesContext();
+  const {
+    data: { selectedCalendarId },
+  } = useCalendarState();
+
+  return useCustomQuery<SavedCalendarEvent[]>({
+    queryKey: ["calendar", "cached", selectedCalendarId],
+    queryFn: async () => {
+      const data = await calendarService.getCalendarEvents(selectedCalendarId, {
+        useCacheOnly: true,
+      });
+      return data;
+    },
+    enabled: !!selectedCalendarId,
+  });
+};
+
+export const useCachedCalendarLists = () => {
   const { calendar: calendarService } = useServicesContext();
 
   return useCustomQuery<ListCalendar[]>({
+    queryKey: ["calendarLists", "cached"],
+    queryFn: async () => {
+      const data = await calendarService.getCalendars({ useCacheOnly: true });
+      return data;
+    },
+    enabled: true,
+  });
+};
+
+export function useCalendarLists(options: { enabled?: boolean } = {}) {
+  const { calendar: calendarService } = useServicesContext();
+
+  return useCustomQuery<ListCalendar[]>({
+    ...options,
     queryKey: ["calendarLists"],
     queryFn: async () => {
       const data = await calendarService.getCalendars();

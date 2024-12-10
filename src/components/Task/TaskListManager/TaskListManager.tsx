@@ -3,21 +3,14 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
-  Divider,
-  Stack,
-  IconButton,
   Button,
-  CircularProgress,
 } from "@mui/material";
 import React, { useEffect, useMemo } from "react";
-import { useTaskLists } from "../../../api/task.api";
+import { useCachedTaskLists, useTaskLists } from "../../../api/task.api";
 import { TaskManager } from "../TasksManager/TaskManager";
 import { useTasksState } from "../../Providers/TasksStateProvider";
 import { KeyboardArrowDown, List } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
-import { TasksSettings } from "../TasksSettings/TasksSettings";
-import { useUserState } from "../../Providers/UserStateProvider";
-import { useScriptType } from "../../Providers/ScriptTypeProvider";
 import { AppControls } from "@src/components/shared/AppControls";
 import { Settings } from "@src/components/shared/Settings/Settings";
 
@@ -26,11 +19,7 @@ export function TaskListManager() {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [refetching, setRefetching] = React.useState(false);
   const [isTransitionPending, startTransition] = React.useTransition();
-  const scriptType = useScriptType();
-  const {
-    data: { buttonExpanded },
-  } = useUserState();
-  const { data } = useTaskLists();
+  const { data, isLoading } = useTaskLists();
 
   const queryClient = useQueryClient();
   const {
@@ -64,7 +53,7 @@ export function TaskListManager() {
   return (
     <>
       <AppControls
-        reloading={isTransitionPending || refetching}
+        reloading={isTransitionPending || refetching || isLoading}
         settingsOpen={settingsOpen}
         onSettingsClick={() => {
           setSettingsOpen(!settingsOpen);

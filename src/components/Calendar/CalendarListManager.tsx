@@ -1,4 +1,4 @@
-import { useCalendarEvents, useCalendarLists } from "@src/api/calendar.api";
+import { useCalendarLists } from "@src/api/calendar.api";
 import { CalendarManager } from "./CalendarManager";
 import { useEffect, useMemo, useState } from "react";
 import { useCalendarState } from "../Providers/CalendarStateProvider";
@@ -7,7 +7,7 @@ import { CalendarControls } from "./CalendarControls";
 import { Settings } from "../shared/Settings/Settings";
 
 export function CalendarListManager(stackProps: StackProps) {
-  const { data: calendarList, isError, isLoading } = useCalendarLists();
+  const { data: calendarList, isError } = useCalendarLists();
   const {
     data: { selectedCalendarId },
     updateData: updateCalendarState,

@@ -76,6 +76,7 @@ export function Task({
   temporary,
   listId,
   loading,
+  disabled,
   autoFocus,
   onSaved,
 }: {
@@ -83,6 +84,7 @@ export function Task({
   listId: string;
   temporary?: boolean;
   loading?: boolean;
+  disabled?: boolean;
   autoFocus?: boolean;
   onSaved?: () => void;
 }) {
