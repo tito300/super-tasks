@@ -12,8 +12,11 @@ import { ExtensionSettings } from "./ExtensionSettings";
 import { AiSettings } from "@src/components/chatGpt/settings/AiSettings";
 import { useUserState } from "@src/components/Providers/UserStateProvider";
 import { useServicesContext } from "@src/components/Providers/ServicesProvider";
+import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 
 export function Settings() {
+  const scriptType = useScriptType();
+
   return (
     <Stack py={1.5}>
       <Typography px={2} variant="h5">
@@ -86,7 +89,7 @@ export function Settings() {
         alignItems="center"
         justifyContent={"flex-end"}
       >
-        <AddMoreIntegrations />
+        {scriptType === "Popup" && <AddMoreIntegrations />}
         <SignOut />
       </Stack>
     </Stack>

@@ -231,6 +231,7 @@ export const MessageComposer = ({
         onKeyDown={handleKeyDown}
         onChange={handleChange}
         sx={{
+          borderRadius: 1,
           ["& .Mui-focused:after"]: {
             borderBottom: "none",
           },

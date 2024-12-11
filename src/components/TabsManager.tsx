@@ -166,7 +166,7 @@ function NavigationTabs({ onClose }: { onClose: () => void }) {
   return (
     <>
       <TabIconsContainer
-        onClick={onClose}
+        onClick={scriptType === "Content" ? onClose : undefined}
         scriptType={scriptType}
         id="summary-tabs-container"
       >
