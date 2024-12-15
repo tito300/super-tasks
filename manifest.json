@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "Axess",
   "description": "Axess your daily tools from any tab!",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0FpsQRsXM8ly6nnw+qYoO7gt8YHW8V2x1soklp3CgeHNhvvLL2LPM5ewfa+jo4m/UC3gFiryIoflbYJqVpdu4edo8Z1PuLRU7nSQLTTtWtptqNula/2lzF1RkIZHR61X0CLjSQ2z93qGe12Iipa01U9w7Xg8q0uFyOZfhpIgidm+lWOwHm36nTJeBRKXLXUn+/Dl5Y72RftxgQkRjAEKGwAPf1d92nGUw8Zw+dO92kipjM0Q3x0yKmoK3KbCwP3TI6AvAcQ3L7Y8FAlZ42AmSLjlNY90wIebNeJPiZ+XM1abfKDPKJkMsQk+UAbgsxooBaOvL/xaPxqoeFHylSkgtQIDAQAB",
   "oauth2": {
     "client_id": "567438855699-4vafg2ckks5ik6uvdbeoa2h7rr45a2i3.apps.googleusercontent.com",
     "scopes": [

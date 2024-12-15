@@ -227,7 +227,7 @@ const ElementContainer = styled("div")<{
 }));
 
 function getElementTransform(pagePosition: PagePosition, index: number) {
-  if (index === 0) return "translate(0, 0)";
+  if (index === 0) return "translate(0, 50%)";
   if (pagePosition === "top-right") {
     if (index === 1) {
       return "translate(0, 100%)";

@@ -67,7 +67,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
   };
 
   const getSelectedScopes = () => {
-    const selectedScopes: string[] = [googleScopes.email, googleScopes.openId];
+    const selectedScopes: string[] = [googleScopes.email];
     if (selectedApps.gTasks) {
       selectedScopes.push(googleScopes.tasks);
     }

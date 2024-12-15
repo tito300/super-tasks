@@ -43,6 +43,7 @@ import { retryAsync } from "@src/utils/retryAsync";
 import { AiReWriteForm } from "./AiRewriteText";
 import { useMessageEngine } from "../Providers/MessageEngineProvider";
 import { useChatGptSettings } from "../Providers/ChatGptSettingsProvider";
+import { truncateText } from "@src/utils/truncateText";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -197,7 +198,12 @@ export function AiSelectedText() {
 
   useEffect(() => {
     messageEngine.onMessage("OpenWithAxessAI", async () => {
-      handleOpen(getSelectedText());
+      let text = getSelectedText();
+      if (!text) {
+        text = getFullPageText();
+        setAiOptions((options) => ({ ...options, fullPage: true }));
+      }
+      handleOpen(text);
     });
   }, []);
 
@@ -451,20 +457,39 @@ export function AiSelectedText() {
           {!selectedAction ? (
             <>
               <Box px={AiFormLayoutPaddings.pxValue} pt={1}>
-                <Typography
-                  variant="body2"
-                  color="GrayText"
-                  textOverflow={"ellipsis"}
-                  overflow={"hidden"}
-                  whiteSpace={"nowrap"}
-                  borderLeft={"4px solid #0000001f"}
-                  sx={{ backgroundColor: "#f3f3f3" }}
-                  py={1}
-                  pl={1}
-                  borderRadius={0.5}
-                >
-                  {noTextSelected ? "No text selected" : currentSelectedText}
-                </Typography>
+                {aiOptions.fullPage ? (
+                  <Chip
+                    label={`Current Page is Read`}
+                    size="small"
+                    icon={
+                      <DriveFileRenameOutline
+                        color="inherit"
+                        fontSize="small"
+                      />
+                    }
+                    sx={{
+                      py: 1,
+                      backgroundColor: "#4662a5",
+                      color: "white",
+                      boxShadow: "0 2px 4px #00000036",
+                    }}
+                  />
+                ) : (
+                  <Typography
+                    variant="body2"
+                    color="GrayText"
+                    textOverflow={"ellipsis"}
+                    overflow={"hidden"}
+                    whiteSpace={"nowrap"}
+                    borderLeft={"4px solid #0000001f"}
+                    sx={{ backgroundColor: "#f3f3f3" }}
+                    py={1}
+                    pl={1}
+                    borderRadius={0.5}
+                  >
+                    {noTextSelected ? "No text selected" : currentSelectedText}
+                  </Typography>
+                )}
               </Box>
               <Stack
                 px={AiFormLayoutPaddings.pxValue}

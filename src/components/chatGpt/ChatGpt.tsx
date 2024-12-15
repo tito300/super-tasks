@@ -841,10 +841,6 @@ export const Message = ({
   );
 };
 
-function truncateText(text: string, maxLength: number) {
-  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
-}
-
 function HistoryMessage({ children }: { children: React.ReactNode }) {
   return (
     <Box width={"100%"} py={1.5} px={3} display="flex" justifyContent="center">

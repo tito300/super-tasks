@@ -17,6 +17,7 @@ const services = {
 };
 
 let messageEngine: ReturnType<typeof getMessageEngine>;
+let reAuthRetries = 0;
 
 export type ServiceName = keyof typeof services;
 export type ServiceObject = Record<string, (...arg: any[]) => Promise<any>>;
@@ -44,14 +45,17 @@ export const initializeServices = (scriptType: ScriptType) => {
           return response;
         } catch (error: any) {
           if (error.status === 401) {
-            messageEngine.broadcastMessage(
-              "ReAuthenticate",
-              null,
-              "Background",
-              {
-                activeTabOnly: true,
-              }
-            );
+            if (reAuthRetries < 5) {
+              reAuthRetries++;
+              messageEngine.broadcastMessage(
+                "ReAuthenticate",
+                null,
+                "Background",
+                {
+                  activeTabOnly: true,
+                }
+              );
+            }
           }
 
           throw error;
