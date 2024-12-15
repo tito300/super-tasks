@@ -5,9 +5,15 @@ import dayjs from "dayjs";
 import { rrulestr } from "rrule";
 import utc from "dayjs/plugin/utc";
 import timeZone from "dayjs/plugin/timezone";
+import {
+  calendarEventsMock,
+  flattenTodaysEventsResult,
+} from "./calendarUtils.mock";
+import isToday from "dayjs/plugin/isToday";
 
 dayjs.extend(utc);
 dayjs.extend(timeZone);
+dayjs.extend(isToday);
 
 function isSingleEvent(event: SavedCalendarEvent) {
   return !event.recurringEventId && !event.recurrence;
@@ -28,21 +34,19 @@ function isRecurringEventException(event: SavedCalendarEvent) {
   return !event.recurrence && event.recurringEventId;
 }
 
-function findEventTodaysException(
+function findMatchingEventException(
   recurringEvent: SavedCalendarEvent,
   calendarEvents: SavedCalendarEvent[]
 ) {
   return calendarEvents.find((currentEvent) => {
-    return (
-      isRecurringEventException(currentEvent) &&
-      currentEvent.recurringEventId === recurringEvent.id &&
-      getEventStartTime(currentEvent)?.isToday()
-    );
+    if (currentEvent.recurringEventId !== recurringEvent.id) return false;
+
+    return isRecurringEventException(currentEvent);
   });
 }
 
 function validDisplayEvent(event: SavedCalendarEvent) {
-  return event.status !== "cancelled" && event.eventType === "default";
+  return event.eventType === "default";
 }
 
 /** Any exceptions to the recurring events are provided as separate events
@@ -61,6 +65,10 @@ function validDisplayEvent(event: SavedCalendarEvent) {
  */
 export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const flatEvents: SavedCalendarEvent[] = [];
+  const cancelledEvents = calendarEvents.filter(
+    (event) => event.status === "cancelled"
+  );
+
   const validCalendarEvents = calendarEvents.filter(validDisplayEvent);
   const singleEvents = findSingleEvents(validCalendarEvents);
   const recurringEvents = findRecurringEvents(validCalendarEvents);
@@ -77,7 +85,8 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   });
 
   recurringEvents.forEach((event) => {
-    const todaysException = findEventTodaysException(
+    if (isRecurringEventCancelled(event, cancelledEvents, dayjs())) return;
+    const todaysException = findMatchingEventException(
       event,
       recurringExceptions
     );
@@ -105,6 +114,7 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
 
   return flatEvents;
 }
+testFlattenTodaysEvents();
 
 export function getTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const sortedEvents = flattenTodaysEvents(calendarEvents).sort((a, b) => {
@@ -220,17 +230,19 @@ export function getEventStartTime(
   event: CalendarEvent,
   { originalTime = false } = {}
 ) {
-  const start = event.start?.dateTime;
+  if (originalTime) {
+    const original = event.originalStartTime?.dateTime;
 
-  if (!originalTime) {
-    // google calendar times are weird. Sometimes they are in utc
-    // and sometimes they are in the event's timezone
-    return dayjs(start);
+    if (!original) return;
+
+    return dayjs(original);
   }
 
-  const original = event.originalStartTime?.dateTime;
+  const start = event.start?.dateTime;
 
-  return dayjs(original);
+  if (!start) return;
+
+  return dayjs(start);
 }
 
 export function getEventEndTime(event: CalendarEvent) {
@@ -241,21 +253,44 @@ export function getEventEndTime(event: CalendarEvent) {
   }
 }
 
-// takes a modified event with sequence number and checks if the original event today's recurrence
-// matches the modified event's recurrence number
-function isMatchingTodaysOccurrence(
+function isRecurringEventCancelled(
   event: SavedCalendarEvent,
-  modifiedEvent: SavedCalendarEvent
+  cancelledEvents: SavedCalendarEvent[],
+  day: dayjs.Dayjs
 ) {
-  const rule = getRRule(event);
+  const cancelledEvent = cancelledEvents.find((cancelledEvent) => {
+    return cancelledEvent.recurringEventId === event.id;
+  });
 
-  if (!rule) return false;
+  if (!cancelledEvent) return false;
 
-  const occurrences = rule.between(
-    dayjs().subtract(5, "years").toDate(),
-    dayjs().endOf("day").toDate()
+  const cancelledEventStartTime = getEventStartTime(cancelledEvent, {
+    originalTime: true,
+  });
+
+  // compare two dayjs objects and if they are the same day return true
+  return (
+    cancelledEventStartTime?.isSame(day, "day") &&
+    cancelledEventStartTime?.isSame(day, "week") &&
+    cancelledEventStartTime?.isSame(day, "month")
   );
-  const todaysRecurrenceCount = occurrences.length;
+}
 
-  return todaysRecurrenceCount === modifiedEvent.sequence;
+export function testFlattenTodaysEvents() {
+  // @ts-ignore
+  const result = flattenTodaysEvents(calendarEventsMock);
+
+  deepCompareObj(result, flattenTodaysEventsResult);
+}
+
+function deepCompareObj(obj1: any, obj2: any) {
+  for (const key in obj1) {
+    if (typeof obj1[key] === "object") {
+      deepCompareObj(obj1[key], obj2[key]);
+    } else {
+      if (obj1[key] !== obj2[key]) {
+        throw new Error("Objects are not equal");
+      }
+    }
+  }
 }
