@@ -114,7 +114,8 @@ export function flattenTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
 
   return flatEvents;
 }
-testFlattenTodaysEvents();
+// todo: update mocks to always have today's date
+// testFlattenTodaysEvents();
 
 export function getTodaysEvents(calendarEvents: SavedCalendarEvent[]) {
   const sortedEvents = flattenTodaysEvents(calendarEvents).sort((a, b) => {
