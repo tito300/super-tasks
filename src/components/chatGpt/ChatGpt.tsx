@@ -45,6 +45,9 @@ import { retryAsync } from "@src/utils/retryAsync";
 import { useChatGptSettings } from "../Providers/ChatGptSettingsProvider";
 import { Settings } from "../shared/Settings/Settings";
 import { truncateText } from "@src/utils/truncateText";
+import { ScriptType } from "@src/messageEngine/types/taskMessages";
+import { CloseOutlined } from "@mui/icons-material";
+import { ServiceObject } from "@src/services";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error
@@ -55,12 +58,12 @@ window.Prism.manual = true;
 const premiumModels = ["gpt-4o"];
 
 export const ChatGpt = () => {
-  const { chatGptSettings } = useChatGptSettings();
+  const scriptType = useScriptType();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <Container ref={containerRef}>
+    <Container ref={containerRef} scriptType={scriptType}>
       <ChatGptControls
         settingsOpen={settingsOpen}
         onSettingsClick={() => setSettingsOpen(!settingsOpen)}
@@ -138,13 +141,13 @@ export const ChatGptControls = (props: {
   );
 };
 
-const Container = styled(Stack)({
+const Container = styled(Stack)<{ scriptType: ScriptType }>((props) => ({
   position: "relative",
   createdAt: Date.now(),
   width: "100%",
-  height: 500,
+  height: props.scriptType === "Panel" ? "100vh" : 500,
   overflow: "auto",
-});
+}));
 
 export const ConversationsList = () => {
   // todo
@@ -264,7 +267,11 @@ const MessagesWrapper = styled(Stack)(({ theme }) => ({
   paddingBottom: theme.spacing(3.5),
 }));
 
-const getFullPageMessage = () => {
+const getFullPageMessage = (
+  scriptType: ScriptType,
+  chatGptService: ServiceObject
+) => {
+  // todo: need a pattern to communicate with the content script through a service
   return {
     id: 0,
     message: `Full html page innerText: \n
@@ -593,6 +600,12 @@ export const AiConversation = ({
     }
   };
 
+  const handleReadPageClear = (id: number) => {
+    updateData({
+      messages: messages.filter((m) => m.id !== id),
+    });
+  };
+
   if (hidden) return null;
 
   return (
@@ -611,6 +624,7 @@ export const AiConversation = ({
               <Message
                 key={message.id}
                 id={`${constants.EXTENSION_NAME}-message-${message.id}`}
+                onReadPageClear={handleReadPageClear}
                 message={message}
               />
             );
@@ -775,8 +789,12 @@ export const MessageContainer = styled(Stack)<{
 
 export const Message = ({
   message,
+  onReadPageClear,
   ...rest
-}: { message: ChatGptMessage } & StackProps) => {
+}: {
+  message: ChatGptMessage;
+  onReadPageClear: (id: number) => void;
+} & StackProps) => {
   const {
     data: { blurText },
   } = useUserState();
@@ -792,7 +810,7 @@ export const Message = ({
       {...rest}
     >
       <Avatar
-        sx={{ width: 24, height: 24 }}
+        sx={{ width: 18, height: 18 }}
         src={inbound ? chrome.runtime.getURL("chatgpt-icon.png") : undefined}
       >
         {message.direction[0].toUpperCase()}
@@ -812,14 +830,19 @@ export const Message = ({
           message.fullPage ? (
             <>
               <Chip
-                label={
-                  message.fullPageUrl === location.href
-                    ? `Current Page is Read`
-                    : `Page "${truncateText(
-                        message.fullPageTitle!,
-                        15
-                      )}" was Read`
+                label={`Page "${truncateText(
+                  message.fullPageTitle!,
+                  15
+                )}" was Read`}
+                deleteIcon={
+                  <CloseOutlined
+                    fontSize="small"
+                    sx={{
+                      fill: "white",
+                    }}
+                  />
                 }
+                onDelete={() => onReadPageClear(message.id)}
                 sx={{
                   mb: 1,
                   backgroundColor: "#4662a5",

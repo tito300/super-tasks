@@ -14,12 +14,12 @@ import { useLazyMounted } from "@src/hooks/useMounted";
 import { convertRelativeToAbsolutePosition } from "@src/components/Draggable";
 import { SmartExpand } from "./SmartExpand";
 import { useLogRender } from "@src/hooks/useLogRender";
+import { useServicesContext } from "@src/components/Providers/ServicesProvider";
 
 export function DockStationContainer({ children }: PropsWithChildren) {
   useLogRender("DockStationContainer");
   const [isDragging, setIsDragging] = useState(false);
   const mounted = useLazyMounted();
-  const queryClient = useQueryClient();
   const {
     data: {
       buttonExpanded,
@@ -27,9 +27,11 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       authWarningDismissed,
       selectedApps,
       tokens,
+      useSidePanel,
     },
     updateData: updateUserState,
   } = useUserState();
+  const { user: userServices } = useServicesContext();
 
   const [removed, setRemoved] = useState(false);
 
@@ -42,12 +44,9 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       accordionExpanded: true,
     });
 
-    if (app === "tasks") {
-      queryClient.invalidateQueries({
-        queryKey: ["taskLists"],
-      });
+    if (useSidePanel) {
+      userServices.openSidePanel();
     }
-    focusAddTaskInput();
   };
 
   const handleDragStart = () => {
@@ -189,7 +188,7 @@ export function DockStationContainer({ children }: PropsWithChildren) {
         </BadgeStyled>
       }
     >
-      {!buttonExpanded && (
+      {(!buttonExpanded || useSidePanel) && (
         <SmartExpand
           pagePosition={pagePosition}
           elementSize={58}

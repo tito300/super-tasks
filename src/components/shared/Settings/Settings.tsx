@@ -89,7 +89,7 @@ export function Settings() {
         alignItems="center"
         justifyContent={"flex-end"}
       >
-        {scriptType === "Popup" && <AddMoreIntegrations />}
+        {["Popup", "Panel"].includes(scriptType) && <AddMoreIntegrations />}
         <SignOut />
       </Stack>
     </Stack>

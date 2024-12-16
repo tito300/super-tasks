@@ -18,17 +18,30 @@ import googleCalendarIcon from "@assets/img/google-calendar-icon.png";
 import AddIcon from "@mui/icons-material/Add";
 import chatGptCalendarIcon from "@assets/img/chatgpt-icon.png";
 import { constants } from "@src/config/constants";
-import { BorderColor, BorderLeft, Close } from "@mui/icons-material";
+import {
+  AspectRatio,
+  BorderColor,
+  BorderLeft,
+  Close,
+  CloseFullscreen,
+} from "@mui/icons-material";
+import { useServicesContext } from "./Providers/ServicesProvider";
+import { useUserSettings } from "./Providers/UserSettingsProvider";
 
-const AppContainer = styled(Paper)({
-  position: "relative",
-  display: "flex",
-  flexDirection: "column",
-  overflowX: "hidden",
-  overflowY: "auto",
-  height: "450px",
-  backgroundColor: "white",
-});
+const AppContainer = styled(Paper)<{ scriptType: ScriptType }>(
+  ({ scriptType }) => ({
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    overflowX: "hidden",
+    overflowY: "auto",
+    height: "450px",
+    backgroundColor: "white",
+    ...(scriptType === "Panel" && {
+      flexGrow: 1,
+    }),
+  })
+);
 
 export function TabsManager({
   tabs,
@@ -43,11 +56,11 @@ export function TabsManager({
   tabs: Record<TabName, React.ReactNode>;
 } & StackProps) {
   const {
-    data: { currentTab, selectedApps, buttonExpanded },
+    data: { currentTab, selectedApps, buttonExpanded, useSidePanel },
     updateData,
   } = useUserState();
   const scriptType = useScriptType();
-  const defaultTabOpened = scriptType === "Popup";
+  const defaultTabOpened = ["Popup", "Panel"].includes(scriptType);
 
   // we do not want to render tabs that haven't been selected to save on bandwidth and performance
   const openedApps = useRef<Record<TabName, boolean>>({
@@ -71,30 +84,23 @@ export function TabsManager({
     }
   };
 
+  if (useSidePanel && scriptType === "Content") return null;
+  const hide = !useSidePanel && scriptType === "Panel";
+
   return (
-    <Stack
+    <TabsManagerContainer
       onDrag={(e) => e.stopPropagation()}
       onDragStart={(e) => e.stopPropagation()}
       onDragEnd={(e) => e.stopPropagation()}
+      hide={hide}
+      scriptType={scriptType}
       {...rootProps}
-      sx={{
-        width: "100%",
-        typography: "body1",
-        ":hover": {
-          [`& #summary-tabs-container`]: {
-            bottom: scriptType === "Content" ? "calc(100% - 10px)" : "auto",
-            transition: "bottom 0.1s",
-          },
-        },
-        boxShadow: (theme) => theme.shadows[3],
-        borderRadius: 2,
-        ...rootProps?.sx,
-      }}
     >
       <TabContext value={currentTab}>
         {!hideTabs && <NavigationTabs onClose={handleExtensionClose} />}
         <AppContainer
           elevation={0}
+          scriptType={scriptType}
           onMouseDown={(e) => e.stopPropagation()}
           id={`${constants.EXTENSION_NAME}-scrollable-container`}
         >
@@ -143,9 +149,32 @@ export function TabsManager({
           )}
         </AppContainer>
       </TabContext>
-    </Stack>
+    </TabsManagerContainer>
   );
 }
+
+const TabsManagerContainer = styled(Stack)<{
+  hide?: boolean;
+  scriptType: ScriptType;
+}>(({ hide, scriptType, theme }) => ({
+  width: "100%",
+  typography: "body1",
+  ":hover": {
+    [`& #summary-tabs-container`]: {
+      bottom: scriptType === "Content" ? "calc(100% - 10px)" : "auto",
+      transition: "bottom 0.1s",
+    },
+  },
+  boxShadow: theme.shadows[3],
+  borderRadius: 2,
+  ...(scriptType === "Panel" && {
+    height: "100vh",
+  }),
+  transition: "all 0.3s",
+  ...(hide && {
+    transform: "scale(0) translateX(-100%)",
+  }),
+}));
 
 const TabContainer = styled(Stack)({
   height: "100%",
@@ -154,14 +183,38 @@ const TabContainer = styled(Stack)({
 function NavigationTabs({ onClose }: { onClose: () => void }) {
   const scriptType = useScriptType();
   const {
-    data: { selectedApps },
+    data: { selectedApps, useSidePanel },
+    updateData,
   } = useUserState();
+  const { user: userService } = useServicesContext();
+  const { updateUserSettings, userSettings } = useUserSettings();
 
   const tasksAvailable = selectedApps.gTasks;
   const calendarAvailable = selectedApps.gCalendar;
   const chatGptAvailable = selectedApps.chatGpt;
 
   const canAddMore = !tasksAvailable || !calendarAvailable || !chatGptAvailable;
+
+  const handleToggleSidePanel = () => {
+    const _useSidePanel = !useSidePanel;
+
+    if (_useSidePanel) {
+      updateData({ useSidePanel: _useSidePanel, buttonExpanded: true });
+      userService.openSidePanel();
+    } else {
+      updateUserSettings({ syncButtonExpanded: true });
+
+      // todo: no working - it needs to open content script again
+      setTimeout(() => {
+        updateData({ useSidePanel: _useSidePanel, buttonExpanded: true });
+        setTimeout(() => {
+          updateUserSettings({
+            syncButtonExpanded: userSettings.buttonExpanded,
+          });
+        }, 500);
+      }, 500);
+    }
+  };
 
   return (
     <>
@@ -170,15 +223,26 @@ function NavigationTabs({ onClose }: { onClose: () => void }) {
         scriptType={scriptType}
         id="summary-tabs-container"
       >
-        <Stack direction={"row"} alignItems={"center"}>
+        <Stack direction={"row"} alignItems={"center"} spacing={0.5}>
           {chatGptAvailable && <TabOption tabName="chatGpt" />}
           {calendarAvailable && <TabOption tabName="calendar" />}
           {tasksAvailable && <TabOption tabName="tasks" />}
           {canAddMore && scriptType === "Popup" && <TabOption tabName="add" />}
         </Stack>
-        <IconButton sx={{ ml: "auto" }} size="small" onClick={onClose}>
-          <Close fontSize="small" />
-        </IconButton>
+        <Stack direction={"row"} alignItems={"center"}>
+          <IconButton size="small" onClick={handleToggleSidePanel}>
+            {useSidePanel && scriptType !== "Popup" ? (
+              <CloseFullscreen fontSize="small" color="action" />
+            ) : (
+              <AspectRatio fontSize="small" color="action" />
+            )}
+          </IconButton>
+          {scriptType !== "Panel" && (
+            <IconButton sx={{ ml: "auto" }} size="small" onClick={onClose}>
+              <Close fontSize="small" />
+            </IconButton>
+          )}
+        </Stack>
       </TabIconsContainer>
       {scriptType === "Popup" && (
         <Box
@@ -251,7 +315,7 @@ const TabIconsContainer = styled(Stack)<{
   padding: "6px 8px 0px",
   borderBottom: `1px solid ${theme.palette.divider}`,
   width: scriptType === "Popup" ? "100%" : "auto",
-  ...(scriptType === "Content" && { position: "initial" }),
+  ...(["Content", "Panel"].includes(scriptType) && { position: "initial" }),
 }));
 
 const TabIconStyled = styled(IconButton)<{

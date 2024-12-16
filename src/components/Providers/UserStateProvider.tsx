@@ -19,6 +19,7 @@ export type UserState = {
   selectedApps: UserSettings["selectedApps"];
   authWarningDismissed: boolean;
   authWarningDismissedAt: number | null;
+  useSidePanel: boolean;
   position: {
     percentageFromLeft: number | null;
     percentageFromTop: number | null;
@@ -42,6 +43,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     darkMode: userSettings.darkMode,
     tokens: userSettings.tokens,
     selectedApps: userSettings.selectedApps,
+    useSidePanel: userSettings.useSidePanel,
     position: { percentageFromLeft: 99, percentageFromTop: 90 },
     authWarningDismissed: false,
     authWarningDismissedAt: null,

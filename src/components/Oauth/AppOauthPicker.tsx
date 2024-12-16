@@ -109,7 +109,8 @@ export default function AppOauthPicker(paperProps: PaperProps) {
     Object.values(savedSelectedApps).filter((selected) => selected).length || 0;
   const hasUnselectedApps = savedSelectedAppsCount < 3;
 
-  if (authWarningDismissed && scriptType !== "Popup") return null;
+  if (authWarningDismissed && !["Popup", "Panel"].includes(scriptType))
+    return null;
   const newAppsSelected =
     !tokens.google || selectedAppsCount > savedSelectedAppsCount;
   const modified = selectedAppsCount !== savedSelectedAppsCount;
@@ -120,7 +121,7 @@ export default function AppOauthPicker(paperProps: PaperProps) {
       {...paperProps}
       sx={{ px: 2, py: 2, ...paperProps.sx }}
     >
-      {scriptType === "Popup" ? (
+      {["Popup", "Panel"].includes(scriptType) ? (
         <Stack gap={1.5}>
           {hasExistingSelectedApps && (
             <Stack>

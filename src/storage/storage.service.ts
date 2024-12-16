@@ -45,16 +45,24 @@ export const storageService = {
    */
   onChange: (key: keyof StorageData | null, callback: onChangeCallback) => {
     if (key) {
-      chrome.storage.local.onChanged.addListener((changes) => {
+      const listener = (changes: any) => {
         if (key in changes) {
           callback(changes as any);
         } else {
           return null;
         }
-      });
+      };
+      chrome.storage.local.onChanged.addListener(listener);
+      return () => {
+        chrome.storage.local.onChanged.removeListener(listener);
+      };
     } else {
       // @ts-ignore
       chrome.storage.local.onChanged.addListener(callback);
+      return () => {
+        // @ts-ignore
+        chrome.storage.local.onChanged.removeListener(callback);
+      };
     }
   },
 } as const;

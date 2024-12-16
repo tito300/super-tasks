@@ -35,11 +35,14 @@ export const initializeServices = (scriptType: ScriptType) => {
 
   if (!initiated) {
     if (scriptType === "Background") {
-      messageEngine.onMessage("ServiceCall", async (message) => {
+      messageEngine.onMessage("ServiceCall", async (message, sender) => {
         const service = services[message.payload.serviceName];
         try {
           const response = await service[message.payload.method](
-            ...message.payload.args
+            ...message.payload.args,
+            {
+              sender,
+            }
           );
 
           return response;

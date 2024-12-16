@@ -5,6 +5,10 @@ import { Alarms } from "webextension-polyfill";
 const messageEngine = getMessageEngine("Background");
 const services = initializeServices("Background");
 
+chrome.sidePanel.setPanelBehavior({
+  openPanelOnActionClick: false,
+});
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
     // todo

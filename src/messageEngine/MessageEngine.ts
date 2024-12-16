@@ -33,6 +33,7 @@ export class MessageEngine {
   }
   initPopup() {}
   initReminder() {}
+  initPanel() {}
 
   sendMessage<T extends TaskAction>(
     action: T,
@@ -105,11 +106,14 @@ export class MessageEngine {
 
   onMessage<T extends TaskAction>(
     action: T | null,
-    callback: (message: TaskMessage<T>) => Promise<any>
+    callback: (
+      message: TaskMessage<T>,
+      sender: chrome.runtime.MessageSender
+    ) => Promise<any>
   ) {
     const handler = (
       message: unknown,
-      sender: any,
+      sender: chrome.runtime.MessageSender,
       sendResponse: (response: MessageResponse) => void
     ) => {
       if (this.isValidMessage(message) && message.action === action) {
@@ -119,7 +123,7 @@ export class MessageEngine {
         )
           return;
 
-        callback(message as TaskMessage<T>)
+        callback(message as TaskMessage<T>, sender)
           .then((response) => {
             sendResponse({
               payload: response,

@@ -105,4 +105,11 @@ export const userService: ServiceObject = {
       .then((res) => res.json())
       .then((data) => data?.jwt_token as { jwt_token: string });
   },
+  async openSidePanel(options) {
+    const tabId = options.sender?.tab?.id;
+
+    chrome.sidePanel.open({
+      tabId,
+    });
+  },
 };

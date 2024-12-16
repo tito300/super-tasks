@@ -19,6 +19,9 @@
     "service_worker": "src/pages/background/index.ts",
     "type": "module"
   },
+  "side_panel": {
+    "default_path": "src/pages/panel/index.html"
+  },
   "action": {
     "default_popup": "src/pages/popup/index.html",
     "default_icon": {
@@ -37,7 +40,8 @@
     "alarms",
     "notifications",
     "system.display",
-    "contextMenus"
+    "contextMenus",
+    "sidePanel"
   ],
   "content_scripts": [
     {

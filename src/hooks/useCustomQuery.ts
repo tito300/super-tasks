@@ -32,7 +32,7 @@ export function useCustomQuery<T>(options: UseCustomQueryOptions<T>) {
   const enabled =
     options.enabled != null
       ? options.enabled
-      : scriptType === "Popup"
+      : ["Popup", "Panel"].includes(scriptType)
       ? true
       : !isTabVisible
       ? false

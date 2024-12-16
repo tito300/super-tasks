@@ -1,10 +1,44 @@
-import React from 'react';
-import '@pages/panel/Panel.css';
+import { Box } from "@mui/material";
+import { TabsManager } from "@src/components/TabsManager";
+import { urls } from "@src/config/urls";
+import axios from "axios";
+import { useEffect } from "react";
+import { CalendarApp } from "../../components/Calendar/CalendarApp";
+import { TasksApp } from "../../components/Task/TasksApp";
+import { useGlobalState } from "@src/components/Providers/globalStateProvider";
+import { AppPickerTab } from "@src/components/Oauth/AppPickerTab";
+import { ChatGpt } from "@src/components/chatGpt/ChatGpt";
+import { useScriptType } from "@src/components/Providers/ScriptTypeProvider";
 
-export default function Panel(): JSX.Element {
+axios.defaults.baseURL = urls.BASE_URL;
+
+export default function Panel({}): JSX.Element {
+  const { open, toggleOpen } = useGlobalState();
+  const scriptType = useScriptType();
+
+  useEffect(() => {
+    if (!open) {
+      toggleOpen();
+    }
+  }, [open]);
+
   return (
-    <div className="container">
-      <h1>Dev Tools Panel</h1>
-    </div>
+    <Box
+      sx={{
+        minHeight: 400,
+        ...(scriptType === "Panel" && {
+          width: "100vw",
+        }),
+      }}
+    >
+      <TabsManager
+        tabs={{
+          tasks: <TasksApp />,
+          calendar: <CalendarApp />,
+          chatGpt: <ChatGpt />,
+          add: <AppPickerTab />,
+        }}
+      />
+    </Box>
   );
 }

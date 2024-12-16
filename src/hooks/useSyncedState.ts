@@ -35,7 +35,7 @@ export function useSyncedState<T extends {}, K extends any = {}>(
   }, [resourceName]);
 
   useEffect(() => {
-    storageService.onChange(resourceName, (changes) => {
+    const removeListener = storageService.onChange(resourceName, (changes) => {
       function setSyncedState(existingValues: T, newValues: Partial<T>): T {
         const mergedValues = { ...existingValues };
         Object.keys(existingValues).forEach((key) => {
@@ -58,6 +58,10 @@ export function useSyncedState<T extends {}, K extends any = {}>(
         });
       }
     });
+
+    return () => {
+      removeListener();
+    };
   }, [resourceName, resourceSettings]);
 
   const updateData = useCallback(

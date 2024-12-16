@@ -28,6 +28,8 @@ export const userSettingsDefaults = {
   syncSelectedApps: true,
   syncAuthWarningDismissed: true,
   syncAuthWarningDismissedAt: true,
+  useSidePanel: false,
+  syncUseSidePanel: true,
   selectedApps: {
     gTasks: false,
     gCalendar: false,

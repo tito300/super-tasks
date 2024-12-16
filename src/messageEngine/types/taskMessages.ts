@@ -28,7 +28,12 @@ export type TaskMessage<T extends TaskAction = TaskAction> = {
   ? OpenWithAxessAI
   : never;
 
-export type ScriptType = "Popup" | "Content" | "Background" | "Reminder";
+export type ScriptType =
+  | "Popup"
+  | "Content"
+  | "Background"
+  | "Reminder"
+  | "Panel";
 
 export type DockTaskMessage = {
   action: "DockTask";
