@@ -44,6 +44,7 @@ import { useScriptType } from "../Providers/ScriptTypeProvider";
 import { retryAsync } from "@src/utils/retryAsync";
 import { useChatGptSettings } from "../Providers/ChatGptSettingsProvider";
 import { Settings } from "../shared/Settings/Settings";
+import { truncateText } from "@src/utils/truncateText";
 
 // prevents prism from automatically highlighting code blocks on page
 // @ts-expect-error

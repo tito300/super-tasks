@@ -1,6 +1,6 @@
 import { PropsWithChildren, useState } from "react";
 import { Badge, IconButton, styled } from "@mui/material";
-import { Close } from "@mui/icons-material";
+import { Cancel, Close } from "@mui/icons-material";
 import { constants } from "@src/config/constants";
 import { DraggablePopper } from "@src/components/DraggablePopper";
 import { TasksReminderBadge } from "./TasksReminderBadge";
@@ -32,10 +32,6 @@ export function DockStationContainer({ children }: PropsWithChildren) {
   } = useUserState();
 
   const [removed, setRemoved] = useState(false);
-
-  if (removed) {
-    return null;
-  }
 
   const handleButtonClick = (app: "calendar" | "tasks" | "chatGpt") => {
     if (isDragging) return;
@@ -87,29 +83,13 @@ export function DockStationContainer({ children }: PropsWithChildren) {
       >
         <img
           src={runtime.getURL("logo_1_32x32.png")}
-          alt="calendar"
+          alt="axess"
           width={32}
           height={32}
         />
       </AppIconButton>
     );
   } else {
-    if (selectedApps["chatGpt"]) {
-      appButtons.push(
-        <AppIconButton
-          onClick={() => handleButtonClick("chatGpt")}
-          sx={{ backgroundColor: "white" }}
-        >
-          <img
-            src={runtime.getURL("chatgpt-icon.png")}
-            alt="calendar"
-            width={32}
-            height={32}
-          />
-        </AppIconButton>
-      );
-    }
-
     if (selectedApps["gCalendar"]) {
       appButtons.push(
         <AppIconButton
@@ -145,6 +125,34 @@ export function DockStationContainer({ children }: PropsWithChildren) {
         </AppIconButton>
       );
     }
+
+    if (selectedApps["chatGpt"]) {
+      appButtons.push(
+        <AppIconButton
+          onClick={() => handleButtonClick("chatGpt")}
+          sx={{ backgroundColor: "white" }}
+        >
+          <img
+            src={runtime.getURL("chatgpt-icon.png")}
+            alt="calendar"
+            width={32}
+            height={32}
+          />
+        </AppIconButton>
+      );
+    }
+  }
+
+  appButtons.push(
+    <Cancel
+      sx={{ fontSize: 16 }}
+      color="action"
+      onClick={() => setRemoved(true)}
+    />
+  );
+
+  if (removed) {
+    return null;
   }
 
   if (authWarningDismissed) return null;

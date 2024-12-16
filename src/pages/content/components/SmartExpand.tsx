@@ -52,11 +52,22 @@ export function SmartExpand(props: SmartExpandProps) {
 
   return (
     <Container id={`axess-smart-container`} ownerProps={ownerState} {...rest}>
+      {/* <BadgeStyled
+        slotProps={{
+          badge: {
+            id: `${constants.EXTENSION_NAME}-remove-button`,
+          },
+        }}
+        anchorOrigin={{ ...getBadgeAnchorOrigin(pagePosition) }}
+        color="default"
+        badgeContent={badgeContent}
+      > */}
       <ElementContainer
         data-smart-expand-primary
         ownerState={ownerState}
         primary
       ></ElementContainer>
+      {/* </BadgeStyled> */}
       {elements.map((element, index) => {
         const elementClone = React.cloneElement(element, {
           onClick: (e: React.MouseEvent) => {
@@ -65,27 +76,16 @@ export function SmartExpand(props: SmartExpandProps) {
           },
         });
 
-        if (!index && badgeContent) {
-          return (
-            <ElementContainer
-              data-smart-expand-index={index}
-              ownerState={ownerState}
-            >
-              <BadgeStyled
-                slotProps={{
-                  badge: {
-                    id: `${constants.EXTENSION_NAME}-remove-button`,
-                  },
-                }}
-                anchorOrigin={{ ...getBadgeAnchorOrigin(pagePosition) }}
-                color="default"
-                badgeContent={badgeContent}
-              >
-                {elementClone}
-              </BadgeStyled>
-            </ElementContainer>
-          );
-        }
+        // if (!index && badgeContent) {
+        //   return (
+        //     <ElementContainer
+        //       data-smart-expand-index={index}
+        //       ownerState={ownerState}
+        //     >
+
+        //     </ElementContainer>
+        //   );
+        // }
 
         return (
           <ElementContainer
@@ -122,33 +122,45 @@ const Container = styled("div")<{ ownerProps: OwnerState }>(
         ? {}
         : {
             ...(snap && {
-              width: 26, // width of the container is bigger than actual colored element width to give user more space to hover
+              width: 32, // width of the container is bigger than actual colored element width to give user more space to hover
               height: 68, // height of the container is bigger than actual colored element height to give user more space to hover
             }),
             "&:hover": {
-              height: getButtonsExpandedSize(elements.length, elementSize),
-              width: getButtonsExpandedSize(elements.length, elementSize),
+              position: "absolute",
+              display: "flex",
+              gap: "8px",
+              flexDirection: "column",
+              right: 0,
+              top: "50%",
+              transform: "translateY(-50%)",
+              height: "auto",
               ...(snap && {
-                transform: "translate(0, -40px)",
                 pointerEvents: "auto",
+                paddingRight: "54px",
               }),
               [" [data-smart-expand-primary]"]: {
                 opacity: 0,
               },
               [" [data-smart-expand-index='0']"]: {
-                transform: getElementTransform(pagePosition, 0),
+                transform: "scale(1)",
                 transition: "transform 0.1s",
                 opacity: 1,
                 pointerEvents: "auto",
               },
               [" [data-smart-expand-index='1']"]: {
-                transform: getElementTransform(pagePosition, 1),
+                transform: "scale(1)",
                 transition: "transform 0.1s",
                 opacity: 1,
                 pointerEvents: "auto",
               },
               [" [data-smart-expand-index='2']"]: {
-                transform: getElementTransform(pagePosition, 2),
+                transform: "scale(1)",
+                transition: "transform 0.1s",
+                opacity: 1,
+                pointerEvents: "auto",
+              },
+              [" [data-smart-expand-index='3']"]: {
+                transform: "scale(1)",
                 transition: "transform 0.1s",
                 opacity: 1,
                 pointerEvents: "auto",
@@ -171,12 +183,7 @@ const ElementContainer = styled("div")<{
   ownerState: OwnerState;
   primary?: boolean;
 }>(({ ownerState, primary }) => ({
-  position: "absolute",
   cursor: "pointer",
-  // @ts-ignore
-  width: ownerState.elementSize,
-  // @ts-ignore
-  height: ownerState.elementSize,
   // @ts-ignore
   backgroundColor: "transparent",
   // @ts-ignore
@@ -189,6 +196,7 @@ const ElementContainer = styled("div")<{
   ...(ownerState.snap && ownerState.snapDirection === "left" && { left: 0 }),
   ...(primary &&
     ownerState.snap && {
+      position: "absolute",
       width: 6,
       height: 26,
       backgroundColor: "#ff9f20",
@@ -217,6 +225,8 @@ const ElementContainer = styled("div")<{
   ...(primary &&
     !ownerState.snap && {
       opacity: 1,
+      width: 44,
+      height: 44,
       pointerEvents: "auto",
       background: "linear-gradient(45deg, #dc8300, #ffb834)",
       borderRadius: "50%",
@@ -226,66 +236,31 @@ const ElementContainer = styled("div")<{
     }),
 }));
 
-function getElementTransform(pagePosition: PagePosition, index: number) {
-  if (index === 0) return "translate(0, 50%)";
+function getBadgeAnchorOrigin(pagePosition: PagePosition) {
   if (pagePosition === "top-right") {
-    if (index === 1) {
-      return "translate(0, 100%)";
-    } else if (index === 2) {
-      return "translate(-100%, 0)";
-    }
+    return {
+      vertical: "top",
+      horizontal: "left",
+    } as const;
   }
 
   if (pagePosition === "top-left") {
-    if (index === 1) {
-      return "translate(0, 100%)";
-    } else if (index === 2) {
-      return "translate(100%, 0)";
-    }
-  }
-
-  if (pagePosition === "bottom-right") {
-    if (index === 1) {
-      return "translate(0, -100%)";
-    } else if (index === 2) {
-      return "translate(-100%, 0)";
-    }
-  }
-
-  if (pagePosition === "bottom-left") {
-    if (index === 1) {
-      return "translate(0, -100%)";
-    } else if (index === 2) {
-      return "translate(100%, 0)";
-    }
-  }
-}
-
-function getBadgeAnchorOrigin(pagePosition: PagePosition) {
-  if (pagePosition === "top-right") {
     return {
       vertical: "top",
       horizontal: "right",
     } as const;
   }
 
-  if (pagePosition === "top-left") {
-    return {
-      vertical: "top",
-      horizontal: "left",
-    } as const;
-  }
-
   if (pagePosition === "bottom-left") {
     return {
       vertical: "bottom",
-      horizontal: "left",
+      horizontal: "right",
     } as const;
   }
 
   return {
     vertical: "bottom",
-    horizontal: "right",
+    horizontal: "left",
   } as const;
 }
 
