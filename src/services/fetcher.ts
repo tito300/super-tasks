@@ -46,22 +46,8 @@ const cache: Record<
   }
 > = {};
 
-fetcher.get = async (url: string, options: RequestInit = {}) => {
-  if (cache[url] && Date.now() - cache[url].timestamp < 1000 * 10) {
-    console.log("Using cache for", url);
-    const response = cache[url].response;
-    response.json = async () => cache[url].data;
-    return Promise.resolve(response);
-  }
-
+fetcher.get = async (url: string, options: RequestInit) => {
   const response = await fetcher(url, { method: "GET", ...options });
-  const data = await response.json();
-  cache[url] = {
-    timestamp: Date.now(),
-    data,
-    response,
-  };
-  cleanupCache();
   return response;
 };
 
@@ -116,19 +102,14 @@ fetcher.getWithCache = async (
 
   const cachedData = await getCachedData(cacheKey, maxCacheAge);
   if (cachedData) {
-    return {
-      json: async () => cachedData,
-    };
+    return cachedData;
   }
 
   const response = await fetcher.get(url, options);
-  const jsonFunc = response.json.bind(response);
-  response.json = async () => {
-    const data = await jsonFunc();
-    setCacheData(cacheKey, data);
-    return data;
-  };
-  return response;
+  const json = await response.json();
+  setCacheData(cacheKey, json);
+
+  return json;
 };
 
 async function getCachedData(name: string, maxAge: number) {

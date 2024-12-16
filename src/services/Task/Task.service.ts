@@ -41,14 +41,17 @@ export const TaskServices: ServiceObject = {
           maxCacheAge: 1000 * 60 * 60 * 24,
         }),
       })
-      .then((res) => res.json())
       .then((res) => {
         return (res?.items || []) as SavedTask[];
       });
     tasks.forEach((task) => {
       task.listId = listId;
     });
-    return TaskServices.mergeWithLocalState(tasks);
+    const sortedData = tasks.sort((a: any, b: any) =>
+      a.position.localeCompare(b.position)
+    );
+
+    return TaskServices.mergeWithLocalState(sortedData);
   },
   getTaskLists: async ({
     useCacheOnly,
@@ -62,7 +65,6 @@ export const TaskServices: ServiceObject = {
           maxCacheAge: 1000 * 60 * 60 * 24,
         }),
       })
-      .then((res) => res.json())
       .then((res) => {
         return (res?.items || []) as TaskList[];
       });

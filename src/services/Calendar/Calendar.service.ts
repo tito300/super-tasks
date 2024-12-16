@@ -51,7 +51,7 @@ export const calendarServices: ServiceObject = {
           maxCacheAge: 1000 * 60 * 60 * 24,
         }),
       })
-      .then((res) => res.json())
+
       .then((res) => {
         return (res?.data?.items || []) as SavedCalendarEvent[];
       });
@@ -84,7 +84,7 @@ export const calendarServices: ServiceObject = {
           maxCacheAge: 1000 * 60 * 60 * 24,
         }),
       })
-      .then((res) => res.json())
+
       .then((res) => {
         return (res || []) as ListCalendar[];
       });

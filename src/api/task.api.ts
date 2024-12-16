@@ -28,12 +28,10 @@ export const useTasks = ({
       if (!selectedTaskListId) return [];
 
       const data = await taskService.getTasks(selectedTaskListId);
-      const sortedData = data.sort((a: any, b: any) =>
-        a.position.localeCompare(b.position)
-      );
 
-      return sortedData;
+      return data;
     },
+
     enabled: enabled ?? !!selectedTaskListId,
   });
 };
